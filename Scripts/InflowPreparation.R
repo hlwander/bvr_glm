@@ -14,15 +14,13 @@ sim_folder <- getwd()
 pacman::p_load(dplyr,zoo,EcoHydRology,rMR,tidyverse,lubridate)
 
 # First, read in inflow file generated from Thronthwaite Overland flow model + groundwater recharge
-# From HW: for entire watershed (?); units in m3/s
-# Updated inflow model using NLDAS precip and temp data: units in m3/d - need to convert to m3/s
-inflow <- read_csv("./inputs/BVR_flow_calcs_new.csv")
+# From HW: for entire watershed; units in m3/d
+# Updated inflow model using FCR met station precip and temp data: units in m3/d - need to convert to m3/s
+inflow <- read_csv("./inputs/BVR_flow_calcs_obs_met.csv")
 inflow$time = as.POSIXct(strptime(inflow$time,"%Y-%m-%d", tz="EST"))
 inflow <- inflow[,-c(1)]
 names(inflow)[2] <- "FLOW"
 inflow$FLOW = inflow$FLOW/86400
-inflow <- inflow %>% 
-  filter(time >= "2014-01-01")
  
 #diagnostic plot
 plot(inflow$time, inflow$FLOW)
@@ -32,15 +30,15 @@ plot(inflow$time, inflow$FLOW)
 # going to assume temperature measured at FCR 100 is close to BVR inflow temp
 
 # Download FCR inflow data from EDI
-inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/202/7/f5fa5de4b49bae8373f6e7c1773b026e" 
-infile1 <- paste0(getwd(),"/inflow_for_EDI_2013_06Mar2020.csv")
-download.file(inUrl1,infile1,method="curl")
+#inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/202/7/f5fa5de4b49bae8373f6e7c1773b026e" 
+#infile1 <- paste0(getwd(),"/inputs/inflow_for_EDI_2013_06Mar2020.csv")
+#download.file(inUrl1,infile1,method="curl")
 
-temp <- read_csv("./inputs/inflow_for_EDI_2013_06Mar2020.csv")
+temp <- read.csv("./inputs/inflow_for_EDI_2013_06Mar2020.csv")
 temp$DateTime = as.POSIXct(strptime(temp$DateTime,"%Y-%m-%d", tz="EST"))
 temp <- temp %>% select(DateTime, WVWA_Temp_C) %>% 
   rename(time=DateTime, TEMP=WVWA_Temp_C) %>%
-  dplyr::filter(time > as.POSIXct("2013-12-31") & time < as.POSIXct("2020-01-01")) %>% 
+  dplyr::filter(time > as.POSIXct("2015-07-07") & time < as.POSIXct("2021-01-01")) %>% 
   group_by(time) %>% 
   summarise(TEMP=mean(TEMP)) #gives averaged daily temp in C
 
@@ -57,9 +55,9 @@ plot(inflow$time, inflow$TEMP, type = "l", col = "red")
 
 #now let's merge with chemistry
 #first pull in BVR chem data from 2013-2019 from EDI
-inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/199/6/2b3dc84ae6b12d10bd5485f1c300af13" 
-infile1 <- paste0(getwd(),"/chem.csv")
-download.file(inUrl1,infile1,method="curl")
+#inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/199/6/2b3dc84ae6b12d10bd5485f1c300af13" 
+#infile1 <- paste0(getwd(),"/chem.csv")
+#download.file(inUrl1,infile1,method="curl")
 
 BVRchem <- read.csv("./inputs/chem.csv", header=T) %>%
   select(Reservoir:DIC_mgL) %>%
@@ -107,17 +105,17 @@ hist(BVRchem$DOC_mgL)
 hist(BVRchem$DIC_mgL)
 
 # Create nuts (randomly sampled from a normal distribution) for total inflow
-bvr_nuts <- as.data.frame(seq.Date(as.Date("2014/01/01"),as.Date("2019/12/31"), "days"))
+bvr_nuts <- as.data.frame(seq.Date(as.Date("2015/07/07"),as.Date("2019/12/31"), "days"))
 names(bvr_nuts)[1] <- "time"
 bvr_nuts$time<-as.POSIXct(strptime(bvr_nuts$time, "%Y-%m-%d", tz="EST"))
 bvr_nuts <- bvr_nuts %>% 
-  mutate(TN_ugL = rnorm(2191,mean=mean(BVRchem$TN_ugL,sd=sd(BVRchem$TN_ugL)))) %>% 
-  mutate(TP_ugL = rnorm(2191,mean=mean(BVRchem$TP_ugL),sd=sd(BVRchem$TP_ugL))) %>% 
-  mutate(NH4_ugL = rnorm(2191,mean=mean(BVRchem$NH4_ugL,sd=sd(BVRchem$NH4_ugL)))) %>% 
-  mutate(NO3NO2_ugL = rnorm(2191,mean=mean(BVRchem$NO3NO2_ugL,sd=sd(BVRchem$NO3NO2_ugL)))) %>% 
-  mutate(SRP_ugL = rnorm(2191,mean=mean(BVRchem$SRP_ugL,sd=sd(BVRchem$SRP_ugL)))) %>% 
-  mutate(DOC_mgL = rnorm(2191,mean=mean(BVRchem$DOC_mgL,sd=sd(BVRchem$DOC_mgL)))) %>% 
-  mutate(DIC_mgL = rnorm(2191,mean=mean(BVRchem$DIC_mgL,sd=sd(BVRchem$DIC_mgL))))
+  mutate(TN_ugL = rnorm(1639,mean=mean(BVRchem$TN_ugL,sd=sd(BVRchem$TN_ugL)))) %>% 
+  mutate(TP_ugL = rnorm(1639,mean=mean(BVRchem$TP_ugL),sd=sd(BVRchem$TP_ugL))) %>% 
+  mutate(NH4_ugL = rnorm(1639,mean=mean(BVRchem$NH4_ugL,sd=sd(BVRchem$NH4_ugL)))) %>% 
+  mutate(NO3NO2_ugL = rnorm(1639,mean=mean(BVRchem$NO3NO2_ugL,sd=sd(BVRchem$NO3NO2_ugL)))) %>% 
+  mutate(SRP_ugL = rnorm(1639,mean=mean(BVRchem$SRP_ugL,sd=sd(BVRchem$SRP_ugL)))) %>% 
+  mutate(DOC_mgL = rnorm(1639,mean=mean(BVRchem$DOC_mgL,sd=sd(BVRchem$DOC_mgL)))) %>% 
+  mutate(DIC_mgL = rnorm(1639,mean=mean(BVRchem$DIC_mgL,sd=sd(BVRchem$DIC_mgL))))
 
 # Make sure values are not negative!
 bvr_nuts <- bvr_nuts %>% 
@@ -149,6 +147,9 @@ silica <- read.csv("./inputs/FCR2014_Chemistry.csv", header=T) %>%
 plot(silica$time, silica$DRSI_mgL)
 hist(silica$DRSI_mgL)
 median(silica$DRSI_mgL) #this median concentration is going to be used to set as the constant Si inflow conc in both wetland & weir inflows
+
+#only select dates until 2020
+inflow <- inflow %>% filter(time <= "2019-12-31")
 
 alldata<-merge(inflow, bvr_nuts, by="time", all.x=TRUE)
 
@@ -218,7 +219,7 @@ total_inflow <- total_inflow %>%
   mutate_if(is.numeric, round, 4) #round to 4 digits 
 
 #write file for inflow for the weir, with 2 pools of OC (DOC + DOCR)  
-write.csv(total_inflow, "./inputs/BVR_inflow_2014_2019_20210223_allfractions_2poolsDOC_withch4_nldasInflow.csv", row.names = F)
+write.csv(total_inflow, "./inputs/BVR_inflow_2015_2019_allfractions_2poolsDOC_withch4_metInflow.csv", row.names = F)
 
 ### Test land-use change scenarios: assume (NOT validated by literature :):
 #     10% increase in NH4
@@ -317,7 +318,7 @@ weir_inflow <- weir_inflow %>%
   mutate(SIL_rsi = SIL_rsi*1000*(1/60.08)) %>% #setting the Silica concentration to the median 2014 inflow concentration for consistency
   mutate_if(is.numeric, round, 4) #round to 4 digits 
 
-write.csv(weir_inflow, "FCR_weir_inflow_2013_2019_20200607_allfractions_1poolDOC.csv", row.names = F)
+write.csv(weir_inflow, file.path(getwd(),"inputs/FCR_weir_inflow_2013_2019_allfractions_1poolDOC.csv"), row.names = F)
 
 ##############################################################
 ##############################################################
@@ -333,28 +334,41 @@ write.csv(weir_inflow, "FCR_weir_inflow_2013_2019_20200607_allfractions_1poolDOC
 vol <- read_csv("./Data_Output/09Apr20_BVR_WaterLevelDailyVol.csv")
 vol$Date <- as.POSIXct(strptime(vol$Date, "%m/%d/%Y", tz = "EST"))
 
-vol1 <- vol %>% filter(Date>=as.Date('2013-12-31')&Date<=as.Date('2019-12-30')) %>% select(Date,BVR_Vol_m3)
-vol2 <- vol %>% filter(Date>=as.Date('2014-01-01')&Date<=as.Date('2019-12-31')) %>% select(Date,BVR_Vol_m3)
+vol1 <- vol %>% filter(Date>=as.Date('2015-07-06')&Date<=as.Date('2019-12-30')) %>% select(Date,BVR_Vol_m3)
+vol2 <- vol %>% filter(Date>=as.Date('2015-07-07')&Date<=as.Date('2019-12-31')) %>% select(Date,BVR_Vol_m3)
 
-dvol <- vol %>% filter(Date>=as.Date('2014-01-01')&Date<=as.Date('2019-12-31')) %>% select(Date)
+dvol <- vol %>% filter(Date>=as.Date('2015-07-07')&Date<=as.Date('2019-12-31')) %>% select(Date)
 
 # Calculate dVol/dt by vol2-vol1/s
 vol3 <- as.data.frame((vol2$BVR_Vol_m3 - vol1$BVR_Vol_m3)/(24*60*60))
 names(vol3)[1] <- "dv_m3s"
 
 dvol <- cbind.data.frame(dvol,vol3)
+alldata<-merge(inflow, bvr_nuts, by="time", all.x=TRUE)
 
 # Check change in water level
 ggplot(dvol,mapping=aes(x=Date,y=dv_m3s))+
   geom_line()
 
-# Calculate outflow as the total inflow - change in water level
-outflow <- as.data.frame(alldata$FLOW-dvol$dv_m3s)
+#drop rows that are NA in alldata
+alldata <- alldata[!(is.na(alldata$FLOW)),]
+
+
+#manually line up these 2 datasets 2015-11-01, 2016-11-06, 2017-11-05, 2019-11-03 repeated twice
+dvol <- dvol[-c(118,489,853,1581),]
+alldata <- alldata[!(alldata$time=="2016-03-13" | alldata$time=="2017-03-12" | alldata$time=="2018-03-11"),] 
+
+#check to make sure dates line up
+df <- data.frame(one = alldata$time, two=dvol$Date) #had to drop 4 dates because missing between the 2 dfs
+
+# Calculate outflow as the total inflow - change in water level 
+outflow <- as.data.frame(alldata$FLOW-dvol$dv_m3s) 
 names(outflow)[1] <- "FLOW"
 outflow <- cbind.data.frame(dvol,outflow)
 outflow <- outflow %>% select(Date,FLOW) %>% 
   mutate_if(is.numeric,round,4) #round to 4 digits
 names(outflow)[1] <- "time"
+
 
 #outflow <- outflow %>% filter(time<as.POSIXct("2014-08-19"))
 #stream_flow <- inflow %>% filter(time>as.POSIXct("2014-08-19")) %>% select(time,FLOW)
@@ -367,5 +381,5 @@ ggplot()+
   theme_classic(base_size=15)
 
 #write file
-write.csv(outflow, "./inputs/BVR_spillway_outflow_2014_2019_20210223_nldasInflow.csv", row.names=F)
+write.csv(outflow, "./inputs/BVR_spillway_outflow_2015_2019_metInflow.csv", row.names=F)
   

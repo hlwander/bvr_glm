@@ -6,11 +6,11 @@
 pacman::p_load(tidyverse,ggplot2,zoo)
 
 # Load in calculated inflow (from Schuler_Eq)
-q <- read_csv("C:/Users/ahoun/OneDrive/Desktop/BVR-GLM/BVR-GLM/Data_Output/q_calc.csv")
+q <- read_csv("./Data_Output/q_calc.csv")
 q$time <- as.POSIXct(strptime(q$time, "%Y-%m-%d", tz = "EST"))
 
 # Load in BVR water level data
-vol <- read_csv("C:/Users/ahoun/OneDrive/Desktop/BVR-GLM/BVR-GLM/Data_Output/09Apr20_BVR_WaterLevelDailyVol.csv")
+vol <- read_csv("./Data_Output/09Apr20_BVR_WaterLevelDailyVol.csv")
 vol$Date <- as.POSIXct(strptime(vol$Date, "%m/%d/%Y", tz = "EST"))
 vol1 <- vol %>% filter(Date>=as.Date('2013-01-01')&Date<=as.Date('2018-12-31')) %>% select(Date,BVR_Vol_m3)
 
