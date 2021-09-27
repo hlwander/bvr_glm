@@ -12,7 +12,7 @@ rm(list = ls()) #let's clean up that workspace!
 wd <- getwd()#setwd("/Users/alexgh/Desktop/BVR-GLM")
 #setwd("C:/Users/ahoun/Desktop/BVR-GLM") # For AGH windows computer
 #setwd("./FCR_2013_2019GLMHistoricalRun_GLMv3beta") #if pulling from github, sets it to proper wd
-source('Scripts/20210225_functions-glm_hw.R') #source the helper functions
+source('Scripts/20210225_functions-glm.R') #source the helper functions
 read.packages() 
 
 # RUN GLM AND READ RESULTS  ---------------------------
@@ -148,7 +148,7 @@ run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
 
 # 2) dissolved oxygen
-file.copy('20210922_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('20210927_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
 var = 'OXY_oxy'
 calib <- matrix(c('par', 'lb', 'ub', 'x0',

@@ -5,14 +5,10 @@
 # Updated for BVR: A Hounshell, 29 Jun 2020
 
 # Load packages, set sim folder, load nml file ####
-library(GLMr)
-library(glmtools)
-library(tidyverse)
-library(lubridate)
-library(ncdf4)
+pacman::p_load(GLMr,glmtools,tidyverse,lubridate,ncdf4)
 
 #setwd("C:/Users/ahoun/Desktop/BVR-GLM")
-setwd("~/Documents/VirginiaTech/research/BVR_GLM/BVR-GLM")
+setwd("~/Documents/VirginiaTech/research/BVR_GLM/bvr_glm")
 #setwd("../BVR-GLM") #if pulling from github, sets it to proper wd, which should be "/FCR_2013_2019GLMHistoricalRun_GLMv3beta"
 sim_folder <- getwd()
 

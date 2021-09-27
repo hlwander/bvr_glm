@@ -1,0 +1,34 @@
+&aed_models
+   models = 'aed_sedflux','aed_noncohesive','aed_oxygen'
+/
+&aed_sedflux
+   sedflux_model = 'Constant2D'
+/
+&aed_sed_const2d
+   n_zones = 2
+   Fsed_oxy = -3.62857142857143, -4.17142857142857
+   Fsed_ch4 = 15, 232.6331575
+   Fsed_amm = 2.848790019, 1.659739687
+   Fsed_nit = -0.13, -0.01
+   Fsed_frp = 0.010134545, 0.204607841
+/
+&aed_noncohesive
+   num_ss = 0
+   ss_initial = 1, 1
+   Ke_ss = 0.06, 0.063
+   settling = 1
+   w_ss = -0.03, -0.001
+   d_ss = 2e-06, 1e-05
+   rho_ss = 1500, 1800
+   resuspension = 0
+   epsilon = 0.007
+   tau_0 = 0.03, 0.03
+   tau_r = 1
+   Ktau_0 = 0.001
+/
+&aed_oxygen
+   oxy_initial = 225
+   Ksed_oxy = 2
+   theta_sed_oxy = 0.8114286
+   Fsed_oxy_variable = 'SDF_Fsed_oxy'
+/

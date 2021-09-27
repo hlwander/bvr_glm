@@ -18,9 +18,9 @@ depths<- c(0.1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
 ######TEMPERATURE, DO, AND CHLA FROM CTD
 
 #need to import CTD observations from EDI
-inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/200/10/2461524a7da8f1906bfc3806d594f94c" 
-infile1 <- paste0(getwd(),"/field_data/CTD_final_2013_2019.csv")
-download.file(inUrl1,infile1,method="curl")
+#inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/200/10/2461524a7da8f1906bfc3806d594f94c" 
+#infile1 <- paste0(getwd(),"/field_data/CTD_final_2013_2019.csv")
+#download.file(inUrl1,infile1,method="curl")
 
 #read in CTD temp file from EDI to create field file, but first need to subset CTD data per each day to depths
 ctd<-read.csv(file.path(getwd(),'field_data/CTD_final_2013_2019.csv')) %>% #read in observed CTD data, which has multiple casts on the same day (problematic for comparison)
@@ -32,9 +32,9 @@ ctd<-read.csv(file.path(getwd(),'field_data/CTD_final_2013_2019.csv')) %>% #read
   na.omit() 
 
 # Import YSI observations from EDI
-inUrl1 <- "https://pasta.lternet.edu/package/data/eml/edi/198/7/25b5e8b7f4291614d5c6d959a08148d8"
-infile1 <- paste0(getwd(),"/field_data/YSI_PAR_profiles_2013-2019.csv")
-download.file(inUrl1,infile1,method="curl")
+#inUrl1 <- "https://pasta.lternet.edu/package/data/eml/edi/198/7/25b5e8b7f4291614d5c6d959a08148d8"
+#infile1 <- paste0(getwd(),"/field_data/YSI_PAR_profiles_2013-2019.csv")
+#download.file(inUrl1,infile1,method="curl")
 
 ysi <- read_csv('field_data/YSI_PAR_profiles_2013-2019.csv') %>% 
   filter(Reservoir=="BVR") %>% 
@@ -194,9 +194,9 @@ initdepths <- initdepths %>% mutate(temp = na.fill(na.approx(temp,na.rm=FALSE),"
 
 #now let's build a chemistry field_data file
 #first pull in FCR chem data from 2013-2019 from EDI
-inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/199/6/2b3dc84ae6b12d10bd5485f1c300af13" 
-infile1 <- paste0(getwd(),"/field_data/chem.csv")
-download.file(inUrl1,infile1,method="curl")
+#inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/199/6/2b3dc84ae6b12d10bd5485f1c300af13" 
+#infile1 <- paste0(getwd(),"/field_data/chem.csv")
+#download.file(inUrl1,infile1,method="curl")
 
 BVRchem <- read.csv("field_data/chem.csv", header=T) %>%
   select(Reservoir:DIC_mgL) %>%
@@ -253,7 +253,7 @@ init_chem <- init_chem %>% mutate(NIT_amm = na.fill(na.approx(NIT_amm,na.rm=FALS
   mutate(OGM_docr = na.fill(na.approx(OGM_docr,na.rm=FALSE),"extend")) %>% 
   mutate(CAR_dic = na.fill(na.approx(CAR_dic,na.rm=FALSE),"extend")) %>% 
   select(depth,NIT_amm,NIT_nit,PHS_frp,OGM_doc,OGM_docr,CAR_dic) %>% 
-  write.csv("Init_chem.csv", row.names = F)
+  write.csv("inputs/Init_chem.csv", row.names = F)
 
 #######now make FCR chem dataset with one DOC pool
 FCRchem <- read.csv("field_data/chem.csv", header=T) %>%
@@ -317,9 +317,9 @@ ggplot(ch4,aes(DateTime,CAR_ch4,colour=as.factor(Depth)))+
 ###### SECCHI DATA FROM EDI
 
 #first pull in Secchi data from 2013-2019 from EDI
-inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/198/7/01c3762d9d2c4069eeb3dc10aa236c47" 
-infile1 <- paste0(getwd(),"/field_data/Secchi_depth_2013-2019.csv")
-download.file(inUrl1,infile1,method="curl")
+#inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/198/7/01c3762d9d2c4069eeb3dc10aa236c47" 
+#infile1 <- paste0(getwd(),"/field_data/Secchi_depth_2013-2019.csv")
+#download.file(inUrl1,infile1,method="curl")
 #note that something's funky with this file- I had to open it up and re-format dates before it could be used
 
 secchi <- read.csv("field_data/Secchi_depth_2013-2019.csv", header=T) %>%

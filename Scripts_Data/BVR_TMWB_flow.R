@@ -1,63 +1,97 @@
 #calculating flow for BVR using the Thornthwaite-mather water balance model
 #modified to daily timestep - added in recharge to help with baseflow underestimation 11Jun2020
 #Updated 4Sep2020 - change from GSOD temp/precip data to NLDAS for consistency 
+#Updated 23Sep21 - change to obs met data because forecasts look weird when going from glm to FLARE
 
 #packages
 if (!require("pacman"))install.packages("pacman")
 pacman::p_load(httr,EcoHydRology,GSODR,curl,elevatr,raster,soilDB,rgdal,lattice,lubridate, tidyverse)
 
 #soil data
-url="https://websoilsurvey.sc.egov.usda.gov/DSD/Download/AOI/rf5f3ikjuazplfru4x1wpt1f/wss_aoi_2021-02-15_13-24-28.zip"
-download.file(url,"mysoil.zip") #Note: will probably have to update wss_aoi date if it's been a while - go to wss homepage and click on start wss link on right of page
-unzip("mysoil.zip")            #zoom in to site, use define aoi tool to select desired area, go to download soils data tab, scroll to bottom of page and click "create download link", right click and copy link address, paste on line 10
+#url="https://websoilsurvey.sc.egov.usda.gov/DSD/Download/AOI/rf5f3ikjuazplfru4x1wpt1f/wss_aoi_2021-02-15_13-24-28.zip"
+#download.file(url,"mysoil.zip") #Note: will probably have to update wss_aoi date if it's been a while - go to wss homepage and click on start wss link on right of page
+#unzip("mysoil.zip")            #zoom in to site, use define aoi tool to select desired area, go to download soils data tab, scroll to bottom of page and click "create download link", right click and copy link address, paste on line 10
 list.files()
 
-list.files("wss_aoi_2020-09-01_12-17-20/spatial/",pattern = "shp")
-list.files("wss_aoi_2020-09-01_12-17-20/tabular/")
+list.files(paste0(getwd(), "/data_raw/TMWB_data/wss_aoi_2021-03-22_13-16-30/spatial/"),pattern = "shp")
+list.files(paste0(getwd(), "/data_raw/TMWB_data/wss_aoi_2021-03-22_13-16-30/tabular/"))
 
 objects()
 rm(list=objects())
 
 #Using ROANOKE RIVER AT NIAGARA, VA  usgs gage to use as a template (will write over with BVR-specific data) 
 myflowgage_id="02056000"
-myflowgage=get_usgs_gage(myflowgage_id,begin_date = "2013-01-01",end_date = "2019-12-31")
+myflowgage=get_usgs_gage(myflowgage_id,begin_date = "2015-07-07",end_date = "2019-12-31")
 
 #change coordinates and area for entire BVR watershed
 myflowgage$area<- 2.27 #km
 myflowgage$declat<- 37.31321
 myflowgage$declon<- -79.81535
 
-#read in NLDAS data
+#read in obs met data from FCR met station
+#download.file("https://portal.edirepository.org/nis/dataviewer?packageid=edi.389.5&entityid=3d1866fecfb8e17dc902c76436239431",
+#              "inputs/Met_final_2015_2020.csv")
+
+met <- read.csv(file.path(getwd(),"inputs/Met_final_2015_2020.csv"))
+
+#drop first 3 rows because end of 1600 hour
+met <- met[-c(1:3),]
+
+#only select first entry for each hour
+met_hourly <- met %>% select(c(DateTime,ShortwaveRadiationUp_Average_W_m2,InfaredRadiationUp_Average_W_m2,
+                               AirTemp_Average_C,RH_percent,WindSpeed_Average_m_s,Rain_Total_mm)) %>% 
+                      mutate(DateTime = ymd_hms(DateTime), dt = as_date(DateTime), hr = hour(DateTime)) %>% 
+                      group_by(dt, hr) %>% filter(DateTime == min(DateTime)) %>% filter(DateTime <=as.Date("2019-12-31")) 
+met_hourly_final <- met_hourly[,-c(8,9)]
+names(met_hourly_final) <- c("time","ShortWave","LongWave","AirTemp","RelHum","WindSpeed","Rain")
+#write.csv(met_hourly_final,"inputs/FCR_hourly_met_2015_2020.csv",row.names=FALSE)
+
+#convert to as.date format
+met$DateTime  <-as.Date(met$DateTime)
+
+#then average by date
+met_daily <- met %>% select(DateTime, AirTemp_Average_C, Rain_Total_mm) %>% group_by(DateTime) %>%
+  rename(mdate=DateTime) %>% filter(mdate<=as.Date("2019-12-31")) %>%
+  summarise(MaxTemp_C = max(AirTemp_Average_C, na.rm=T),
+            MinTemp_C = min(AirTemp_Average_C, na.rm=T),
+            MeanTemp_C = mean(AirTemp_Average_C, na.rm=T),
+            Precip_mmpd = sum(Rain_Total_mm, na.rm=T)) 
+
+#use NLDAS for missing met days
 NLDAS<- read.csv("./inputs/BVR_GLM_NLDAS_010113_123119_GMTadjusted.csv")
-#NLDAS=data.frame(mdate=NLDAS$date,P=NLDAS$precip,
-#                 MaxTemp=NLDAS$max_temp, MinTemp=NLDAS$min_temp)
 NLDAS[is.na(NLDAS)]=0 # A Quick BUT sloppy removal of NAs
 
 #convert NLDAS date to as.date format
 NLDAS$time <-as.Date(NLDAS$time)
-
 #convert rain from m/d to mm/hr (which is funny because pretty sure this was the original format of the NLDAS data)
 NLDAS$precip_mm <-NLDAS$Rain * 1000 / 24
 
-
 #average by date
 NLDAS <- NLDAS %>% select(time, AirTemp, precip_mm) %>% group_by(time) %>%
-                    rename(mdate=time) %>%
-                    summarise(MaxTemp_C = max(AirTemp),
-                              MinTemp_C = min(AirTemp),
-                              MeanTemp_C = mean(AirTemp),
-                              Precip_mmpd = sum(precip_mm)) 
+  rename(mdate=time) %>%
+  summarise(MaxTemp_C = max(AirTemp),
+            MinTemp_C = min(AirTemp),
+            MeanTemp_C = mean(AirTemp),
+            Precip_mmpd = sum(precip_mm)) 
+
+#new merged df with mostly met, but some NLDAS to fill missing days
+dates <- seq(as.Date("2015-07-07"),as.Date("2019-12-31"),by="days")
+
+#now fill in missing days with NLDAS
+missing_met <- NLDAS[!(NLDAS$mdate %in% met_daily$mdate),] 
+missing_met <- missing_met %>% filter(missing_met$mdate>=as.Date("2015-07-07"))
+met_final <- rbind(missing_met,met_daily)
 
 #replace flow with NAs because this is specific to Roanoke River (not BVR)
 myflowgage$flowdata[["flow"]] <- NA
 
-# Merge the NLDAS weather data with flow gage to use as our base HRU data structure
-myflowgage$TMWB=merge(myflowgage$flowdata,NLDAS)
+# Merge met_final weather data with flow gage to use as our base HRU data structure
+myflowgage$TMWB=merge(myflowgage$flowdata,met_final)
 
 # Grab the necessary soil and elevation spatial layers and parameters (usgs)
-url="https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrography/NHD/HU8/HighResolution/Shape/NHD_H_03010101_HU8_Shape.zip"
-curl_download(url,"NHD_H_03010101_HU8_Shape.zip")
-unzip("NHD_H_03010101_HU8_Shape.zip",exdir="03010101") 
+#url="https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrography/NHD/HU8/HighResolution/Shape/NHD_H_03010101_HU8_Shape.zip"
+#curl_download(url,"NHD_H_03010101_HU8_Shape.zip")
+#unzip("NHD_H_03010101_HU8_Shape.zip",exdir="03010101") 
 
 #set coordinates to plot DEM raster
 degdist=sqrt(myflowgage$area*4)/80
@@ -66,9 +100,9 @@ mybbox = matrix(c(
   myflowgage$declat - degdist, myflowgage$declat + degdist), 
   ncol = 2, byrow = TRUE)
 
-streams=readOGR("03010101/Shape/NHDFlowline.dbf") 
-mysoil = mapunit_geom_by_ll_bbox(mybbox)
-plot(mysoil)
+streams=readOGR(paste0(getwd(), "/TMWB_data/03010101/Shape/NHDFlowline.dbf")) 
+
+mysoil <- readOGR(file.path(getwd(), "TMWB_data/soils"))
 
 # Associate mukey with cokey from component
 mukey_statement = format_SQL_in_statement(unique(mysoil$mukey))
@@ -219,5 +253,6 @@ plot(TMWBsol$TMWB$mdate,TMWBsol$TMWB$S,col="green", type='l')
 plot(TMWBsol$TMWB$mdate,TMWBsol$TMWB$Drainage,col="purple", type='l')
 
 #create csv for q export
-QExport<- data.frame("time"=TMWBsol$TMWB$mdate, "Q_BVR_m3/d"=TMWBsol$TMWB$Qpred_m3pd)
-write.csv(QExport, "BVR_flow_calcs_new.csv")
+QExport<- data.frame("time"=TMWBsol$TMWB$mdate, "Q_BVR_m3pd"=TMWBsol$TMWB$Qpred_m3pd)
+write.csv(QExport, "inputs/BVR_flow_calcs_obs_met.csv")
+
