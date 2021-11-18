@@ -737,7 +737,7 @@ run_sensitivity <- function(var, max_r, x0, lb, ub, pars, obs, nml_file){
   #cal_pars = calib[c(which(morris_res_clust$cluster == row(k_means$centers)[k_means$centers==max(k_means$centers)])),]
   
   #Separate parameters to be calibrated and default parameters
- # cal_pars = calib[c(which(morris_norm$mean >= 0.1)),]
+  cal_pars = calib[c(which(morris_norm$mean >= 0.1)),]
  # def_pars = calib[-c(which(morris_norm$mean >= 0.1)),]
   
   
