@@ -16,7 +16,7 @@ pacman::p_load(dplyr,zoo,EcoHydRology,rMR,tidyverse,lubridate)
 # First, read in inflow file generated from Thronthwaite Overland flow model + groundwater recharge
 # From HW: for entire watershed; units in m3/d
 # Updated inflow model using FCR met station precip and temp data: units in m3/d - need to convert to m3/s
-inflow <- read_csv("./inputs/BVR_flow_calcs_obs_met.csv")
+inflow <- read_csv("./inputs/BVR_flow_calcs_obs_met_2015_2021.csv")
 inflow$time = as.POSIXct(strptime(inflow$time,"%Y-%m-%d", tz="EST"))
 inflow <- inflow[,-c(1)]
 names(inflow)[2] <- "FLOW"
@@ -34,7 +34,7 @@ plot(inflow$time, inflow$FLOW)
 #infile1 <- paste0(getwd(),"/inputs/inflow_for_EDI_2013_06Mar2020.csv")
 #download.file(inUrl1,infile1,method="curl")
 
-temp <- read.csv("./inputs/inflow_for_EDI_2013_06Mar2020.csv")
+temp <- read.csv("./inputs/inflow_for_EDI_2013_06Mar2020.csv") #FIX THIS!
 temp$DateTime = as.POSIXct(strptime(temp$DateTime,"%Y-%m-%d", tz="EST"))
 temp <- temp %>% select(DateTime, WVWA_Temp_C) %>% 
   rename(time=DateTime, TEMP=WVWA_Temp_C) %>%
@@ -54,8 +54,8 @@ plot(inflow$time, inflow$FLOW, type = "o")
 plot(inflow$time, inflow$TEMP, type = "l", col = "red")
 
 #now let's merge with chemistry
-#first pull in BVR chem data from 2013-2019 from EDI
-#inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/199/6/2b3dc84ae6b12d10bd5485f1c300af13" 
+#first pull in BVR chem data from 2013-2020 from EDI
+#inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/199/7/2b3dc84ae6b12d10bd5485f1c300af13" 
 #infile1 <- paste0(getwd(),"/chem.csv")
 #download.file(inUrl1,infile1,method="curl")
 
@@ -148,8 +148,8 @@ plot(silica$time, silica$DRSI_mgL)
 hist(silica$DRSI_mgL)
 median(silica$DRSI_mgL) #this median concentration is going to be used to set as the constant Si inflow conc in both wetland & weir inflows
 
-#only select dates until 2020
-inflow <- inflow %>% filter(time <= "2019-12-31")
+#only select dates until 2021
+inflow <- inflow %>% filter(time <= "2020-12-31")
 
 alldata<-merge(inflow, bvr_nuts, by="time", all.x=TRUE)
 
@@ -355,8 +355,8 @@ alldata <- alldata[!(is.na(alldata$FLOW)),]
 
 
 #manually line up these 2 datasets 2015-11-01, 2016-11-06, 2017-11-05, 2019-11-03 repeated twice
-dvol <- dvol[-c(118,489,853,1581),]
-alldata <- alldata[!(alldata$time=="2016-03-13" | alldata$time=="2017-03-12" | alldata$time=="2018-03-11"),] 
+#dvol <- dvol[-c(118,489,853,1581),]
+#alldata <- alldata[!(alldata$time=="2016-03-13" | alldata$time=="2017-03-12" | alldata$time=="2018-03-11"),] 
 
 #check to make sure dates line up
 df <- data.frame(one = alldata$time, two=dvol$Date) #had to drop 4 dates because missing between the 2 dfs
