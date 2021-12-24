@@ -34,17 +34,39 @@ plot(inflow$time, inflow$FLOW)
 #infile1 <- paste0(getwd(),"/inputs/inflow_for_EDI_2013_06Mar2020.csv")
 #download.file(inUrl1,infile1,method="curl")
 
-temp <- read.csv("./inputs/inflow_for_EDI_2013_06Mar2020.csv") #FIX THIS!
+temp <- read.csv("./inputs/inflow_for_EDI_2013_06Mar2020.csv") 
 temp$DateTime = as.POSIXct(strptime(temp$DateTime,"%Y-%m-%d", tz="EST"))
 temp <- temp %>% select(DateTime, WVWA_Temp_C) %>% 
   rename(time=DateTime, TEMP=WVWA_Temp_C) %>%
-  dplyr::filter(time > as.POSIXct("2015-07-07") & time < as.POSIXct("2021-01-01")) %>% 
+  dplyr::filter(time > as.POSIXct("2015-07-07") & time < as.POSIXct("2021-01-07")) %>% 
   group_by(time) %>% 
   summarise(TEMP=mean(TEMP)) #gives averaged daily temp in C
 
+#read in 2021 temp data 
+temp_21 <- read.csv("./inputs/2021_YSI_PAR_profiles.csv") #will need to change to pressure transducer sensor when available (currently ysi temp)
+temp_21$DateTime = as.POSIXct(strptime(temp_21$DateTime,"%Y-%m-%d", tz="EST"))
+temp_21 <- temp_21 %>% dplyr::filter(Reservoir =="FCR") %>%
+  dplyr::filter(Site=="100") %>%
+  select(DateTime, Temp_C) %>% 
+  rename(time=DateTime, TEMP=Temp_C) %>%
+  dplyr::filter(time > as.POSIXct("2021-01-06") & time < as.POSIXct("2021-12-01")) %>% 
+  group_by(time) %>% 
+  summarise(TEMP=mean(TEMP)) #gives averaged daily temp in C
+
+#now take the ysi temp and adjust based on lm of fcr ysi 100 vs fcr pressure transducer at weir
+temp_21$TEMP <-(0.824 *temp_21$TEMP) +2.91
+
+#combine both temp datasets
+temp <- rbind(temp,temp_21)
+
 # Merge inflow and inflow temp datasets
-inflow <- merge(inflow,temp,by="time",all=TRUE)
-inflow <- inflow %>% mutate(TEMP=na.fill(na.approx(TEMP),"extend"))
+inflow <- merge(inflow,temp,by="time",all=TRUE) 
+
+#only select data until last inflow obs so can infill the missing days
+inflow <- inflow[inflow$time<=last(temp$time),]
+             
+#fill in missing days
+inflow <- inflow %>% mutate(TEMP=na.fill(na.approx(TEMP),"extend")) 
 
 # Add SALT column (salinty = 0 for all time points)
 inflow <- inflow %>% mutate(SALT = rep(0,length(inflow$time)))
@@ -105,17 +127,17 @@ hist(BVRchem$DOC_mgL)
 hist(BVRchem$DIC_mgL)
 
 # Create nuts (randomly sampled from a normal distribution) for total inflow
-bvr_nuts <- as.data.frame(seq.Date(as.Date("2015/07/07"),as.Date("2019/12/31"), "days"))
+bvr_nuts <- as.data.frame(seq.Date(as.Date("2015/07/07"),as.Date("2021/12/01"), "days"))
 names(bvr_nuts)[1] <- "time"
 bvr_nuts$time<-as.POSIXct(strptime(bvr_nuts$time, "%Y-%m-%d", tz="EST"))
 bvr_nuts <- bvr_nuts %>% 
-  mutate(TN_ugL = rnorm(1639,mean=mean(BVRchem$TN_ugL,sd=sd(BVRchem$TN_ugL)))) %>% 
-  mutate(TP_ugL = rnorm(1639,mean=mean(BVRchem$TP_ugL),sd=sd(BVRchem$TP_ugL))) %>% 
-  mutate(NH4_ugL = rnorm(1639,mean=mean(BVRchem$NH4_ugL,sd=sd(BVRchem$NH4_ugL)))) %>% 
-  mutate(NO3NO2_ugL = rnorm(1639,mean=mean(BVRchem$NO3NO2_ugL,sd=sd(BVRchem$NO3NO2_ugL)))) %>% 
-  mutate(SRP_ugL = rnorm(1639,mean=mean(BVRchem$SRP_ugL,sd=sd(BVRchem$SRP_ugL)))) %>% 
-  mutate(DOC_mgL = rnorm(1639,mean=mean(BVRchem$DOC_mgL,sd=sd(BVRchem$DOC_mgL)))) %>% 
-  mutate(DIC_mgL = rnorm(1639,mean=mean(BVRchem$DIC_mgL,sd=sd(BVRchem$DIC_mgL))))
+  mutate(TN_ugL = rnorm(2340,mean=mean(BVRchem$TN_ugL,sd=sd(BVRchem$TN_ugL)))) %>% 
+  mutate(TP_ugL = rnorm(2340,mean=mean(BVRchem$TP_ugL),sd=sd(BVRchem$TP_ugL))) %>% 
+  mutate(NH4_ugL = rnorm(2340,mean=mean(BVRchem$NH4_ugL,sd=sd(BVRchem$NH4_ugL)))) %>% 
+  mutate(NO3NO2_ugL = rnorm(2340,mean=mean(BVRchem$NO3NO2_ugL,sd=sd(BVRchem$NO3NO2_ugL)))) %>% 
+  mutate(SRP_ugL = rnorm(2340,mean=mean(BVRchem$SRP_ugL,sd=sd(BVRchem$SRP_ugL)))) %>% 
+  mutate(DOC_mgL = rnorm(2340,mean=mean(BVRchem$DOC_mgL,sd=sd(BVRchem$DOC_mgL)))) %>% 
+  mutate(DIC_mgL = rnorm(2340,mean=mean(BVRchem$DIC_mgL,sd=sd(BVRchem$DIC_mgL))))
 
 # Make sure values are not negative!
 bvr_nuts <- bvr_nuts %>% 
@@ -148,8 +170,8 @@ plot(silica$time, silica$DRSI_mgL)
 hist(silica$DRSI_mgL)
 median(silica$DRSI_mgL) #this median concentration is going to be used to set as the constant Si inflow conc in both wetland & weir inflows
 
-#only select dates until 2021
-inflow <- inflow %>% filter(time <= "2020-12-31")
+#only select dates until end of 2021
+inflow <- inflow %>% filter(time <= "2021-12-01")
 
 alldata<-merge(inflow, bvr_nuts, by="time", all.x=TRUE)
 
@@ -218,8 +240,11 @@ total_inflow <- total_inflow %>%
   mutate(SIL_rsi = SIL_rsi*1000*(1/60.08)) %>% #setting the Silica concentration to the median 2014 inflow concentration for consistency
   mutate_if(is.numeric, round, 4) #round to 4 digits 
 
+#estimate bvr inflow temp based on relationship between bvr and fcr inflows
+total_inflow$TEMP <- (1.5 * total_inflow$TEMP) - 9.21
+
 #write file for inflow for the weir, with 2 pools of OC (DOC + DOCR)  
-write.csv(total_inflow, "./inputs/BVR_inflow_2015_2019_allfractions_2poolsDOC_withch4_metInflow.csv", row.names = F)
+write.csv(total_inflow, "./inputs/BVR_inflow_2015_2021_allfractions_2poolsDOC_withch4_metInflow.csv", row.names = F)
 
 ### Test land-use change scenarios: assume (NOT validated by literature :):
 #     10% increase in NH4
