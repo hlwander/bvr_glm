@@ -131,13 +131,13 @@ bvr_nuts <- as.data.frame(seq.Date(as.Date("2015/07/07"),as.Date("2021/12/01"), 
 names(bvr_nuts)[1] <- "time"
 bvr_nuts$time<-as.POSIXct(strptime(bvr_nuts$time, "%Y-%m-%d", tz="EST"))
 bvr_nuts <- bvr_nuts %>% 
-  mutate(TN_ugL = rnorm(2340,mean=mean(BVRchem$TN_ugL,sd=sd(BVRchem$TN_ugL)))) %>% 
+  mutate(TN_ugL = rnorm(2340,mean=mean(BVRchem$TN_ugL),sd=sd(BVRchem$TN_ugL))) %>% 
   mutate(TP_ugL = rnorm(2340,mean=mean(BVRchem$TP_ugL),sd=sd(BVRchem$TP_ugL))) %>% 
-  mutate(NH4_ugL = rnorm(2340,mean=mean(BVRchem$NH4_ugL,sd=sd(BVRchem$NH4_ugL)))) %>% 
-  mutate(NO3NO2_ugL = rnorm(2340,mean=mean(BVRchem$NO3NO2_ugL,sd=sd(BVRchem$NO3NO2_ugL)))) %>% 
-  mutate(SRP_ugL = rnorm(2340,mean=mean(BVRchem$SRP_ugL,sd=sd(BVRchem$SRP_ugL)))) %>% 
-  mutate(DOC_mgL = rnorm(2340,mean=mean(BVRchem$DOC_mgL,sd=sd(BVRchem$DOC_mgL)))) %>% 
-  mutate(DIC_mgL = rnorm(2340,mean=mean(BVRchem$DIC_mgL,sd=sd(BVRchem$DIC_mgL))))
+  mutate(NH4_ugL = rnorm(2340,mean=mean(BVRchem$NH4_ugL),sd=sd(BVRchem$NH4_ugL))) %>% 
+  mutate(NO3NO2_ugL = rnorm(2340,mean=mean(BVRchem$NO3NO2_ugL),sd=sd(BVRchem$NO3NO2_ugL))) %>% 
+  mutate(SRP_ugL = rnorm(2340,mean=mean(BVRchem$SRP_ugL),sd=sd(BVRchem$SRP_ugL))) %>% 
+  mutate(DOC_mgL = rnorm(2340,mean=mean(BVRchem$DOC_mgL),sd=sd(BVRchem$DOC_mgL))) %>% 
+  mutate(DIC_mgL = rnorm(2340,mean=mean(BVRchem$DIC_mgL),sd=sd(BVRchem$DIC_mgL)))
 
 # Make sure values are not negative!
 bvr_nuts <- bvr_nuts %>% 
