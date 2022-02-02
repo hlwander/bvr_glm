@@ -61,7 +61,7 @@ gases<-read.csv('field_data/field_gases.csv', header=T)
 gases$DateTime <-as.POSIXct(strptime(gases$DateTime, "%Y-%m-%d", tz="EST"))
 
 #######################################################
-# RUN SENSITIVITY ANALYSIS  ---------------------------
+#OAT (manual?) sensitivity/calibration
 
 # 1) water temperature, following ISIMIP approach
 #first, copy & paste your glm3.nml and aed2.nml within their respective directories
@@ -107,7 +107,67 @@ obs <- read_field_obs('field_data/CleanedObsTemp.csv', var)
 nml_file = 'glm3.nml'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
+#water temperature CALIBRATION
+file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_20210204_2DOCpools.nml', overwrite = TRUE)
+#file.copy('./aed2/aed4_phyto_pars_30June2020.nml', './aed2/aed2_phyto_pars_30June2020.nml', overwrite = TRUE) #FIX THIS
+var = 'temp'
+calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
+cal_pars = calib
+#Reload ub, lb for calibration
+pars <- cal_pars$par
+x0 <- cal_pars$x0
+ub <- cal_pars$ub
+lb <- cal_pars$lb
+#Create initial files
+#init.val <- rep(5, nrow(cal_pars))
+init.val <- (x0 - lb) *10 /(ub-lb) # NEEDS TO BE UPDATED WITH STARTING VALUES FROM YOUR CALIBRATION FILE
+obs <- read_field_obs('field_data/CleanedObsTemp.csv', var)
+method = 'cmaes'
+calib.metric = 'RMSE'
+os = 'Compiled' #Changed from Unix
+target_fit = -Inf#1.55
+target_iter = 1000 #1000*length(init.val)^2
+nml_file = 'glm3.nml'
+nml <- read_nml(nml_file) 
+print(nml)
+var_unit = 'degreesC'
+var_seq = seq(-5,35,1)
+flag = c()
+run_calibvalid(var, var_unit = 'degreesC', var_seq = seq(-5,35,1), cal_pars, pars, ub, lb, init.val, obs, method, 
+               calib.metric, os, target_fit, target_iter, nml_file, flag = c()) #var_seq is contour color plot range
 
+#to visualize how params can converge
+par(mfrow=c(3,4))
+data<-read.csv("results/calib_results_RMSE_temp.csv", header=T)
+temp<-seq(1,length(data$DateTime),1)
+for(i in 1:length(init.val)){
+  plot(temp,data[,i+1],type="l",xlab="Iteration", ylab=(colnames(data[i+1])))
+}
+
+# Check water level?
+par(mfrow=c(1,1))
+
+nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file 
+
+#get water level
+water_level<-get_surface_height(nc_file, ice.rm = TRUE, snow.rm = TRUE)
+
+# Read in and plot water level observations
+wlevel <- read_csv("./Data_Output/09Apr20_BVR_WaterLevelDailyVol.csv")
+wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%m/%d/%Y", tz="EST"))
+wlevel <- wlevel %>% 
+  dplyr::filter(Date>as.POSIXct('2014-01-01') & Date<as.POSIXct('2020-01-01'))
+
+plot(water_level$DateTime,water_level$surface_height)
+points(wlevel$Date, wlevel$BVR_WaterLevel_m, type="l",col="red")
+
+# Calculate NSE (good call, Heather!)
+NSE(water_level$surface_height,wlevel$BVR_WaterLevel_m)
+rmse(water_level$surface_height,wlevel$BVR_WaterLevel_m)
+
+
+#------------------------------------------------------------------------------#
 # 2) dissolved oxygen
 file.copy('20210927_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
@@ -134,6 +194,36 @@ obs <- read_field_obs('field_data/field_BVR.csv', var)
 nml_file = './aed2/aed2_bvr.nml'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
+#dissolved oxygen CALIBRATION
+file.copy('20210922_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
+#file.copy('./aed2/aed4_phyto_pars_30June2020.nml', './aed2/aed2_phyto_pars_30June2020.nml', overwrite = TRUE) #FIX THIS
+var = 'OXY_oxy'
+calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
+cal_pars = calib
+#Reload ub, lb for calibration
+pars <- cal_pars$par
+x0 <- cal_pars$x0
+ub <- cal_pars$ub
+lb <- cal_pars$lb
+#Create initial files
+#init.val <- rep(5, nrow(cal_pars))
+init.val <- (c(x0) - lb) *10 /(ub-lb) # Paul's values
+obs <- read_field_obs('field_data/field_BVR.csv', var)
+method = 'cmaes'
+calib.metric = 'RMSE'
+os = "Compiled" #Changed from Unix
+target_fit = -Inf#2.50 * 1000/32
+target_iter = 500#1000*length(init.val)^2
+#nml_file = 'aed2/aed2.nml'
+nml_file = 'aed2/aed2_bvr.nml'
+var_unit = "mmol/m3"
+var_seq = seq(0,600,50)
+flag = c()
+run_calibvalid(var, var_unit = 'mmol/m3', var_seq = seq(0,600,50), cal_pars, pars, ub, lb, init.val, obs, method, 
+               calib.metric, os, target_fit, target_iter, nml_file, flag = c())
+
+#------------------------------------------------------------------------------#
 # 3) dissolved inorganic carbon
 file.copy('20210927_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('aed2/aed2_20210301_DOcal.nml', 'aed2/aed2_bvr.nml', overwrite = TRUE)
@@ -158,6 +248,7 @@ obs <- read_field_obs('field_data/field_chem_2DOCpools.csv', var)
 obs <- completeFun(obs, 'CAR_dic')
 nml_file = 'aed2/aed2_bvr.nml'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
+
 
 
 # 3b) dissolved methane
@@ -411,93 +502,7 @@ run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
 # START CALIBRATION  ---------------------------
 
-# 1) water temperature
-file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_20210204_2DOCpools.nml', overwrite = TRUE)
-#file.copy('./aed2/aed4_phyto_pars_30June2020.nml', './aed2/aed2_phyto_pars_30June2020.nml', overwrite = TRUE) #FIX THIS
-var = 'temp'
-calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
-cal_pars = calib
-#Reload ub, lb for calibration
-pars <- cal_pars$par
-x0 <- cal_pars$x0
-ub <- cal_pars$ub
-lb <- cal_pars$lb
-#Create initial files
-#init.val <- rep(5, nrow(cal_pars))
-init.val <- (x0 - lb) *10 /(ub-lb) # NEEDS TO BE UPDATED WITH STARTING VALUES FROM YOUR CALIBRATION FILE
-obs <- read_field_obs('field_data/CleanedObsTemp.csv', var)
-method = 'cmaes'
-calib.metric = 'RMSE'
-os = 'Compiled' #Changed from Unix
-target_fit = -Inf#1.55
-target_iter = 1000 #1000*length(init.val)^2
-nml_file = 'glm3.nml'
-nml <- read_nml(nml_file) 
-print(nml)
-var_unit = 'degreesC'
-var_seq = seq(-5,35,1)
-flag = c()
-run_calibvalid(var, var_unit = 'degreesC', var_seq = seq(-5,35,1), cal_pars, pars, ub, lb, init.val, obs, method, 
-               calib.metric, os, target_fit, target_iter, nml_file, flag = c()) #var_seq is contour color plot range
 
-#to visualize how params can converge
-par(mfrow=c(3,4))
-data<-read.csv("results/calib_results_RMSE_temp.csv", header=T)
-temp<-seq(1,length(data$DateTime),1)
-for(i in 1:length(init.val)){
-  plot(temp,data[,i+1],type="l",xlab="Iteration", ylab=(colnames(data[i+1])))
-}
-
-# Check water level?
-par(mfrow=c(1,1))
-
-nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file 
-
-#get water level
-water_level<-get_surface_height(nc_file, ice.rm = TRUE, snow.rm = TRUE)
-
-# Read in and plot water level observations
-wlevel <- read_csv("./Data_Output/09Apr20_BVR_WaterLevelDailyVol.csv")
-wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%m/%d/%Y", tz="EST"))
-wlevel <- wlevel %>% 
-  dplyr::filter(Date>as.POSIXct('2014-01-01') & Date<as.POSIXct('2020-01-01'))
-
-plot(water_level$DateTime,water_level$surface_height)
-points(wlevel$Date, wlevel$BVR_WaterLevel_m, type="l",col="red")
-
-# Calculate NSE (good call, Heather!)
-NSE(water_level$surface_height,wlevel$BVR_WaterLevel_m)
-rmse(water_level$surface_height,wlevel$BVR_WaterLevel_m)
-
-# 2) dissolved oxygen
-file.copy('20210922_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
-#file.copy('./aed2/aed4_phyto_pars_30June2020.nml', './aed2/aed2_phyto_pars_30June2020.nml', overwrite = TRUE) #FIX THIS
-var = 'OXY_oxy'
-calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
-cal_pars = calib
-#Reload ub, lb for calibration
-pars <- cal_pars$par
-x0 <- cal_pars$x0
-ub <- cal_pars$ub
-lb <- cal_pars$lb
-#Create initial files
-#init.val <- rep(5, nrow(cal_pars))
-init.val <- (c(x0) - lb) *10 /(ub-lb) # Paul's values
-obs <- read_field_obs('field_data/field_BVR.csv', var)
-method = 'cmaes'
-calib.metric = 'RMSE'
-os = "Compiled" #Changed from Unix
-target_fit = -Inf#2.50 * 1000/32
-target_iter = 500#1000*length(init.val)^2
-#nml_file = 'aed2/aed2.nml'
-nml_file = 'aed2/aed2_bvr.nml'
-var_unit = "mmol/m3"
-var_seq = seq(0,600,50)
-flag = c()
-run_calibvalid(var, var_unit = 'mmol/m3', var_seq = seq(0,600,50), cal_pars, pars, ub, lb, init.val, obs, method, 
-               calib.metric, os, target_fit, target_iter, nml_file, flag = c())
 
 
 # 3) dissolved inorganic carbon
