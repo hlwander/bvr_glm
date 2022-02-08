@@ -12,7 +12,7 @@ rm(list = ls()) #let's clean up that workspace!
 wd <- getwd()#setwd("/Users/alexgh/Desktop/BVR-GLM")
 #setwd("C:/Users/ahoun/Desktop/BVR-GLM") # For AGH windows computer
 #setwd("./FCR_2013_2019GLMHistoricalRun_GLMv3beta") #if pulling from github, sets it to proper wd
-source('Scripts/20210225_functions-glm.R') #source the helper functions
+source('Scripts/functions-glm.R') #source the helper functions
 read.packages() 
 
 # RUN GLM AND READ RESULTS  ---------------------------
@@ -61,7 +61,7 @@ gases<-read.csv('field_data/field_gases.csv', header=T)
 gases$DateTime <-as.POSIXct(strptime(gases$DateTime, "%Y-%m-%d", tz="EST"))
 
 #######################################################
-#OAT (manual?) sensitivity/calibration
+#sensitivity/calibration
 
 # 1) water temperature, following ISIMIP approach
 #first, copy & paste your glm3.nml and aed2.nml within their respective directories
@@ -169,7 +169,7 @@ rmse(water_level$surface_height,wlevel$BVR_WaterLevel_m)
 
 #------------------------------------------------------------------------------#
 # 2) dissolved oxygen
-file.copy('20210927_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('20220201_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
 var = 'OXY_oxy'
 calib <- matrix(c('par', 'lb', 'ub', 'x0',
@@ -195,7 +195,7 @@ nml_file = './aed2/aed2_bvr.nml'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
 #dissolved oxygen CALIBRATION
-file.copy('20210922_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('20220201_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
 #file.copy('./aed2/aed4_phyto_pars_30June2020.nml', './aed2/aed2_phyto_pars_30June2020.nml', overwrite = TRUE) #FIX THIS
 var = 'OXY_oxy'
@@ -225,8 +225,8 @@ run_calibvalid(var, var_unit = 'mmol/m3', var_seq = seq(0,600,50), cal_pars, par
 
 #------------------------------------------------------------------------------#
 # 3) dissolved inorganic carbon
-file.copy('20210927_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed2/aed2_20210301_DOcal.nml', 'aed2/aed2_bvr.nml', overwrite = TRUE)
+file.copy('20220208_DOcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed2/20220208_DOcal_aed2.nml', 'aed2/aed2_bvr.nml', overwrite = TRUE)
 # NOTE! For now - manually changed alk mode = 3 (2021-03-23)
 # Prior calibrations (2021-03-22) used alk mode = 1 w/ an RMSE of 804 (BAD!)
 # Updated 12 Apr 2021: Alk_mode = 4; initial conditions updated

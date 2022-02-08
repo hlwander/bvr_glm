@@ -6,6 +6,14 @@
    max_layer_thick = 0.33
    non_avg = .true.
 /
+&wq_setup
+   wq_lib = 'aed'
+   wq_nml_file = 'aed2/aed2_bvr.nml'
+   ode_method = 1
+   split_factor = 1
+   bioshade_feedback = .true.
+   repair_state = .true.
+/
 &light
    light_mode = 0
    n_bands = 4
@@ -15,12 +23,12 @@
    Kw = 0.87
 /
 &mixing
-   coef_mix_conv = 0.2600639
-   coef_wind_stir = 0.4405369
-   coef_mix_shear = 0.2293195
-   coef_mix_turb = 0.5076918
-   coef_mix_KH = 0.3678705
-   coef_mix_hyp = 0.8
+   coef_mix_conv = 0.2
+   coef_wind_stir = 0.23
+   coef_mix_shear = 0.3
+   coef_mix_turb = 0.51
+   coef_mix_KH = 0.3
+   coef_mix_hyp = 0.51
    deep_mixing = .true.
    coef_mix_shreq = 0
 /
@@ -72,15 +80,15 @@
    cloud_mode = 4
    meteo_fl = 'inputs/FCR_hourly_met_2015_2020.csv'
    subdaily = .true.
-   wind_factor = 0.8205455
-   sw_factor = 1.09297
-   lw_factor = 0.7853047
+   wind_factor = 1
+   sw_factor = 0.9758402
+   lw_factor = 0.8647376
    at_factor = 1
    rh_factor = 1
    rain_factor = 1
-   cd = 0.001417321
-   ce = 0.001090873
-   ch = 0.001191396
+   cd = 0.0013
+   ce = 0.0013
+   ch = 0.0013
    rain_threshold = 0.04
    runoff_coef = 0.2
    time_fmt = 'YYYY-MM-DD hh:mm:ss'
@@ -93,7 +101,7 @@
    strmbd_slope = 0.05
    strmbd_drag = 0.03
    inflow_factor = 1
-   inflow_fl = 'inputs/BVR_inflow_2015_2019_allfractions_2poolsDOC_withch4_metInflow.csv'
+   inflow_fl = 'inputs/BVR_inflow_2015_2021_allfractions_2poolsDOC_withch4_metInflow.csv'
    inflow_varnum = 19
    inflow_vars = 'FLOW','TEMP','SALT','OXY_oxy','NIT_amm','NIT_nit','PHS_frp','OGM_doc','OGM_docr','OGM_poc','OGM_don','OGM_donr','OGM_pon','OGM_dop','OGM_dopr','OGM_pop','CAR_dic','CAR_ch4','SIL_rsi'
 /
@@ -118,7 +126,7 @@
    zone_heights = 6.7, 13.3
    sed_heat_Ksoil = 1.8, 1.8
    sed_temp_depth = 0.2, 0.2
-   sed_temp_mean = 8.985009690459, 18.3887284873705
-   sed_temp_amplitude = 2.63034191386966, 3.34234292919375
-   sed_temp_peak_doy = 255.82458614097, 255.592167893957
+   sed_temp_mean = 9.19833336707211, 19.1397151911532
+   sed_temp_amplitude = 2.06603550275184, 5.32427733240564
+   sed_temp_peak_doy = 270, 270
 /
