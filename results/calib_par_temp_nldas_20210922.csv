@@ -1,2 +1,0 @@
-DateTime,wind_factor,sw_factor,lw_factor,coef_mix_conv,coef_wind_stir,coef_mix_shear,coef_mix_turb,coef_mix_KH,coef_mix_hyp,ce,ch,cd,sed_temp_mean,sed_temp_mean.1,sed_temp_amplitude,sed_temp_amplitude.1,sed_temp_peak_doy,sed_temp_peak_doy.1,RMSE
-2/25/21 19:07,1.202938686,0.880172444,0.916798137,0.276203859,0.165230003,0.40886885,0.8,0.331526774,0.775578078,0.00060229,0.001493882,0.001235643,7.7349785,15.93184164,2,5.544512218,254.726492,256.0876182,1.6449

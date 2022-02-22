@@ -169,7 +169,7 @@ rmse(water_level$surface_height,wlevel$BVR_WaterLevel_m)
 
 #------------------------------------------------------------------------------#
 # 2) dissolved oxygen
-file.copy('20220201_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('20220219_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
 var = 'OXY_oxy'
 calib <- matrix(c('par', 'lb', 'ub', 'x0',
@@ -195,7 +195,7 @@ nml_file = './aed2/aed2_bvr.nml'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
 #dissolved oxygen CALIBRATION
-file.copy('20220201_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('20220219_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
 #file.copy('./aed2/aed4_phyto_pars_30June2020.nml', './aed2/aed2_phyto_pars_30June2020.nml', overwrite = TRUE) #FIX THIS
 var = 'OXY_oxy'

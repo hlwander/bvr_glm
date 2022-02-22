@@ -6,6 +6,14 @@
    max_layer_thick = 0.33
    non_avg = .true.
 /
+&wq_setup
+   wq_lib = 'aed'
+   wq_nml_file = 'aed2/aed2_bvr.nml'
+   ode_method = 1
+   split_factor = 1
+   bioshade_feedback = .true.
+   repair_state = .true.
+/
 &light
    light_mode = 0
    n_bands = 4
@@ -73,8 +81,8 @@
    meteo_fl = 'inputs/FCR_hourly_met_2015_2020.csv'
    subdaily = .true.
    wind_factor = 1
-   sw_factor = 1.190163
-   lw_factor = 0.7613673
+   sw_factor = 1.239093
+   lw_factor = 0.803233
    at_factor = 1
    rh_factor = 1
    rain_factor = 1
@@ -118,7 +126,7 @@
    zone_heights = 6.7, 13.3
    sed_heat_Ksoil = 1.8, 1.8
    sed_temp_depth = 0.2, 0.2
-   sed_temp_mean = 9.49029713029351, 18.5587924914729
-   sed_temp_amplitude = 2.255733
+   sed_temp_mean = 9.12536486753112, 18.451393598525
+   sed_temp_amplitude = 2.638587
    sed_temp_peak_doy = 270, 270
 /
