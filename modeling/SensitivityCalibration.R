@@ -2,17 +2,15 @@
 #modified for FCR-specific applications by CCC
 #last updated 3 June 2020
 #modified for BVR 8 Aug 2020 HLW
-# Updated by AGH to work with Windows : )
-# Updated by AGH to work with Mac : )
+#starting to calibrate again on 7 Feb 2023
 
 pacman::p_load(GLMr,glmtools,tidyverse,lubridate,ncdf4,hydroGOF)
 
 rm(list = ls()) #let's clean up that workspace!
 
-wd <- getwd()#setwd("/Users/alexgh/Desktop/BVR-GLM")
-#setwd("C:/Users/ahoun/Desktop/BVR-GLM") # For AGH windows computer
+wd <- getwd()
 #setwd("./FCR_2013_2019GLMHistoricalRun_GLMv3beta") #if pulling from github, sets it to proper wd
-source('Scripts/functions-glm.R') #source the helper functions
+source('modeling/functions-glm.R') #source the helper functions
 read.packages() 
 
 # RUN GLM AND READ RESULTS  ---------------------------
@@ -22,7 +20,7 @@ sim_vars(out)
 
 sim_folder<-getwd()
 
-run_glm("Compiled") #pulling from Cayelan's version
+run_glm("glm+.app/Contents/MacOS/Compiled") #pulling from Cayelan's version
 
 # Check temperature and DO
 nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file 
