@@ -20,7 +20,7 @@ sim_vars(out)
 
 sim_folder<-getwd()
 
-run_glm("glm+.app/Contents/MacOS/Compiled") #pulling from Cayelan's version
+run_glm(sim_folder)
 
 # Check temperature and DO
 nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file 

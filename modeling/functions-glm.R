@@ -186,7 +186,7 @@ run_glm <- function(os){
     system("glm",ignore.stdout=TRUE)
   } else if (os == "Compiled"){
     sim_folder = getwd() #BE SURE TO EDIT THIS!
-    system2(paste0(sim_folder, "/", "glm"), stdout = TRUE, stderr = TRUE, env = paste0("DYLD_LIBRARY_PATH=",sim_folder))
+    system2(paste0(sim_folder,"/glm+.app/Contents/MacOS/glm+"), stdout = TRUE, stderr = TRUE, env = "DYLD_LIBRARY_PATH=",sim_folder,"/glm.app/Contents/MacOS")
   }
 }
 
@@ -560,7 +560,7 @@ glmFUNsa <- function(p){
   write_path <- nml_file
   write_nml(eg_nml, file = write_path)
   
-  run_glm("Compiled") #changed from Unix 
+  run_glm(sim_folder) #changed from Unix 
 
   suppressWarnings(mod <- mod2obs(mod_nc = out, obs = obs, reference = 'surface', var)) #Supressed warnings
 
