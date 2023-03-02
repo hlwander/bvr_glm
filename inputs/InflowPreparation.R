@@ -171,7 +171,7 @@ hist(silica$DRSI_mgL)
 median(silica$DRSI_mgL) #this median concentration is going to be used to set as the constant Si inflow conc in both wetland & weir inflows
 
 #only select dates until end of 2021
-inflow <- inflow %>% filter(time <= "2021-12-01")
+inflow <- inflow %>% filter(time <= "2019-12-31")
 
 alldata<-merge(inflow, bvr_nuts, by="time", all.x=TRUE)
 
@@ -243,6 +243,9 @@ total_inflow <- total_inflow %>%
 #estimate bvr inflow temp based on relationship between bvr and fcr inflows
 total_inflow$TEMP <- (1.5 * total_inflow$TEMP) - 9.21
 
+#make sure time is 12:00
+total_inflow$time <- total_inflow$time +  hours(12) + minutes(00) + seconds(00)
+
 #write file for inflow for the weir, with 2 pools of OC (DOC + DOCR)  
 write.csv(total_inflow, "./inputs/BVR_inflow_2015_2021_allfractions_2poolsDOC_withch4_metInflow.csv", row.names = F)
 
@@ -301,7 +304,7 @@ ggplot()+
   theme_classic(base_size=15)
 
 #write file for inflow for the weir, with 2 pools of OC (DOC + DOCR)  
-write.csv(total_inflow_landuse, "./inputs/BVR_inflow_2014_2019_20210316_allfractions_2poolsDOC_withch4_nldasInflow_landuse.csv", row.names = F)
+#write.csv(total_inflow_landuse, "./inputs/BVR_inflow_2014_2019_20210316_allfractions_2poolsDOC_withch4_nldasInflow_landuse.csv", row.names = F)
 
 #copying dataframe in workspace to be used later
 alltdata = alldata
@@ -343,7 +346,7 @@ weir_inflow <- weir_inflow %>%
   mutate(SIL_rsi = SIL_rsi*1000*(1/60.08)) %>% #setting the Silica concentration to the median 2014 inflow concentration for consistency
   mutate_if(is.numeric, round, 4) #round to 4 digits 
 
-write.csv(weir_inflow, file.path(getwd(),"inputs/FCR_weir_inflow_2013_2019_allfractions_1poolDOC.csv"), row.names = F)
+#write.csv(weir_inflow, file.path(getwd(),"inputs/FCR_weir_inflow_2013_2019_allfractions_1poolDOC.csv"), row.names = F)
 
 ##############################################################
 ##############################################################
@@ -370,6 +373,9 @@ names(vol3)[1] <- "dv_m3s"
 
 dvol <- cbind.data.frame(dvol,vol3)
 alldata<-merge(inflow, bvr_nuts, by="time", all.x=TRUE)
+
+#dvol repeats for 2018-11-04 so delete row 1214
+dvol <- dvol[-c(1218),]
 
 # Check change in water level
 ggplot(dvol,mapping=aes(x=Date,y=dv_m3s))+
@@ -404,6 +410,9 @@ ggplot()+
   geom_line(outflow,mapping=aes(x=time,y=FLOW,color="Outflow"))+
   geom_line(inflow,mapping=aes(x=time,y=FLOW,color="Inflow"))+
   theme_classic(base_size=15)
+
+#make sure time is 12:00
+outflow$time <- outflow$time +  hours(12) + minutes(00) + seconds(00)
 
 #write file
 write.csv(outflow, "./inputs/BVR_spillway_outflow_2015_2019_metInflow.csv", row.names=F)

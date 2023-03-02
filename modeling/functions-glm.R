@@ -560,7 +560,7 @@ glmFUNsa <- function(p){
   write_path <- nml_file
   write_nml(eg_nml, file = write_path)
   
-  run_glm(sim_folder) #changed from Unix 
+  run_glm(os) #changed from Unix 
 
   suppressWarnings(mod <- mod2obs(mod_nc = out, obs = obs, reference = 'surface', var)) #Supressed warnings
 
@@ -814,8 +814,8 @@ run_calibvalid <- function(var, var_unit, var_seq, cal_pars, pars, ub, lb, init.
   #   file.copy('aed2/aed4.nml', 'aed2/aed2.nml', overwrite = TRUE)
   # }
 
-  calibration.list <- list("start" = '2014-01-01 12:00:00',
-                           "stop" = '2018-12-31 12:00:00')  #EDIT THIS!
+  calibration.list <- list("start" = '2015-07-07 12:00:00',
+                           "stop" = '2018-07-07 12:00:00')  #EDIT THIS!
   nml <- read_nml('glm3.nml')
   nml <- set_nml(nml, arg_list = calibration.list)
   write_nml(nml, 'glm3.nml')
@@ -921,7 +921,7 @@ it <- 1
   dev.off()
   
   
-  validation.list <- list("start" = '2018-01-01 00:00:00',
+  validation.list <- list("start" = '2018-07-08 12:00:00',
                           "stop" = '2019-12-31 12:00:00') # EDITED THIS
   nml <- read_nml('glm3.nml')
   nml <- set_nml(nml, arg_list = validation.list)
@@ -937,7 +937,7 @@ it <- 1
   dev.off()
   
   
-  total.list <- list("start" = '2014-01-01 12:00:00', "stop" = '2019-12-31 12:00:00') #EDIT THIS!
+  total.list <- list("start" = '2015-07-07 12:00:00', "stop" = '2019-12-31 12:00:00') #EDIT THIS!
                 #EDITED THIS
                 #list("start" = '1980-04-01 00:00:00',
                 #     "stop" = '2015-12-31 00:00:00')

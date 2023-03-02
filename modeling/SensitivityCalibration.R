@@ -20,7 +20,8 @@ sim_vars(out)
 
 sim_folder<-getwd()
 
-run_glm(sim_folder)
+system2(paste0(sim_folder,"/glm+.app/Contents/MacOS/glm+"), stdout = TRUE, stderr = TRUE, env = paste0("DYLD_LIBRARY_PATH=",sim_folder, "/glm+.app/Contents/MacOS"))
+#run_glm(file.path(paste0(sim_folder,"/glm+.app/Contents/")))
 
 # Check temperature and DO
 nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file 
@@ -36,7 +37,7 @@ water_level<-get_surface_height(nc_file, ice.rm = TRUE, snow.rm = TRUE)
 wlevel <- read_csv("./Data_Output/09Apr20_BVR_WaterLevelDailyVol.csv")
 wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%m/%d/%Y", tz="EST"))
 wlevel <- wlevel %>% 
-  dplyr::filter(Date>as.POSIXct("2014-01-01") & Date<as.POSIXct("2020-01-01"))
+  dplyr::filter(Date>as.POSIXct("2015-07-09") & Date<as.POSIXct("2020-01-01"))
 
 plot(water_level$DateTime,water_level$surface_height)
 points(wlevel$Date, wlevel$BVR_WaterLevel_m, type="l",col="red")
@@ -48,7 +49,7 @@ field_oxy <-read.csv("./field_data/CleanedObsOxy.csv", header=T)
 field_temp$DateTime <-as.POSIXct(strptime(field_temp$DateTime, "%Y-%m-%d", tz="EST"))
 field_oxy$DateTime <-as.POSIXct(strptime(field_oxy$DateTime, "%Y-%m-%d", tz="EST"))
 field_surface_height <- read.csv("field_data/ObsSurface_Height.csv",header=T)
-field_surface_height$DateTime <- as.POSIXct(strptime(field_surface_height$DateTime, "%Y-%m-%d",tz="EST"))
+field_surface_height$DateTime <- as.POSIXct(strptime(field_surface_height$DateTime, "%m/%d/%Y",tz="EST"))  
 
 # CHEMISTRY: GET ALL NUTRIENTS, SILICA, CH4, & CO2
 chem <- read.csv('field_data/field_chem_2DOCpools.csv', header=T)
@@ -103,7 +104,9 @@ ub <- calib$ub
 pars <- calib$par
 obs <- read_field_obs('field_data/CleanedObsTemp.csv', var)
 nml_file = 'glm3.nml'
+os = 'Compiled'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
+#this part isn't working because morris_cluster=0 and all_ee is 0 too
 
 #water temperature CALIBRATION
 file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)

@@ -14,7 +14,7 @@
 pacman::p_load(zoo,tidyverse,lubridate,hydroGOF,GLMr,glmtools,ggplot2)
 
 # Set working directory
-setwd("./bvr_glm")
+setwd("/Users/heatherwander/Documents/VirginiaTech/research/BVR_glm/bvr_glm")
 sim_folder <- getwd()
 
 # Using baseline model data (aka: no oxygenation scenarios)
@@ -155,4 +155,10 @@ full_gof_val_table <- all_gof_val %>%
 
 full_gof_table <- rbind(full_n_all,full_gof_all_table,full_n_cal,full_gof_cal_table,full_n_val,full_gof_val_table)
 
-write_csv(full_gof_table,'output/table_gof_watercol_bvr_2014-2019.csv')
+write_csv(full_gof_table,'Data_Output/table_gof_watercol_bvr_2014-2019.csv')
+
+#Visualize calibration and validation results as a heatmap
+
+
+
+

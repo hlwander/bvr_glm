@@ -18,30 +18,35 @@ depths<- c(0.1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
 ######TEMPERATURE, DO, AND CHLA FROM CTD
 
 #need to import CTD observations from EDI
-#inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/200/10/2461524a7da8f1906bfc3806d594f94c" 
-#infile1 <- paste0(getwd(),"/field_data/CTD_final_2013_2019.csv")
-#download.file(inUrl1,infile1,method="curl")
+#inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/200/13/27ceda6bc7fdec2e7d79a6e4fe16ffdf" 
+#infile1 <- paste0(getwd(),"/field_data/CTD_final_2013_2022.csv")
+#try(download.file(inUrl1,infile1,method="curl"))
+#if (is.na(file.size(infile1))) download.file(inUrl1,infile1,method="auto")
+
 
 #read in CTD temp file from EDI to create field file, but first need to subset CTD data per each day to depths
-ctd<-read.csv(file.path(getwd(),'field_data/CTD_final_2013_2019.csv')) %>% #read in observed CTD data, which has multiple casts on the same day (problematic for comparison)
+ctd<-read.csv(file.path(getwd(),'field_data/CTD_final_2013_2022.csv')) %>% #read in observed CTD data, which has multiple casts on the same day (problematic for comparison)
   filter(Reservoir=="BVR") %>%
   filter(Site==50) %>%
-  rename(time=Date, depth=Depth_m, temp=Temp_C, DO=DO_mgL, chla = Chla_ugL) %>%
+  rename(time=DateTime, depth=Depth_m, temp=Temp_C, DO=DO_mgL, chla = Chla_ugL) %>%
   mutate(time = as.POSIXct(strptime(time, "%Y-%m-%d", tz="EST"))) %>%
   select(time, depth, temp, DO, chla) %>%
+  filter(time <= as.Date("2019-12-31")) %>%
   na.omit() 
 
 # Import YSI observations from EDI
-#inUrl1 <- "https://pasta.lternet.edu/package/data/eml/edi/198/7/25b5e8b7f4291614d5c6d959a08148d8"
-#infile1 <- paste0(getwd(),"/field_data/YSI_PAR_profiles_2013-2019.csv")
-#download.file(inUrl1,infile1,method="curl")
+#inUrl2  <- "https://pasta.lternet.edu/package/data/eml/edi/198/11/6e5a0344231de7fcebbe6dc2bed0a1c3" 
+#infile2 <- paste0(getwd(),"/field_data/YSI_PAR_profiles_2013-2022.csv")
+#try(download.file(inUrl2,infile2,method="curl"))
+#if (is.na(file.size(infile2))) download.file(inUrl2,infile2,method="auto")
 
-ysi <- read_csv('field_data/YSI_PAR_profiles_2013-2019.csv') %>% 
+ysi <- read_csv('field_data/YSI_PAR_profiles_2013-2022.csv') %>% 
   filter(Reservoir=="BVR") %>% 
   filter(Site==50) %>% 
   rename(time=DateTime,depth=Depth_m,temp=Temp_C,DO=DO_mgL) %>% 
-  mutate(time = as.POSIXct(strptime(time, "%m/%d/%y",tz='EST'))) %>% 
+  mutate(time = as.POSIXct(strptime(time, "%Y-%m-%d %H:%M:%S",tz='EST'))) %>% 
   select(time,depth,temp,DO) %>% 
+  filter(time <= as.Date("2019-12-31")) %>%
   na.omit()
 
 # Select unique dates from both CTD and YSI casts
@@ -121,7 +126,7 @@ super_final_2 <- as.data.frame(super_final) %>%
   select(time, new_depth, temp, DO, chla) %>%
   rename(depth = new_depth) %>%
   mutate(time = as.POSIXct(strptime(time, "%Y-%m-%d", tz="EST"))) %>%
-  filter(time > as.Date("2014-01-01")) #need to make sure that the CTD data only start after first day of sim
+  filter(time > as.Date("2015-07-07")) #need to make sure that the CTD data only start after first day of sim
 
 # Check data!
 plot(super_final_2$time,super_final_2$temp)
@@ -203,6 +208,7 @@ BVRchem <- read.csv("field_data/chem.csv", header=T) %>%
   dplyr::filter(Reservoir=="BVR") %>%
   dplyr::filter(Site==50) %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
+  filter(DateTime > as.Date("2015-07-07")) %>%
   select(DateTime, Depth_m, NH4_ugL:DIC_mgL) %>%
   rename(Depth=Depth_m) %>%
   mutate(NIT_amm = NH4_ugL*1000*0.001*(1/18.04)) %>% 
@@ -261,6 +267,7 @@ FCRchem <- read.csv("field_data/chem.csv", header=T) %>%
   dplyr::filter(Reservoir=="FCR") %>%
   dplyr::filter(Site==50) %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
+  dplyr::filter(DateTime > as.Date("2015-07-07")) %>%
   select(DateTime, Depth_m, NH4_ugL:DIC_mgL) %>%
   rename(Depth=Depth_m) %>%
   mutate(NIT_amm = NH4_ugL*1000*0.001*(1/18.04)) %>% 
@@ -297,6 +304,7 @@ ch4 <- read.csv(file.path(getwd(),"inputs/Dissolved_GHG_data_FCR_BVR_site50_inf_
   dplyr::filter(Reservoir=="BVR") %>%
   dplyr::filter(Depth_m < 50) %>% #to remove weir inflow site
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
+  dplyr::filter(DateTime > as.Date("2015-07-07")) %>%
   rename(Depth = Depth_m, CAR_ch4 = ch4_umolL, CAR_pCO2 = co2_umolL) %>%
   select(DateTime, Depth, CAR_ch4, CAR_pCO2) %>%
   mutate(CAR_pCO2 = CAR_pCO2*(0.0018/1000000)/0.0005667516) %>% #to convert umol/L to pCO2
@@ -326,10 +334,11 @@ secchi <- read.csv("field_data/Secchi_depth_2013-2019.csv", header=T) %>%
   dplyr::filter(Reservoir=="BVR") %>%
   dplyr::filter(Site==50) %>%
   dplyr::filter(Flag_Secchi==0) %>%
-  mutate(DateTime = as.POSIXct(strptime(DateTime, "%m/%d/%Y", tz="EST"))) %>%
+  mutate(DateTime = as.POSIXct(strptime(DateTime, "%m/%d/%y", tz="EST"))) %>%
   mutate(Depth = rep(1, length(DateTime))) %>%
   mutate(extc_coef = Secchi_m/1.7) %>%
-  select(DateTime, Depth, Secchi_m, extc_coef)
+  select(DateTime, Depth, Secchi_m, extc_coef) %>%
+  filter(DateTime > as.Date("2015-07-07"))
 write.csv(secchi, "field_data/field_secchi.csv", row.names=F)
   
   

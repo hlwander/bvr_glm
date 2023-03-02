@@ -39,7 +39,7 @@ water_level<-get_surface_height(nc_file, ice.rm = TRUE, snow.rm = TRUE)
 wlevel <- read_csv("./Data_Output/09Apr20_BVR_WaterLevelDailyVol.csv")
   
 wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%m/%d/%Y", tz="EST"))
-wlevel <- wlevel %>% filter(Date>as.POSIXct("2014-01-01") & Date<as.POSIXct("2020-01-01"))
+wlevel <- wlevel %>% filter(Date>as.POSIXct("2015-07-10") & Date<as.POSIXct("2020-01-01"))
 
 plot(water_level$DateTime,water_level$surface_height)
 points(wlevel$Date, wlevel$BVR_WaterLevel_m, type="l",col="red")
@@ -56,8 +56,8 @@ points(wlevel$Date, wlevel$BVR_Vol_m3, type="l",col="red")
 plot(evap$time, evap$evap)
 plot(precip$time, precip$precip)
 
-outflow<-read.csv("inputs/BVR_spillway_outflow_dvdt_2014_2019_20200619.csv", header=T)
-inflow_weir<-read.csv("inputs/BVR_inflow_2014_2019_20200625_allfractions_2poolsDOC_withch4.csv", header=T)
+outflow<-read.csv("inputs/BVR_spillway_outflow_2015_2019_metInflow.csv", header=T)
+inflow_weir<-read.csv("inputs/BVR_inflow_2015_2021_allfractions_2poolsDOC_withch4_metInflow.csv", header=T)
 
 outflow$time<-as.POSIXct(strptime(outflow$time, "%Y-%m-%d", tz="EST"))
 inflow_weir$time<-as.POSIXct(strptime(inflow_weir$time, "%Y-%m-%d", tz="EST"))
