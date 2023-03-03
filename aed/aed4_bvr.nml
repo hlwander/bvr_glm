@@ -1,16 +1,16 @@
 &aed_models
    models = 
    'aed_sedflux',
-!   'aed_tracer',
+   'aed_tracer',
    'aed_noncohesive',
-   'aed_oxygen'!,
-!   'aed_carbon',
-!   'aed_silica',
-!   'aed_nitrogen',
-!   'aed_phosphorus',
-!   'aed_organic_matter',
-!   'aed_phytoplankton',
-!   'aed_totals'
+   'aed_oxygen',
+   'aed_carbon',
+   'aed_silica',
+   'aed_nitrogen',
+   'aed_phosphorus',
+   'aed_organic_matter',
+   'aed_phytoplankton',
+   'aed_totals'
 /
 &aed_sedflux
    sedflux_model = 'Constant2D'
@@ -19,13 +19,9 @@
    n_zones = 2
    active_zones = 1, 2
    Fsed_oxy = -44,-10
-   !Fsed_oxy = -32.76435121, -5.203754493, -0.181529858
    Fsed_ch4 = 15, 232.6331575
    Fsed_amm =  2.848790019, 1.0
-   !Fsed_amm =  2.848790019, 1.59739687
    Fsed_nit = -0.01, -0.0001
-   !Fsed_nit = -0.13, 0.001
-   !Fsed_frp = 0.009, 0.25
    Fsed_frp = 0.0048, 0.25
 /
 !&aed_tracer

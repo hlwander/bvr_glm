@@ -16,7 +16,7 @@ pacman::p_load(dplyr,zoo,EcoHydRology,rMR,tidyverse,lubridate)
 # First, read in inflow file generated from Thronthwaite Overland flow model + groundwater recharge
 # From HW: for entire watershed; units in m3/d
 # Updated inflow model using FCR met station precip and temp data: units in m3/d - need to convert to m3/s
-inflow <- read_csv("./inputs/BVR_flow_calcs_obs_met_2015_2021.csv")
+inflow <- read_csv("./inputs/BVR_flow_calcs_obs_met.csv")
 inflow$time = as.POSIXct(strptime(inflow$time,"%Y-%m-%d", tz="EST"))
 inflow <- inflow[,-c(1)]
 names(inflow)[2] <- "FLOW"
@@ -417,3 +417,22 @@ outflow$time <- outflow$time +  hours(12) + minutes(00) + seconds(00)
 #write file
 write.csv(outflow, "./inputs/BVR_spillway_outflow_2015_2019_metInflow.csv", row.names=F)
   
+
+
+
+met <- read.csv(file.path(getwd(),"/inputs/met_avg_filtered.csv")) 
+met <- met %>% mutate(time = as.Date(time)) %>% 
+  filter(time >= as.Date("2016-01-01") & time <= as.Date("2016-12-31"))
+
+inflow_sub <- total_inflow %>% filter(time >= as.Date("2016-01-01") & time <= as.Date("2016-12-31"))
+
+plot(inflow_sub$time, inflow_sub$FLOW)
+
+plot(met$time, met$AirTemp)
+plot(met$time, met$WindSpeed)
+plot(met$time, met$ShortWave)
+plot(met$time, met$LongWave)
+plot(met$time, met$RelHum)
+plot(met$time, met$Rain)
+
+#obs <- read_field_obs('field_data/CleanedObsTemp.csv')
