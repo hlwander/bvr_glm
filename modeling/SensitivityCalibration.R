@@ -108,12 +108,12 @@ os = 'Compiled'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 #this part isn't working because morris_cluster=0 and all_ee is 0 too
 
-#water temperature CALIBRATION
+#water temperature CALIBRATION - note that I'm hacking the calib df for now bc can't get temp sensitivity function to work :(
 file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_20210204_2DOCpools.nml', overwrite = TRUE)
 #file.copy('./aed2/aed4_phyto_pars_30June2020.nml', './aed2/aed2_phyto_pars_30June2020.nml', overwrite = TRUE) #FIX THIS
 var = 'temp'
-calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
+calib <- calib[c(3,13:18),]#read.csv(paste0('sensitivity/calibration_file_',var,'.csv'), stringsAsFactors = F)
 cal_pars = calib
 #Reload ub, lb for calibration
 pars <- cal_pars$par
@@ -170,8 +170,8 @@ rmse(water_level$surface_height,wlevel$BVR_WaterLevel_m)
 
 #------------------------------------------------------------------------------#
 # 2) dissolved oxygen
-file.copy('20220219_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
+file.copy('20230302_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('./aed2/aed4_bvr.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
 var = 'OXY_oxy'
 calib <- matrix(c('par', 'lb', 'ub', 'x0',
                   'Fsed_oxy', -2, -40, -21,
@@ -192,7 +192,7 @@ lb <- calib$lb
 ub <- calib$ub
 pars <- calib$par
 obs <- read_field_obs('field_data/field_BVR.csv', var)
-nml_file = './aed2/aed2_bvr.nml'
+nml_file = './aed/aed2_bvr.nml'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
 #dissolved oxygen CALIBRATION

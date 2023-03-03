@@ -1,10 +1,18 @@
 &glm_setup
    sim_name = 'BVR'
    max_layers = 500
-   min_layer_vol = 0.5
+   min_layer_vol = 0.025
    min_layer_thick = 0.15
    max_layer_thick = 0.33
    non_avg = .true.
+/
+&wq_setup
+   wq_lib = 'aed'
+   wq_nml_file = 'aed/aed2_bvr.nml'
+   ode_method = 1
+   split_factor = 1
+   bioshade_feedback = .true.
+   repair_state = .true.
 /
 &light
    light_mode = 0
@@ -12,7 +20,7 @@
    light_extc = 1, 0.5, 2, 4
    energy_frac = 0.51, 0.45, 0.035, 0.005
    Benthic_Imin = 10
-   Kw = 0.87
+   Kw = 0.15
 /
 &mixing
    coef_mix_conv = 0.2
@@ -36,7 +44,7 @@
 /
 &time
    timefmt = 2
-   start = '2014-01-01 12:00:00'
+   start = '2015-07-07 12:00:00'
    stop = '2019-12-31 12:00:00'
    dt = 3600
    num_days = 1
@@ -49,12 +57,13 @@
 /
 &init_profiles
    num_depths = 27
-   lake_depth = 13
+   lake_depth = 13.1
    the_depths = 0.1, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13
    the_temps = 4.8132, 4.791, 4.7799, 4.778633333, 4.778, 4.7667, 4.76105, 4.74285, 4.73375, 4.73785, 4.7399, 4.7353, 4.733, 4.730233333, 4.72885, 4.717416667, 4.7117, 4.713966667, 4.7151, 4.7057, 4.701, 4.700466667, 4.7002, 4.7002, 4.7002, 4.7002, 4.7002
    the_sals = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-   num_wq_vars = 0
-   wq_names = ''
+   num_wq_vars = 1
+   wq_names = 'OXY_oxy'
+   wq_init_vals = 285, 277, 272, 267, 262, 252, 247, 242, 248, 265, 315, 296, 277, 277, 277, 306, 306, 306, 307,  306, 306, 306, 306, 306,  305, 305, 305
    snow_thickness = 0
    white_ice_thickness = 0
    blue_ice_thickness = 0
@@ -73,8 +82,8 @@
    meteo_fl = 'inputs/FCR_hourly_met_2015_2020.csv'
    subdaily = .true.
    wind_factor = 1
-   sw_factor = 1.190163
-   lw_factor = 0.7613673
+   sw_factor = 1
+   lw_factor = 0.8015645
    at_factor = 1
    rh_factor = 1
    rain_factor = 1
@@ -118,7 +127,7 @@
    zone_heights = 6.7, 13.3
    sed_heat_Ksoil = 1.8, 1.8
    sed_temp_depth = 0.2, 0.2
-   sed_temp_mean = 9.49029713029351, 18.5587924914729
-   sed_temp_amplitude = 2.255733
-   sed_temp_peak_doy = 270, 270
+   sed_temp_mean = 19.8354608777322, 11.5121864741379
+   sed_temp_amplitude = 2.48325793891851, 5.28135088723405
+   sed_temp_peak_doy = 251.607801042052, 266.251609015332
 /

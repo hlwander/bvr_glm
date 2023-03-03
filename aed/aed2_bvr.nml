@@ -6,7 +6,7 @@
 /
 &aed_sed_const2d
    n_zones = 2
-   Fsed_oxy = -34.2089191778984, -6.17926424679249
+   Fsed_oxy = -5.8, -3.08571428571429
    Fsed_ch4 = 15, 232.6331575
    Fsed_amm = 2.848790019, 1.659739687
    Fsed_nit = -0.13, -0.01
@@ -28,7 +28,7 @@
 /
 &aed_oxygen
    oxy_initial = 225
-   Ksed_oxy = 8.72666
-   theta_sed_oxy = 1.08
+   Ksed_oxy = 1.8
+   theta_sed_oxy = 0.8285714
    Fsed_oxy_variable = 'SDF_Fsed_oxy'
 /
