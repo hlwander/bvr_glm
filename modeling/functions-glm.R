@@ -182,12 +182,13 @@ run_glm <- function(os){
     system("glm",ignore.stdout=TRUE)
   } else if (os == "Original"){
     file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
-    file.copy('aed2/aed4.nml', 'aed2/aed2.nml', overwrite = TRUE)
+    file.copy('aed/aed4.nml', 'aed/aed2.nml', overwrite = TRUE)
     system("glm",ignore.stdout=TRUE)
   } else if (os == "Compiled"){
     sim_folder = getwd() #BE SURE TO EDIT THIS!
-    system2(paste0(sim_folder,"/glm+.app/Contents/MacOS/glm+"), stdout = TRUE, stderr = TRUE, env = "DYLD_LIBRARY_PATH=",sim_folder,"/glm.app/Contents/MacOS")
-  }
+    system2(paste0(sim_folder,"/glm+.app/Contents/MacOS/glm+"), stdout = TRUE, stderr = TRUE, env = paste0("DYLD_LIBRARY_PATH=",sim_folder, "/glm+.app/Contents/MacOS"))
+    
+    }
 }
 
 # gotm_functions.R
@@ -785,7 +786,7 @@ run_calibvalid <- function(var, var_unit, var_seq, cal_pars, pars, ub, lb, init.
   for (p in flag){
     if (length(flag) == 0){
       file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
-      file.copy('aed2/aed4.nml', 'aed2/aed2.nml', overwrite = TRUE)
+      file.copy('aed/aed4.nml', 'aed/aed2.nml', overwrite = TRUE)
     } else {
       if (p == 'temp'){
         calib <- read.csv(paste0('results/calib_results_',calib.metric,'_',p,'.csv'))
@@ -798,11 +799,11 @@ run_calibvalid <- function(var, var_unit, var_seq, cal_pars, pars, ub, lb, init.
       } else {
         calib <- read.csv(paste0('results/calib_results_',calib.metric,'_',p,'.csv'))
         eval(parse(text = paste0('best_par <- calib[which.min(calib$',calib.metric,'),]')))
-        nml <- read_nml('aed2/aed2.nml')
+        nml <- read_nml('aed/aed2.nml')
         for(i in 2:(ncol(best_par)-1)){
           nml <- set_nml(nml,colnames(best_par)[i],best_par[1,i])
         }
-        write_nml(nml, file = 'aed2/aed2.nml')
+        write_nml(nml, file = 'aed/aed2.nml')
       }
     }
   }

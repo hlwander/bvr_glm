@@ -4,8 +4,6 @@
 #updated and cleaned up on 2 June 2020
 # Adapted to BVR: A Hounshell, 25 June 2020
 
-#setwd("C:/Users/ahoun/OneDrive/Desktop/BVR-GLM/BVR-GLM/field_data")
-
 library(tidyverse)
 library(lubridate)
 library(zoo)
