@@ -186,8 +186,8 @@ run_glm <- function(os){
     system("glm",ignore.stdout=TRUE)
   } else if (os == "Compiled"){
     sim_folder = getwd() #BE SURE TO EDIT THIS!
-    system2(paste0(sim_folder,"/glm+.app/Contents/MacOS/glm+"), stdout = TRUE, stderr = TRUE, env = paste0("DYLD_LIBRARY_PATH=",sim_folder, "/glm+.app/Contents/MacOS"))
-    
+    system2(paste0(sim_folder,"/glm+.app/Contents/MacOS/glm+"), stdout = TRUE, stderr = TRUE, 
+            env = paste0("DYLD_LIBRARY_PATH=",sim_folder, "/glm+.app/Contents/MacOS"))
     }
 }
 
