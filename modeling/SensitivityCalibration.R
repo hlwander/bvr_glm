@@ -332,8 +332,8 @@ calib <- matrix(c('par', 'lb', 'ub', 'x0',
                   'Rch4ox', 0.0001, 5, 1,
                   'Kch4ox', 0.0001, 5, 0.5,
                   'vTch4ox', 0.9, 1.2, 1.08,
-                  'Fsed_ch4', 0.001, 300, 30,
-                  'Ksed_ch4', 0.001, 100, 30,
+                  'Fsed_ch4', 1, 80, 40,
+                  'Ksed_ch4', 0.1, 3, 1.5,
                   'theta_sed_ch4', 1, 1.15, 1.08), nrow = 7, ncol = 4, byrow = TRUE)#BE SURE TO EDIT ROW N!
 write.table(calib, file = paste0('sensitivity/sample_sensitivity_config_',var,'.csv'), row.names = FALSE, 
             col.names = FALSE, sep = ',',
@@ -347,11 +347,12 @@ pars <- calib$par
 obs <- read_field_obs('field_data/field_gases.csv', var)
 obs <- completeFun(obs, 'CAR_ch4')
 nml_file = 'aed/aed2.nml'
+os = "Compiled"
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
 #dissolved methane - CALIBRATION
-file.copy('16Mar23_ch4cal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed/16Mar23_ch4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
+file.copy('16Mar23_diccal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed/16Mar23_diccal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
 var = 'CAR_ch4'
 calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
 cal_pars = calib
@@ -397,13 +398,7 @@ plot(water_level$DateTime,water_level$surface_height)
 points(wlevel$Date, wlevel$BVR_WaterLevel_m, type="l",col="red")
 
 #------------------------------------------------------------------------------#
-
-
-
-
-
-
-# 4) silica
+# 4) silica - no sensitivity bc only have data in 2014
 file.copy('20210927_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('./aed2/aed4_20210517_CH4cal.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
 var = 'SIL_rsi'
@@ -414,16 +409,36 @@ calib <- matrix(c('par', 'lb', 'ub', 'x0',
 write.table(calib, file = paste0('sensitivity/sample_sensitivity_config_',var,'.csv'), row.names = FALSE, 
             col.names = FALSE, sep = ',',
             quote = FALSE)
-max_r = 3
-calib <- read.csv(paste0('sensitivity/sample_sensitivity_config_',var,'.csv'), stringsAsFactors = F)
-x0 <- calib$x0
-lb <- calib$lb
-ub <- calib$ub
-pars <- calib$par
+
+#silica - CALIBRATION
+file.copy('20210225_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed2/aed4_20210419_Ch4cal.nml', 'aed2/aed2_bvr.nml', overwrite = TRUE)
+var = 'SIL_rsi'
+calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
+cal_pars = calib
+#Reload ub, lb for calibration
+pars <- cal_pars$par
+ub <- cal_pars$ub
+lb <- cal_pars$lb
+#Create initial files
+init.val <- (c(5, 50) - lb) *10 /(ub-lb) # EDIT THESE
 obs <- read_field_obs('field_data/field_silica.csv', var)
-obs <- completeFun(obs, 'SIL_rsi')
-nml_file = 'aed2/aed2.nml'
-run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
+method = 'cmaes'
+calib.metric = 'RMSE'
+os = "Compiled"
+target_fit = -Inf#2.50 * 1000/32
+target_iter = 300#1000*length(init.val)^2
+nml_file = 'aed2/aed2_20200701_2DOCpools.nml'
+run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,1000,50), pars, ub, lb, init.val, obs, method, 
+               calib.metric, os, target_fit, target_iter, nml_file, flag = c())
+
+
+
+#------------------------------------------------------------------------------#
+
+
+
+
 
 # 5a) ammonium
 file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
@@ -659,27 +674,6 @@ run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
 
 
-# 4) silica
-file.copy('20210225_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed2/aed4_20210419_Ch4cal.nml', 'aed2/aed2_bvr.nml', overwrite = TRUE)
-var = 'SIL_rsi'
-calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
-cal_pars = calib
-#Reload ub, lb for calibration
-pars <- cal_pars$par
-ub <- cal_pars$ub
-lb <- cal_pars$lb
-#Create initial files
-init.val <- (c(5, 50) - lb) *10 /(ub-lb) # EDIT THESE
-obs <- read_field_obs('field_data/field_silica.csv', var)
-method = 'cmaes'
-calib.metric = 'RMSE'
-os = "Compiled"
-target_fit = -Inf#2.50 * 1000/32
-target_iter = 300#1000*length(init.val)^2
-nml_file = 'aed2/aed2_20200701_2DOCpools.nml'
-run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,1000,50), pars, ub, lb, init.val, obs, method, 
-               calib.metric, os, target_fit, target_iter, nml_file, flag = c())
 
 
 # 5a) ammonium

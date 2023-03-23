@@ -126,6 +126,12 @@ super_final_2 <- as.data.frame(super_final) %>%
   mutate(time = as.POSIXct(strptime(time, "%Y-%m-%d", tz="EST"))) %>%
   filter(time > as.Date("2015-07-07")) #need to make sure that the CTD data only start after first day of sim
 
+#order df by depth and date
+super_final_2 <- super_final_2 %>% arrange(time, depth)
+
+#get rid of duplicate rows
+super_final_2 <- super_final_2[!(duplicated(super_final_2[,c(1:2)])),]
+
 # Check data!
 plot(super_final_2$time,super_final_2$temp)
 plot(super_final_2$time,super_final_2$DO)

@@ -11,9 +11,9 @@ pacman::p_load(GLMr,glmtools,tidyverse,lubridate,ncdf4)
 sim_folder <- getwd()
 
 #look at glm and aed nml files
-nml_file <- paste0(sim_folder,"/glm3.nml")
-aed_file <- paste0(sim_folder,"/aed2/aed2_20210204_2DOCpools.nml")
-aed_phytos_file <- paste0(sim_folder,"/aed2/aed2_phyto_pars_30June2020.nml")
+nml_file <- paste0(sim_folder,"/16Mar23_ch4cal_glm3.nml")
+aed_file <- paste0(sim_folder,"/aed/16Mar23_ch4cal_aed2.nml")
+aed_phytos_file <- paste0(sim_folder,"/aed/aed2_phyto_pars_2May2022_RQT.nml")
 nml <- read_nml(nml_file) 
 aed <- read_nml(aed_file) #you may get a warning about an incomplete final line but it doesn't matter
 aed_phytos <- read_nml(aed_phytos_file)
@@ -217,10 +217,10 @@ plot(mod_oxy9$DateTime, mod_oxy9$OXY_oxy_9.2, type="l")
 #######################################################
 #### dissolved inorganic carbon (DIC) data ###########
 var="CAR_dic"
-field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
+field_file <- file.path(sim_folder,'/field_data/field_chem_2DOCpools.csv') 
 #note: DIC is tricky because there are no observational data between 2013-2017, so doesn't work for normal calibration period
 
-obs<-read.csv('field_data/field_chem.csv', header=TRUE) %>% #read in observed chemistry data
+obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
   group_by(DateTime, Depth) %>%
@@ -277,7 +277,6 @@ RMSE(m_DIC,o_DIC)
 
 #######################################################
 #### dissolved methane data #######
-#### dissolved inorganic carbon (DIC) data ###########
 var="CAR_ch4"
 field_file <- file.path(sim_folder,'/field_data/field_gases.csv') 
 

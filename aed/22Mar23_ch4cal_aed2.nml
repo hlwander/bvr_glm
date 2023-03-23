@@ -8,7 +8,7 @@
    n_zones = 2
    active_zones = 1, 2
    Fsed_oxy = -38.5514681213708, -30.8879889628294
-   Fsed_ch4 = 150!0.001 but this is way too low
+   Fsed_ch4 = 80
    Fsed_amm = 2.848790019, 1
    Fsed_nit = -0.01, -1e-04
    Fsed_frp = 0.0048, 0.25
@@ -51,11 +51,11 @@
    ionic = 0.1
    co2_piston_model = 1
    ch4_initial = 5
-   Rch4ox = 0.3182755
-   Kch4ox = 5
+   Rch4ox = 1e-04
+   Kch4ox = 1e-04
    vTch4ox = 1.2
-   Ksed_ch4 = 0.1!0.001
-   theta_sed_ch4 = 1.015
+   Ksed_ch4 = 3
+   theta_sed_ch4 = 1.2
    methane_reactant_variable = 'OXY_oxy'
    atm_ch4 = 1.76e-06
    ch4_piston_model = 1
