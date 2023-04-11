@@ -331,65 +331,6 @@ obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=0.1 & ne
 RMSE(mod,obs)
 
 
-
-#######################################################
-#### dissolved pCO2  data #######
-#SKIPPING THIS FOR NOW!!
-#read in observed CO2 file to create field file, but first need to remove duplicate date values
-# plot_var(file=nc_file,"CAR_pCO2",reference="surface")#, col_lim = c(0,0.000001))#figure of CO2 modeled
-# plot_var(file=nc_file,"CAR_pH",reference="surface") 
-# plot_var(file=nc_file,"PHY_TCHLA",reference="surface")
-# co2<-read.csv('FCR_pCO2_DIC_2015_2017_20181007.csv', header=TRUE)#read in observed CTD data, which has multiple casts on the same day (problematic for comparison)
-# co2$DateTime<-as.POSIXct(strptime(co2$DateTime, "%Y-%m-%d", tz="EST")) 
-# co2$day <- day(co2$DateTime)
-# co2$year <- year(co2$DateTime)
-# co2$month <- month(co2$DateTime)
-# co2$corrected <-(co2$co2_umol_L*0.0018/1000000)/0.0005667516
-# deduped.data <- duplicated(co2[ , c(2,4,5,6) ] )
-# obs_co2 <- co2[which(deduped.data == FALSE),c(1,2,7)]
-# colnames(obs_co2)<-c("DateTime", "Depth", "CAR_pCO2")
-# write.csv(obs_co2, "CleanedObsCO2.csv", row.names = F)
-# field_file <- file.path(sim_folder,'CleanedObsCO2.csv') 
-# plot_var_compare(nc_file,field_file,var_name = "CAR_pCO2", precision="mins", col_lim=c(0,0.005)) #compare obs vs modeled
-# 
-# #get modeled oxygen concentrations for focal depths
-# depths<- c(0.1, 1.6, 3.8, 5.0, 6.2, 8.0, 9.0)  
-# mod_co2 <- get_var(nc_file, "CAR_pCO2", reference="surface", z_out=depths)
-# colnames(mod_co2) <- c("time", "0.1", "1.6", "3.8", "5", "6.2", "8", "9")
-# long_mod_co2 <- gather(mod_co2, key = "depth", value="obsCAR_pCO2", "0.1":"9", factor_key = TRUE) #go from wide to long
-# long_mod_co2$depth <- as.numeric(levels(long_mod_co2$depth))[long_mod_co2$depth] 
-# colnames(long_mod_co2)=c("DateTime", "Depth", "modeledCAR_pCO2")
-# 
-# #lets do depth by depth comparisons of the sims
-# co2_compare<-merge(long_mod_co2, obs_co2, by=c("DateTime","Depth"))
-# co2_compare <- co2_compare[complete.cases(co2_compare), ]
-# for(i in 1:length(unique(co2_compare$Depth))){
-#   tempdf<-subset(co2_compare, co2_compare$Depth==depths[i])
-#   plot(tempdf$DateTime,tempdf$CAR_pCO2, type='l', col='red',
-#        ylab='pCO2 atm', xlab='time',
-#        main = paste0("Obs=Red,Mod=Black,Depth=",depths[i]),ylim=c(-0.00001,0.0005))
-#   points(tempdf$DateTime, tempdf$modeledCAR_pCO2, type="l",col='black')
-# }
-# 
-# #calculate RMSE for pCO2
-# field_file <- file.path(sim_folder,'CleanedObsCO2.csv') 
-# DIC <- resample_to_field(nc_file, field_file, precision="mins", method='interp', 
-#                          var_name="CAR_pCO2")
-# DIC <-DIC[complete.cases(DIC),]
-# 
-# m_DIC <- DIC$Modeled_CAR_pCO2[DIC$Depth>=0.1 & DIC$Depth<=0.1] #depths from 6-9m
-# o_DIC <- DIC$Observed_CAR_pCO2[DIC$Depth>=0.1 & DIC$Depth<=0.1] #depths from 6-9m
-# RMSE(m_DIC,o_DIC)
-# 
-# m_DIC <- DIC$Modeled_CAR_pCO2[DIC$Depth>=9 & DIC$Depth<=9] #depths from 6-9m
-# o_DIC <- DIC$Observed_CAR_pCO2[DIC$Depth>=9 & DIC$Depth<=9] #depths from 6-9m
-# RMSE(m_DIC,o_DIC)
-# 
-# m_DIC <- DIC$Modeled_CAR_pCO2[DIC$Depth>=5 & DIC$Depth<=5] #depths from 6-9m
-# o_DIC <- DIC$Observed_CAR_pCO2[DIC$Depth>=5 & DIC$Depth<=5] #depths from 6-9m
-# RMSE(m_DIC,o_DIC)
-
-
 #######################################################
 #### silica  data #######
 
@@ -453,7 +394,7 @@ RMSE(mod,obs)
 var="NIT_amm"
 field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
 
-obs<-read.csv('field_data/field_chem.csv', header=TRUE) %>% #read in observed chemistry data
+obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
   na.omit()

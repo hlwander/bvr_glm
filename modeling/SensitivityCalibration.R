@@ -329,12 +329,13 @@ file.copy('16Mar23_diccal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('aed/16Mar23_diccal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
 var = 'CAR_ch4'
 calib <- matrix(c('par', 'lb', 'ub', 'x0',
-                  'Rch4ox', 0.0001, 5, 1,
-                  'Kch4ox', 0.0001, 5, 0.5,
+                  'Rch4ox', 0.1, 5, 1,
+                  'Kch4ox', 0.1, 5, 0.5,
                   'vTch4ox', 0.9, 1.2, 1.08,
                   'Fsed_ch4', 1, 80, 40,
+                  'Fsed_ch4',#ADD HERE
                   'Ksed_ch4', 0.1, 3, 1.5,
-                  'theta_sed_ch4', 1, 1.15, 1.08), nrow = 7, ncol = 4, byrow = TRUE)#BE SURE TO EDIT ROW N!
+                  'theta_sed_ch4', 1, 1.15, 1.08), nrow = 8, ncol = 4, byrow = TRUE)#BE SURE TO EDIT ROW N!
 write.table(calib, file = paste0('sensitivity/sample_sensitivity_config_',var,'.csv'), row.names = FALSE, 
             col.names = FALSE, sep = ',',
             quote = FALSE)
@@ -399,8 +400,8 @@ points(wlevel$Date, wlevel$BVR_WaterLevel_m, type="l",col="red")
 
 #------------------------------------------------------------------------------#
 # 4) silica - no sensitivity bc only have data in 2014
-file.copy('20210927_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('./aed2/aed4_20210517_CH4cal.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
+file.copy('22Mar23_ch4cal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('./aed/22Mar23_ch4cal_aed2.nml', './aed/aed2.nml', overwrite = TRUE)
 var = 'SIL_rsi'
 calib <- matrix(c('par', 'lb', 'ub', 'x0',
                   'Fsed_rsi', 0.1, 100, 25,
@@ -411,8 +412,6 @@ write.table(calib, file = paste0('sensitivity/sample_sensitivity_config_',var,'.
             quote = FALSE)
 
 #silica - CALIBRATION
-file.copy('20210225_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed2/aed4_20210419_Ch4cal.nml', 'aed2/aed2_bvr.nml', overwrite = TRUE)
 var = 'SIL_rsi'
 calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
 cal_pars = calib
@@ -420,29 +419,23 @@ cal_pars = calib
 pars <- cal_pars$par
 ub <- cal_pars$ub
 lb <- cal_pars$lb
+x0 <- cal_pars$x0
 #Create initial files
-init.val <- (c(5, 50) - lb) *10 /(ub-lb) # EDIT THESE
+init.val <- (x0 - lb) *10 /(ub-lb) # EDIT THESE
 obs <- read_field_obs('field_data/field_silica.csv', var)
 method = 'cmaes'
 calib.metric = 'RMSE'
 os = "Compiled"
 target_fit = -Inf#2.50 * 1000/32
 target_iter = 300#1000*length(init.val)^2
-nml_file = 'aed2/aed2_20200701_2DOCpools.nml'
+nml_file = 'aed/aed2.nml'
 run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,1000,50), pars, ub, lb, init.val, obs, method, 
                calib.metric, os, target_fit, target_iter, nml_file, flag = c())
 
-
-
 #------------------------------------------------------------------------------#
-
-
-
-
-
-# 5a) ammonium
-file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
+# 5a) ammonium - SENSITIVITY
+file.copy('22Mar23_CH4cal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('./aed/22Mar23_CH4cal_aed2.nml', './aed/aed2.nml', overwrite = TRUE)
 var = 'NIT_amm'
 calib <- matrix(c('par', 'lb', 'ub', 'x0',
                   'Rnitrif', 0.001, 1, 0.075,
@@ -471,7 +464,31 @@ obs <- completeFun(obs, 'NIT_amm')
 nml_file = 'aed2/aed2_bvr.nml'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
-# 5b) nitrate
+#ammonium - CALIBRATION
+file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed/aed4.nml', 'aed/aed2.nml', overwrite = TRUE)
+var = 'NIT_amm'
+calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
+cal_pars = calib
+#Reload ub, lb for calibration
+pars <- cal_pars$par
+ub <- cal_pars$ub
+lb <- cal_pars$lb
+#Create initial files
+init.val <- (c(2.8,1.6,48,1.07) - lb) *10 /(ub-lb) # EDIT THESE
+obs <- read_field_obs('field_data/field_chem_hypo.csv', var)
+method = 'cmaes'
+calib.metric = 'RMSE'
+os = "Compiled"
+target_fit = -Inf#2.50 * 1000/32
+target_iter = 1000#1000*length(init.val)^2
+nml_file = 'aed/aed2_20200701_2DOCpools.nml'
+run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,250,25), pars, ub, lb, init.val, obs, method, 
+               calib.metric, os, target_fit, target_iter, nml_file, flag = c())
+
+
+#------------------------------------------------------------------------------#
+# 5b) nitrate - SENSITIVITY
 file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
 var = 'NIT_nit'
@@ -506,7 +523,32 @@ nml_file = 'aed2/aed2_bvr.nml'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
 
-# 6) phosphorus
+#nitrate - CALIBRATION
+file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed/aed4.nml', 'aed/aed2.nml', overwrite = TRUE)
+var = 'NIT_nit'
+calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
+cal_pars = calib
+#Reload ub, lb for calibration
+pars <- cal_pars$par
+ub <- cal_pars$ub
+lb <- cal_pars$lb
+#Create initial files
+init.val <- (c(-0.1, 50) - lb) *10 /(ub-lb) # EDIT THESE
+obs <- read_field_obs('field_data/field_chem_hypo.csv', var)
+method = 'cmaes'
+calib.metric = 'RMSE'
+os = "Compiled"
+target_fit = -Inf#2.50 * 1000/32
+target_iter = 250#1000*length(init.val)^2
+nml_file = 'aed/aed2_20200701_2DOCpools.nml'
+run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,50,5), pars, ub, lb, init.val, obs, method, 
+               calib.metric, os, target_fit, target_iter, nml_file, flag = c())
+
+
+
+#------------------------------------------------------------------------------#
+# 6) phosphorus - SENSITIVITY
 file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
 var = 'PHS_frp'
@@ -525,11 +567,36 @@ ub <- calib$ub
 pars <- calib$par
 obs <- read_field_obs('field_data/field_chem_2DOCpools.csv', var)
 obs <- completeFun(obs, 'PHS_frp')
-nml_file = 'aed2/aed2_bvr.nml'
+nml_file = 'aed/aed2_bvr.nml'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
+# 6) phosphate
+file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed/aed4.nml', 'aed/aed2.nml', overwrite = TRUE)
+var = 'PHS_frp'
+calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
+cal_pars = calib
+#Reload ub, lb for calibration
+pars <- cal_pars$par
+ub <- cal_pars$ub
+lb <- cal_pars$lb
+#Create initial files
+#init.val <- rep(5, nrow(cal_pars))
+init.val <- (c(0.011, 0.2, 25) - lb) *10 /(ub-lb) # EDIT THESE
+obs <- read_field_obs('field_data/field_chem.csv', var)
+method = 'cmaes'
+calib.metric = 'RMSE'
+os = "Compiled"
+target_fit = -Inf#2.50 * 1000/32
+target_iter = 500#1000*length(init.val)^2
+nml_file = 'aed/aed2_20200701_2DOCpools.nml'
+run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,0.5,0.05), pars, ub, lb, init.val, obs, method, 
+               calib.metric, os, target_fit, target_iter, nml_file, flag = c())
 
-# 7a) dissolved organic carbon labile
+
+
+#------------------------------------------------------------------------------#
+# 7a) dissolved organic carbon labile - SENSITIVITY
 file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
 var = 'OGM_doc'
@@ -560,7 +627,32 @@ nml_file = 'aed2/aed2_bvr.nml'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
 
-# 7b) dissolved organic carbon recalcitrant
+#dissolved organic carbon (labile) - CALIBRATION
+file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed/aed4_20200701_2DOCpools.nml', 'aed/aed2_20200701_2DOCpools.nml', overwrite = TRUE)
+var = 'OGM_doc'
+calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
+cal_pars = calib
+#Reload ub, lb for calibration
+pars <- cal_pars$par
+ub <- cal_pars$ub
+lb <- cal_pars$lb
+#Create initial files
+#init.val <- rep(5, nrow(cal_pars))
+init.val <- (c(4,31.25,1.08) - lb) *10 /(ub-lb) # EDIT THESE
+obs <- read_field_obs('field_data/field_chem.csv', var)
+method = 'cmaes'
+calib.metric = 'RMSE'
+os = "Compiled"
+target_fit = -Inf#2.50 * 1000/32
+target_iter = 500#1000*length(init.val)^2
+nml_file = 'aed/aed2_20200701_2DOCpools.nml'
+run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,100,10), pars, ub, lb, init.val, obs, method, 
+               calib.metric, os, target_fit, target_iter, nml_file, flag = c())
+
+
+#------------------------------------------------------------------------------#
+# 7b) dissolved organic carbon recalcitrant - SENSITIVITY
 file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
 var = 'OGM_docr'
@@ -590,8 +682,33 @@ obs <- completeFun(obs, 'OGM_docr')
 nml_file = 'aed2/aed2_bvr.nml'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
+#dissolved organic carbon (recalcitrant) - CALIBRATION
+file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed2/aed4_20200701_2DOCpools.nml', 'aed2/aed2_20200701_2DOCpools.nml', overwrite = TRUE)
+var = 'OGM_docr'
+calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
+cal_pars = calib
+#Reload ub, lb for calibration
+pars <- cal_pars$par
+ub <- cal_pars$ub
+lb <- cal_pars$lb
+#Create initial files
+#init.val <- rep(5, nrow(cal_pars))
+init.val <- (c(0.01, 0.001) - lb) *10 /(ub-lb) # EDIT THESE
+obs <- read_field_obs('field_data/field_chem.csv', var)
+#obs$PHS_frp <- obs$PHS_frp * 1000/31
+method = 'cmaes'
+calib.metric = 'RMSE'
+os = "Compiled"
+target_fit = -Inf#2.50 * 1000/32
+target_iter = 500#1000*length(init.val)^2
+nml_file = 'aed2/aed2_20200701_2DOCpools.nml'
+run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,500,50), pars, ub, lb, init.val, obs, method, 
+               calib.metric, os, target_fit, target_iter, nml_file, flag = c())
 
-# 8) chlorophyll a
+
+#------------------------------------------------------------------------------#
+# 8) chlorophyll a - SENSITIVITY
 file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
 file.copy('./aed2/aed4_phyto_pars_30June2020.nml', './aed2/aed2_phyto_pars_30June2020.nml', overwrite = TRUE) #FIX THIS
@@ -638,97 +755,10 @@ nml_file = 'aed2/aed2_phyto_pars_30June2020.nml'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
 
-
-# START CALIBRATION  ---------------------------
-
-
-
-
-
-
-### Try calibrating to pCO2? - using calibrations from DIC as a starting point
-# It's okay - DIC is likely the best...
-#file.copy('20210225_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-#file.copy('aed2/aed4_20210324_DICcal.nml', 'aed2/aed2_bvr.nml', overwrite = TRUE)
-#var = 'CAR_pCO2'
-#calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
-#cal_pars = calib
-#Reload ub, lb for calibration
-#pars <- cal_pars$par
-#ub <- cal_pars$ub
-#lb <- cal_pars$lb
-#Create initial files
-#init.val <- (c(1, 50, 1.08) - lb) *10 /(ub-lb) # Paul's values
-#obs <- read_field_obs('field_data/field_gases.csv', var)
-#obs <- completeFun(obs, 'CAR_pCO2')
-#method = 'cmaes'
-#calib.metric = 'RMSE'
-#os = "Compiled"
-#target_fit = -Inf#2.50 * 1000/32
-#target_iter = 500#1000#1000*length(init.val)^2
-#nml_file = 'aed2/aed2_bvr.nml'
-#flag=c()
-#run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,2000,250), pars, ub, lb, init.val, obs, method, 
-#               calib.metric, os, target_fit, target_iter, nml_file, flag = c())
-
-
-
-
-
-
-# 5a) ammonium
+#chlorophyll- CALIBRATION
 file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
-#file.copy('aed2/aed4.nml', 'aed2/aed2.nml', overwrite = TRUE)
-file.copy('aed2/aed4_20200701_2DOCpools.nml', 'aed2/aed2_20200701_2DOCpools.nml', overwrite = TRUE)
-var = 'NIT_amm'
-calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
-cal_pars = calib
-#Reload ub, lb for calibration
-pars <- cal_pars$par
-ub <- cal_pars$ub
-lb <- cal_pars$lb
-#Create initial files
-init.val <- (c(2.8,1.6,48,1.07) - lb) *10 /(ub-lb) # EDIT THESE
-obs <- read_field_obs('field_data/field_chem_hypo.csv', var)
-method = 'cmaes'
-calib.metric = 'RMSE'
-os = "Compiled"
-target_fit = -Inf#2.50 * 1000/32
-target_iter = 1000#1000*length(init.val)^2
-nml_file = 'aed2/aed2_20200701_2DOCpools.nml'
-run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,250,25), pars, ub, lb, init.val, obs, method, 
-               calib.metric, os, target_fit, target_iter, nml_file, flag = c())
-
-
-# 5b) nitrate
-file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
-#file.copy('aed2/aed4.nml', 'aed2/aed2.nml', overwrite = TRUE)
-file.copy('aed2/aed4_20200701_2DOCpools.nml', 'aed2/aed2_20200701_2DOCpools.nml', overwrite = TRUE)
-var = 'NIT_nit'
-calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
-cal_pars = calib
-#Reload ub, lb for calibration
-pars <- cal_pars$par
-ub <- cal_pars$ub
-lb <- cal_pars$lb
-#Create initial files
-init.val <- (c(-0.1, 50) - lb) *10 /(ub-lb) # EDIT THESE
-obs <- read_field_obs('field_data/field_chem_hypo.csv', var)
-method = 'cmaes'
-calib.metric = 'RMSE'
-os = "Compiled"
-target_fit = -Inf#2.50 * 1000/32
-target_iter = 250#1000*length(init.val)^2
-nml_file = 'aed2/aed2_20200701_2DOCpools.nml'
-run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,50,5), pars, ub, lb, init.val, obs, method, 
-               calib.metric, os, target_fit, target_iter, nml_file, flag = c())
-
-
-# 6) phosphate
-file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
-#file.copy('aed2/aed4.nml', 'aed2/aed2.nml', overwrite = TRUE)
-file.copy('aed2/aed4_20200701_2DOCpools.nml', 'aed2/aed2_20200701_2DOCpools.nml', overwrite = TRUE)
-var = 'PHS_frp'
+file.copy('aed/aed4_20200612_2DOCpools.nml', 'aed/aed2_20200612_2DOCpools.nml', overwrite = TRUE)
+var = 'PHY_TCHLA'
 calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
 cal_pars = calib
 #Reload ub, lb for calibration
@@ -737,66 +767,34 @@ ub <- cal_pars$ub
 lb <- cal_pars$lb
 #Create initial files
 #init.val <- rep(5, nrow(cal_pars))
-init.val <- (c(0.011, 0.2, 25) - lb) *10 /(ub-lb) # EDIT THESE
-obs <- read_field_obs('field_data/field_chem.csv', var)
-method = 'cmaes'
-calib.metric = 'RMSE'
-os = "Compiled"
-target_fit = -Inf#2.50 * 1000/32
-target_iter = 500#1000*length(init.val)^2
-nml_file = 'aed2/aed2_20200701_2DOCpools.nml'
-run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,0.5,0.05), pars, ub, lb, init.val, obs, method, 
-               calib.metric, os, target_fit, target_iter, nml_file, flag = c())
-
-
-# 7) dissolved organic carbon - recalcitrant fraction
-file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed2/aed4_20200701_2DOCpools.nml', 'aed2/aed2_20200701_2DOCpools.nml', overwrite = TRUE)
-var = 'OGM_docr'
-calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
-cal_pars = calib
-#Reload ub, lb for calibration
-pars <- cal_pars$par
-ub <- cal_pars$ub
-lb <- cal_pars$lb
-#Create initial files
-#init.val <- rep(5, nrow(cal_pars))
-init.val <- (c(0.01, 0.001) - lb) *10 /(ub-lb) # EDIT THESE
+init.val <- (c(0.01) - lb) *10 /(ub-lb) # EDIT THESE
 obs <- read_field_obs('field_data/field_chem.csv', var)
 #obs$PHS_frp <- obs$PHS_frp * 1000/31
 method = 'cmaes'
 calib.metric = 'RMSE'
 os = "Compiled"
 target_fit = -Inf#2.50 * 1000/32
-target_iter = 500#1000*length(init.val)^2
-nml_file = 'aed2/aed2_20200701_2DOCpools.nml'
-run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,500,50), pars, ub, lb, init.val, obs, method, 
-               calib.metric, os, target_fit, target_iter, nml_file, flag = c())
-
-
-# 8) dissolved organic carbon - labile fraction
-file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed2/aed4_20200701_2DOCpools.nml', 'aed2/aed2_20200701_2DOCpools.nml', overwrite = TRUE)
-var = 'OGM_doc'
-calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
-cal_pars = calib
-#Reload ub, lb for calibration
-pars <- cal_pars$par
-ub <- cal_pars$ub
-lb <- cal_pars$lb
-#Create initial files
-#init.val <- rep(5, nrow(cal_pars))
-init.val <- (c(4,31.25,1.08) - lb) *10 /(ub-lb) # EDIT THESE
-obs <- read_field_obs('field_data/field_chem.csv', var)
-method = 'cmaes'
-calib.metric = 'RMSE'
-os = "Compiled"
-target_fit = -Inf#2.50 * 1000/32
-target_iter = 500#1000*length(init.val)^2
-nml_file = 'aed2/aed2_20200701_2DOCpools.nml'
+target_iter = 25#1000*length(init.val)^2
+nml_file = 'aed/aed2_phyto_pars_28June2019.nml'
 run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,100,10), pars, ub, lb, init.val, obs, method, 
                calib.metric, os, target_fit, target_iter, nml_file, flag = c())
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#------------------------------------------------------------------------------#
 # 8a) Secchi
 file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('aed2/aed4_20200701_2DOCpools.nml', 'aed2/aed2_20200701_2DOCpools.nml', overwrite = TRUE)
@@ -829,30 +827,6 @@ run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,1,10), pars,
 
 
 
-# 9) chlorophyll- my attempt!
-file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed2/aed4_20200612_2DOCpools.nml', 'aed2/aed2_20200612_2DOCpools.nml', overwrite = TRUE)
-file.copy('aed2/aed4_phyto_pars_28June2019.nml', 'aed2/aed2_phyto_pars_28June2019.nml', overwrite = TRUE)
-var = 'PHY_TCHLA'
-calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
-cal_pars = calib
-#Reload ub, lb for calibration
-pars <- cal_pars$par
-ub <- cal_pars$ub
-lb <- cal_pars$lb
-#Create initial files
-#init.val <- rep(5, nrow(cal_pars))
-init.val <- (c(0.01) - lb) *10 /(ub-lb) # EDIT THESE
-obs <- read_field_obs('field_data/field_chem.csv', var)
-#obs$PHS_frp <- obs$PHS_frp * 1000/31
-method = 'cmaes'
-calib.metric = 'RMSE'
-os = "Compiled"
-target_fit = -Inf#2.50 * 1000/32
-target_iter = 25#1000*length(init.val)^2
-nml_file = 'aed2/aed2_phyto_pars_28June2019.nml'
-run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,100,10), pars, ub, lb, init.val, obs, method, 
-               calib.metric, os, target_fit, target_iter, nml_file, flag = c())
 
 
 
