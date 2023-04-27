@@ -59,8 +59,21 @@ plot(precip$time, precip$precip)
 outflow<-read.csv("inputs/BVR_spillway_outflow_2015_2019_metInflow.csv", header=T)
 inflow_weir<-read.csv("inputs/BVR_inflow_2015_2021_allfractions_2poolsDOC_withch4_metInflow.csv", header=T)
 
+#scale docr by 2 becuase too low
+inflow_scaled <- inflow_weir
+inflow_scaled$OGM_docr <- inflow_weir$OGM_docr * 2
+
+#save as new inflow file
+#write.csv(inflow_scaled,"inputs/BVR_inflow_2015_2021_allfractions_2poolsDOC_withch4_metInflow_2xdocr.csv", row.names = FALSE)
+
+inflow_weir<-read.csv("inputs/BVR_inflow_2015_2021_allfractions_2poolsDOC_withch4_metInflow_2xdocr.csv", header=T)
+
 outflow$time<-as.POSIXct(strptime(outflow$time, "%Y-%m-%d", tz="EST"))
 inflow_weir$time<-as.POSIXct(strptime(inflow_weir$time, "%Y-%m-%d", tz="EST"))
+
+#plot modeled docr with scaled inflows
+plot(inflow_weir$time, inflow_weir$OGM_docr, type="l")
+
 
 # Scaled to inflow_scaling (as of 20200702 = 1.05)
 plot(inflow_weir$time,inflow_weir$FLOW*1.05)
@@ -70,6 +83,8 @@ volume$time<-as.POSIXct(strptime(volume$time, "%Y-%m-%d", tz="EST"))
 wrt<-merge(volume, outflow, by='time')
 wrt$wrt <- ((wrt$Tot_V)/(wrt$FLOW))*(1/60)*(1/60)*(1/24) #residence time in days
 plot(wrt$time,wrt$wrt)
+
+plot(volume$time,volume$Tot_V)
 
 hist(wrt$wrt)
 median(wrt$wrt)

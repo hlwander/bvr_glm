@@ -26,7 +26,7 @@ nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file
 #######################################################
 var='OGM_docr'
 
-obs<-read.csv('field_data/field_chem_2DOCpools_docr_scaled.csv', header=TRUE) %>% #read in observed chemistry data
+obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
   na.omit()

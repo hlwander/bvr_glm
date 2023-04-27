@@ -677,7 +677,7 @@ x0 <- calib$x0
 lb <- calib$lb
 ub <- calib$ub
 pars <- calib$par
-obs <- read_field_obs('field_data/field_chem_2DOCpools_docr_scaled.csv', var)
+obs <- read_field_obs('field_data/field_chem_2DOCpools.csv', var)
 obs <- completeFun(obs, 'OGM_docr')
 nml_file = 'aed2/aed2_bvr.nml'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
@@ -695,7 +695,7 @@ lb <- cal_pars$lb
 #Create initial files
 #init.val <- rep(5, nrow(cal_pars))
 init.val <- (c(0.01, 0.001) - lb) *10 /(ub-lb) # EDIT THESE
-obs <- read_field_obs('field_data/field_chem_2DOCpools_docr_scaled.csv', var)
+obs <- read_field_obs('field_data/field_chem_2DOCpools.csv', var)
 #obs$PHS_frp <- obs$PHS_frp * 1000/31
 method = 'cmaes'
 calib.metric = 'RMSE'
