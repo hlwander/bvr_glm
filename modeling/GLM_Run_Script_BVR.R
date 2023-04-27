@@ -167,7 +167,7 @@ depths<- c(0.1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
 #plot_var_compare(nc_file,field_file,var_name = var, precision="days",col_lim = c(0,1000)) #compare obs vs modeled
 
 #get modeled oxygen concentrations for focal depths
-mod_oxy <- get_var(nc_file, "OXY_oxy", reference='surface', z_out=depths) #%>%
+mod_oxy <- get_var(nc_file, "OXY_oxy", reference='surface', z_out=depths) %>%
   pivot_longer(cols=starts_with("OXY_oxy_"), names_to="Depth", names_prefix="OXY_oxy_", values_to = "OXY_oxy") %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) 
 
@@ -176,7 +176,7 @@ oxy_compare <- merge(mod_oxy, obs_oxy, by=c("DateTime","Depth")) %>%
   rename(mod_oxy = OXY_oxy.x, obs_oxy = OXY_oxy.y)
 for(i in 1:length(unique(oxy_compare$Depth))){
   tempdf<-subset(oxy_compare, oxy_compare$Depth==depths[i])
-  plot(tempdf$DateTime,tempdf$obs_oxy, type='l', col='red',
+  plot(tempdf$DateTime,tempdf$obs_oxy, type='p', col='red',
        ylab='Oxygen mmol/m3', xlab='time',
        main = paste0("Obs=Red,Mod=Black,Depth=",depths[i]),ylim=c(0,600))
   points(tempdf$DateTime, tempdf$mod_oxy, type="l",col='black')
@@ -392,7 +392,7 @@ RMSE(mod,obs)
 #### ammonium #######
 
 var="NIT_amm"
-field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
+field_file <- file.path(sim_folder,'/field_data/field_chem_2DOCpools.csv') 
 
 obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
@@ -416,7 +416,7 @@ compare<-na.omit(compare)
 for(i in 1:length(depths)){
   tempdf<-subset(compare, compare$Depth==depths[i])
   if(nrow(tempdf)>1){
-    plot(tempdf$DateTime,eval(parse(text=paste0("tempdf$",var,".y"))), type='l', col='red',
+    plot(tempdf$DateTime,eval(parse(text=paste0("tempdf$",var,".y"))), type='p', col='red',
          ylab=var, xlab='time',
          main = paste0("Obs=Red,Mod=Black,Depth=",depths[i]))
     points(tempdf$DateTime, eval(parse(text=paste0("tempdf$",var,".x"))), type="l",col='black')
@@ -449,9 +449,9 @@ RMSE(mod,obs)
 #### nitrate #########################################
 
 var="NIT_nit"
-field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
+field_file <- file.path(sim_folder,'/field_data/field_chem_2DOCpools.csv') 
 
-obs<-read.csv('field_data/field_chem.csv', header=TRUE) %>% #read in observed chemistry data
+obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
   na.omit()
@@ -507,7 +507,7 @@ RMSE(mod,obs)
 var="PHS_frp"
 field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
 
-obs<-read.csv('field_data/field_chem.csv', header=TRUE) %>% #read in observed chemistry data
+obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
   na.omit()
@@ -564,7 +564,7 @@ RMSE(mod,obs)
 var="OGM_docr"
 field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
 
-obs<-read.csv('field_data/field_chem.csv', header=TRUE) %>% #read in observed chemistry data
+obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
   na.omit()
@@ -618,13 +618,22 @@ RMSE(mod,obs)
 #######################################################
 #### dissolved organic carbon: labile ###########
 
-var="OGM_doc"
-field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
+var="OGM_docr"
 
-obs<-read.csv('field_data/field_chem.csv', header=TRUE) %>% #read in observed chemistry data
+obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
   na.omit()
+
+obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE)
+
+#scale doc values up by 2 bc having a hard time matching modeled to observed
+docr_scaled <- obs[,c(1:6,8)]
+docr_scaled$OGM_docr <- obs$OGM_docr *2
+
+#save new doc file
+#write.csv(docr_scaled, "field_data/field_chem_2DOCpools_docr_scaled.csv", row.names = FALSE)
+
 
 #plot_var_compare(nc_file,field_file,var_name = var, precision="days",col_lim = c(0,400)) #compare obs vs modeled
 

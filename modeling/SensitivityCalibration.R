@@ -570,7 +570,7 @@ obs <- completeFun(obs, 'PHS_frp')
 nml_file = 'aed/aed2_bvr.nml'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
-# 6) phosphate
+#phosphorus CALIBRATION
 file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('aed/aed4.nml', 'aed/aed2.nml', overwrite = TRUE)
 var = 'PHS_frp'
@@ -677,7 +677,7 @@ x0 <- calib$x0
 lb <- calib$lb
 ub <- calib$ub
 pars <- calib$par
-obs <- read_field_obs('field_data/field_chem_2DOCpools.csv', var)
+obs <- read_field_obs('field_data/field_chem_2DOCpools_docr_scaled.csv', var)
 obs <- completeFun(obs, 'OGM_docr')
 nml_file = 'aed2/aed2_bvr.nml'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
@@ -695,7 +695,7 @@ lb <- cal_pars$lb
 #Create initial files
 #init.val <- rep(5, nrow(cal_pars))
 init.val <- (c(0.01, 0.001) - lb) *10 /(ub-lb) # EDIT THESE
-obs <- read_field_obs('field_data/field_chem.csv', var)
+obs <- read_field_obs('field_data/field_chem_2DOCpools_docr_scaled.csv', var)
 #obs$PHS_frp <- obs$PHS_frp * 1000/31
 method = 'cmaes'
 calib.metric = 'RMSE'
@@ -1006,14 +1006,14 @@ ggsave(file=paste0('results/deps_obs_oxy_',filename,'.pdf'), g4, dpi = 300,width
 
 
 # VERIFICATION
-source('Scripts/functions-glm.R')
+source('modeling/functions-glm.R')
 var_dep = 5
 
 var = 'OXY_oxy'
 mult = 1000/32
 var_unit = 'mg/L'#'mmol/m3'
-g3 <- compare_depths(read_field_obs('field_data/field_BVR.csv', var), 
-                     mod2obs(out, read_field_obs('field_data/field_BVR.csv', var), 
+g3 <- compare_depths(read_field_obs('field_data/CleanedObsOxy.csv', var), 
+                     mod2obs(out, read_field_obs('field_data/CleanedObsOxy.csv', var), 
                              reference = 'surface', var), var_dep, var,var_unit,mult); g3
 ggsave(file=paste0('results/surf_',var,'_',var_dep,'.png'), g3, dpi = 300,width = 484,height = 116, units = 'mm')
 

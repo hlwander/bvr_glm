@@ -24,10 +24,9 @@ nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file
 
 
 #######################################################
-var='PHS_frp'
-field_file <- file.path(sim_folder,'/field_data/field_chem_2DOCpools.csv') 
+var='OGM_docr'
 
-obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
+obs<-read.csv('field_data/field_chem_2DOCpools_docr_scaled.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
   na.omit()
@@ -48,7 +47,7 @@ mod<- get_var(nc_file, var, reference="surface", z_out=depths) %>%
 #  select(DateTime, Depth, "OXY_oxy") %>%
 #  na.omit()
 
-#ggplot(subset(mod, Depth==0), aes(DateTime, SIL_rsi)) + geom_point() + theme_bw() + ggtitle("0.1 m")
+ggplot(subset(mod, Depth==9), aes(DateTime, OGM_docr)) + geom_point() + theme_bw() + ggtitle("9 m")
 #ggplot(subset(mod, Depth==4), aes(DateTime, SIL_rsi)) + geom_point() + theme_bw() + ggtitle("4 m")
 #ggplot(subset(mod, Depth==8), aes(DateTime, SIL_rsi)) + geom_point() + theme_bw() + ggtitle("8 m")
 #ggplot(subset(mod, Depth==12), aes(DateTime, SIL_rsi)) + geom_point() + theme_bw() + ggtitle("12 m")
