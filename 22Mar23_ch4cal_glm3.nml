@@ -45,7 +45,7 @@
 &time
    timefmt = 2
    start = '2015-07-07 12:00:00'
-   stop = '2019-12-31 12:00:00'
+   stop = '2022-05-04 12:00:00'
    dt = 3600
    num_days = 1
    timezone = -5
@@ -79,7 +79,7 @@
    rad_mode = 1
    albedo_mode = 1
    cloud_mode = 4
-   meteo_fl = 'inputs/met_avg_filtered.csv'
+   meteo_fl = 'inputs/met.csv' !precip units m/day
    subdaily = .true.
    wind_factor = 1
    sw_factor = 1.223825
@@ -102,7 +102,7 @@
    strmbd_slope = 0.05
    strmbd_drag = 0.03
    inflow_factor = 1
-   inflow_fl = 'inputs/BVR_inflow_2015_2021_allfractions_2poolsDOC_withch4_metInflow_2xdocr.csv'
+   inflow_fl = 'inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow.csv'
    inflow_varnum = 19
    inflow_vars = 'FLOW','TEMP','SALT','OXY_oxy','NIT_amm','NIT_nit','PHS_frp','OGM_doc','OGM_docr','OGM_poc','OGM_don','OGM_donr','OGM_pon','OGM_dop','OGM_dopr','OGM_pop','CAR_dic','CAR_ch4','SIL_rsi'
 /
@@ -112,7 +112,7 @@
    outl_elvs = 585.7
    bsn_len_outl = 855.03
    bsn_wid_outl = 55.96
-   outflow_fl = 'inputs/BVR_spillway_outflow_2015_2019_metInflow.csv'
+   outflow_fl = 'inputs/BVR_spillway_outflow_2015_2022_metInflow.csv'
    outflow_factor = 1
 /
 &snowice
