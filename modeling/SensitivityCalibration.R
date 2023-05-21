@@ -33,10 +33,10 @@ par(mfrow=c(1,1))
 water_level<-get_surface_height(nc_file, ice.rm = TRUE, snow.rm = TRUE)
 
 # Read in and plot water level observations
-wlevel <- read_csv("./Data_Output/09Apr20_BVR_WaterLevelDailyVol.csv")
-wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%m/%d/%Y", tz="EST"))
+wlevel <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2009_2022.csv") %>% select(-(...1))
+wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%Y-%m-%d", tz="EST"))
 wlevel <- wlevel %>% 
-  dplyr::filter(Date>as.POSIXct("2015-07-09") & Date<as.POSIXct("2020-01-01"))
+  dplyr::filter(Date>as.POSIXct("2015-07-09") & Date<as.POSIXct("2022-05-04"))
 
 plot(water_level$DateTime,water_level$surface_height)
 points(wlevel$Date, wlevel$BVR_WaterLevel_m, type="l",col="red")

@@ -247,13 +247,13 @@ write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_wi
 # Load in water level + volume data for BVR
 # Calculated using WVWA + Carey Lab BVR water level observations and joined DEM + 2018 Bathymetry survey
 # See: BVR_Volume script for Matlab
-vol <- read_csv("./Data_Output/09Apr20_BVR_WaterLevelDailyVol.csv")
-vol$Date <- as.POSIXct(strptime(vol$Date, "%m/%d/%Y", tz = "EST"))
+vol <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2009_2022.csv") %>% select(-(...1))
+vol$Date <- as.POSIXct(strptime(vol$Date, "%Y-%m-%d", tz = "EST"))
 
-vol1 <- vol %>% filter(Date>=as.Date('2015-07-06')&Date<=as.Date('2019-12-30')) %>% select(Date,BVR_Vol_m3)
-vol2 <- vol %>% filter(Date>=as.Date('2015-07-07')&Date<=as.Date('2019-12-31')) %>% select(Date,BVR_Vol_m3)
+vol1 <- vol %>% filter(Date>=as.Date('2015-07-06')&Date<=as.Date('2022-05-03')) %>% select(Date,BVR_Vol_m3)
+vol2 <- vol %>% filter(Date>=as.Date('2015-07-07')&Date<=as.Date('2022-05-04')) %>% select(Date,BVR_Vol_m3)
 
-dvol <- vol %>% filter(Date>=as.Date('2015-07-07')&Date<=as.Date('2019-12-31')) %>% select(Date)
+dvol <- vol %>% filter(Date>=as.Date('2015-07-07')&Date<=as.Date('2022-05-04')) %>% select(Date)
 
 # Calculate dVol/dt by vol2-vol1/s
 vol3 <- as.data.frame((vol2$BVR_Vol_m3 - vol1$BVR_Vol_m3)/(24*60*60))
@@ -303,7 +303,7 @@ ggplot()+
 outflow$time <- outflow$time +  hours(12) + minutes(00) + seconds(00)
 
 #write file
-write.csv(outflow, "./inputs/BVR_spillway_outflow_2015_2019_metInflow.csv", row.names=F)
+write.csv(outflow, "./inputs/BVR_spillway_outflow_2015_2022_metInflow.csv", row.names=F)
   
 
 
