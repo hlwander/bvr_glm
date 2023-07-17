@@ -816,7 +816,7 @@ run_calibvalid <- function(var, var_unit, var_seq, cal_pars, pars, ub, lb, init.
   # }
 
   calibration.list <- list("start" = '2015-07-07 12:00:00',
-                           "stop" = '2018-07-07 12:00:00')  #EDIT THIS!
+                           "stop" = '2020-12-31 12:00:00')  #EDIT THIS!
   nml <- read_nml('glm3.nml')
   nml <- set_nml(nml, arg_list = calibration.list)
   write_nml(nml, 'glm3.nml')
@@ -922,8 +922,8 @@ it <- 1
   dev.off()
   
   
-  validation.list <- list("start" = '2018-07-08 12:00:00',
-                          "stop" = '2019-12-31 12:00:00') # EDITED THIS
+  validation.list <- list("start" = '2021-01-01 12:00:00',
+                          "stop" = '2022-05-03 12:00:00') # EDITED THIS
   nml <- read_nml('glm3.nml')
   nml <- set_nml(nml, arg_list = validation.list)
   write_nml(nml, 'glm3.nml')
@@ -938,7 +938,7 @@ it <- 1
   dev.off()
   
   
-  total.list <- list("start" = '2015-07-07 12:00:00', "stop" = '2019-12-31 12:00:00') #EDIT THIS!
+  total.list <- list("start" = '2015-07-07 12:00:00', "stop" = '2022-05-03 12:00:00') #EDIT THIS!
                 #EDITED THIS
                 #list("start" = '1980-04-01 00:00:00',
                 #     "stop" = '2015-12-31 00:00:00')

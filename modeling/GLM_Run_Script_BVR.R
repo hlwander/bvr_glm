@@ -36,13 +36,16 @@ plot_temp(nc_file)
 water_level<-get_surface_height(nc_file, ice.rm = TRUE, snow.rm = TRUE)
 
 # Read in and plot water level observations
-wlevel <- read_csv("./Data_Output/09Apr20_BVR_WaterLevelDailyVol.csv")
+wlevel <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022.csv") |> select(-...1)
   
-wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%m/%d/%Y", tz="EST"))
-wlevel <- wlevel %>% filter(Date>as.POSIXct("2015-07-10") & Date<as.POSIXct("2020-01-01"))
+wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%Y-%m-%d", tz="EST"))
+wlevel <- wlevel %>% filter(Date>as.POSIXct("2015-07-06") & Date<as.POSIXct("2022-05-03"))
 
 plot(water_level$DateTime,water_level$surface_height)
-points(wlevel$Date, wlevel$BVR_WaterLevel_m, type="l",col="red")
+points(wlevel$Date, wlevel$WaterLevel_m, type="l",col="red")
+
+#calculate RMSE
+RMSE(water_level$surface_height,wlevel$WaterLevel_m)
 
 #get WRT
 volume<-get_var(nc_file, "Tot_V", reference="surface") #in m3
@@ -52,12 +55,15 @@ colnames(volume)[1]<-"time"
 colnames(precip)[1]<-"time"
 colnames(evap)[1]<-"time"
 plot(volume$time, volume$Tot_V)
-points(wlevel$Date, wlevel$BVR_Vol_m3, type="l",col="red")
+points(wlevel$Date, wlevel$vol_m3, type="l",col="red")
 plot(evap$time, evap$evap)
 plot(precip$time, precip$precip)
 
-outflow<-read.csv("inputs/BVR_spillway_outflow_2015_2019_metInflow.csv", header=T)
-inflow_weir<-read.csv("inputs/BVR_inflow_2015_2021_allfractions_2poolsDOC_withch4_metInflow.csv", header=T)
+outflow<-read.csv("inputs/BVR_spillway_outflow_2015_2022_metInflow.csv", header=T)
+inflow_weir<-read.csv("inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow.csv", header=T)
+
+#plot inflow temp
+plot(as.Date(inflow_weir$time), inflow_weir$TEMP, type="l")
 
 #scale docr by 2 becuase too low
 inflow_scaled <- inflow_weir
@@ -72,7 +78,7 @@ outflow$time<-as.POSIXct(strptime(outflow$time, "%Y-%m-%d", tz="EST"))
 inflow_weir$time<-as.POSIXct(strptime(inflow_weir$time, "%Y-%m-%d", tz="EST"))
 
 #plot modeled docr with scaled inflows
-plot(inflow_weir$time, inflow_weir$OGM_docr, type="l")
+plot(as.Date(inflow_weir$time), inflow_weir$OGM_docr, type="l")
 
 
 # Scaled to inflow_scaling (as of 20200702 = 1.05)
@@ -828,9 +834,12 @@ plot(phytos$DateTime, phytos$PHY_AGGREGATE_0.1, col="cyan", type="l", ylab="Phyt
 #######################################################
 #### ancillary code #######
 
+secchi_obs <- read.csv("./field_data/field_secchi.csv")
+
 #plot Secchi depth & light extinction
 lec <- get_var(file=nc_file,var_name = 'extc_coef',z_out=1,reference = 'surface')
 plot(lec$DateTime, 1.7/lec$extc_coef_1)
+points(as.POSIXct(secchi_obs$DateTime), secchi_obs$Secchi_m, col="red", type="l")
 plot(lec$DateTime, lec$extc_coef_1)
 
 #see what vars are available for diagnostics
@@ -843,24 +852,13 @@ plot(pH$DateTime, pH$CAR_pH_0.1)
 DICish <- get_var(file=nc_file,var_name = 'CAR_dic',z_out=0.1,reference = 'surface') 
 plot(DICish$DateTime, DICish$CAR_dic_0.1)
 
-#plot to make SSS oxygen addition 
-inflow<-read.csv("FCR_SSS_inflow_2013_2017_20181001.csv", header=TRUE)
-inflow$time<-as.POSIXct(strptime(inflow$time, "%Y-%m-%d", tz="EST")) 
-par(mar = c(5,5,2,5))
-plot(inflow$time,inflow$OXY_oxy, type='l', ylab="BLACK: Oxygen added by SSS (mmol/m3 added every day)",lwd=2)
-par(new = T)
-with(inflow, plot(time, FLOW, axes=F, xlab=NA, ylab=NA, type='l', col="red", lwd=1, cex=1.2))
-axis(side = 4)
-mtext(side = 4, line = 3, 'RED: Flow rate of SSS (m3/day)')
-
-
 #Particulate organic P
 pop9 <- get_var(file=nc_file,var_name = 'OGM_pop',z_out=9,reference = 'surface') 
 plot(pop9$DateTime, pop9$OGM_pop_9, ylim=c(0,0.5))
 
 get_var(file=nc_file,var_name = 'CAR_atm_ch4_flux',reference = "bottom",z_out = 1) #, z_out=1, reference='surface')
 
-nc<-nc_open("output.nc")
+nc<-nc_open("output/output.nc")
 names(nc$var)#get list of variables in data
 names(nc$dim)#get list of variables in data
 time <- ncvar_get(nc, 'time')

@@ -1,43 +1,28 @@
 &aed_models
-   models = 
-   'aed_sedflux',
-   'aed_tracer',
-   'aed_noncohesive',
-   'aed_oxygen',
-   'aed_carbon',
-   'aed_silica',
-   'aed_nitrogen',
-   'aed_phosphorus',
-   'aed_organic_matter',
-   'aed_phytoplankton',
-   'aed_totals'
+   models = 'aed_sedflux',
+            'aed_tracer',
+            'aed_noncohesive',
+            'aed_oxygen',
+            'aed_carbon',
+            'aed_silica',
+            'aed_nitrogen',
+            'aed_phosphorus',
+            'aed_organic_matter',
+            'aed_phytoplankton',
+            'aed_totals'
 /
 &aed_sedflux
    sedflux_model = 'Constant2D'
 /
 &aed_sed_const2d
-   n_zones = 4
-   active_zones = 1, 2, 3, 4
-   Fsed_oxy = -44,-10, -10, -10
-   !Fsed_oxy = -32.76435121, -5.203754493, -0.181529858
-   Fsed_ch4 = 15, 15, 15, 232.6331575
-   Fsed_amm =  2.848790019, 1.0, 1.0, 1.0 !2.848790019, 1.7, 0.5, 1.59739687  !1,0.1,1
-   !Fsed_amm =  2.848790019, 2.848790019, 2.848790019, 1.59739687!1,0.1,1
-   Fsed_nit = -0.01,-0.001,-0.001,-0.0001
-   !Fsed_nit = -0.13, -0.13, -0.13, -0.001
-   !Fsed_frp = 0.009,0.009, 0.04, 0.25
-   Fsed_frp = 0.0048, 0.0048, 0.001, 0.25
+   n_zones = 2
+   active_zones = 1, 2
+   Fsed_oxy = -44,-10
+   Fsed_ch4 = 15, 232.6331575
+   Fsed_amm =  2.848790019, 1.0
+   Fsed_nit = -0.01, -0.0001
+   Fsed_frp = 0.0048, 0.25
 /
-!&aed_sed_const2d
-!   n_zones = 3
-!   active_zones = 1, 2, 3
-!   Fsed_oxy = -28, -7, -1
-!   !Fsed_oxy = -32.76435121, -5.203754493, -0.181529858
-!   Fsed_ch4 = 15, 15, 232.6331575
-!   Fsed_amm = 2.848790019, 2.848790019, 1.59739687!1,0.1,1
-!   Fsed_nit = -0.13, -0.13, -0.001
-!   Fsed_frp = 0.0048, 0.001, 0.25
-!/
 &aed_tracer
    retention_time = .true.
    num_tracers = 1
@@ -224,8 +209,6 @@
    si_uptake_target_variable = 'SIL_rsi'
    do_uptake_target_variable = 'OXY_oxy'
    c_uptake_target_variable = 'CAR_dic'
-   !dbase = 'aed/aed2_phyto_pars_28April2022_constant.nml'
-   !dbase = 'aed/aed2_phyto_pars_20April2022_constant.nml'
    dbase = 'aed/aed2_phyto_pars_2May2022_RQT.nml'
    diag_level = 10
    min_rho = 900

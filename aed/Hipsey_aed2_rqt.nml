@@ -1,5 +1,5 @@
 &aed_models
-   models = 
+   models =
    'aed_sedflux',
    'aed_tracer',
    'aed_noncohesive',
@@ -18,7 +18,8 @@
 &aed_sed_const2d
    n_zones = 4
    active_zones = 1, 2, 3, 4
-   Fsed_oxy = -44,-10, -10, -10
+   Fsed_oxy = -30.33179875153638, -18.33995016351665, -11.27437907196032, -12.51679495174718
+   !Fsed_oxy = -29.29916397869219, -21.66869075617110, -16.39155735828627, -10.90665072320945
    !Fsed_oxy = -32.76435121, -5.203754493, -0.181529858
    Fsed_ch4 = 15, 15, 15, 232.6331575
    Fsed_amm =  2.848790019, 1.0, 1.0, 1.0 !2.848790019, 1.7, 0.5, 1.59739687  !1,0.1,1
@@ -58,8 +59,8 @@
 &aed_oxygen
    oxy_initial = 225
    Fsed_oxy = -10
-   Ksed_oxy = 25
-   theta_sed_oxy = 1.08
+   Ksed_oxy = 33.70992183856151
+   theta_sed_oxy = 1.104420727921303
    Fsed_oxy_variable = 'SDF_Fsed_oxy'
    oxy_min = 0
    oxy_max = 500
@@ -158,7 +159,7 @@
    donr_initial = 9
    dopr_initial = 0.15
    cpom_initial = 0
-   Rdom_minerl = 0.01348416
+   Rdom_minerl = 0.013
    Rpoc_hydrol = 0.001
    Rpon_hydrol = 0.001
    Rpop_hydrol = 1e-04
@@ -224,9 +225,7 @@
    si_uptake_target_variable = 'SIL_rsi'
    do_uptake_target_variable = 'OXY_oxy'
    c_uptake_target_variable = 'CAR_dic'
-   !dbase = 'aed/aed2_phyto_pars_28April2022_constant.nml'
-   !dbase = 'aed/aed2_phyto_pars_20April2022_constant.nml'
-   dbase = 'aed/aed2_phyto_pars_2May2022_RQT.nml'
+   dbase = 'aed/aed2_phyto_pars_hipsey_rqt.nml'
    diag_level = 10
    min_rho = 900
    max_rho = 1200
@@ -246,43 +245,43 @@
    mag_link_variable = ''
    root_link_variable = ''
 /
-&aed_sed_candi
-   spinup_days = 90
-   spinup_dt = 0.25
-   driver_dt = 900
-   substep = 8
-   n_zones = 1
-   active_zones = 0
-   zone_types = 1
-   dbase = 'aed/aed_candi_params.csv'
-   vars_files = 'aed/aed_sdg_vars.csv'
-   geochem_file = 'aed/aed_geochem_pars.dat'
-   swibc_mode = 0
-   deepbc_mode = 1
-   swibc_file = 'aed/aed_sediment_swibc.dat'
-   deepbc_file = 'aed/aed_sediment_deepbc.dat'
-   swibc_filevars = ''
-   deepbc_filevars = ''
-   flux_scale = 1
-   SolidInitialUnit = 'mmolLsolid'
-   OMInitMethodL = 'LI_I'
-   OM_topL = 1
-   OM_minL = 0.9
-   OM_cfL = 0.6
-   InitMinDepthL = 99
-   OMInitMethodR = 'LI_I'
-   OM_topR = 1
-   OM_minR = 0.9
-   OM_cfR = 0.6
-   InitMinDepthR = 99
-   POMVR = 0.3
-   diag_level = 10
-   output_profiles = NA
-   morevariables = 'Rgpp','Rrsp','FO2'
-   output_diag_vars = 'oxy','amm','docl','docr'
-   n_ddpths = 1
-   output_diag_depths = 1
-/
+!&aed_sed_candi
+!   spinup_days = 90
+!   spinup_dt = 0.25
+!   driver_dt = 900
+!   substep = 8
+!   n_zones = 1
+!   active_zones = 0
+!   zone_types = 1
+!   dbase = 'aed/aed_candi_params.csv'
+!   vars_files = 'aed/aed_sdg_vars.csv'
+!   geochem_file = 'aed/aed_geochem_pars.dat'
+!   swibc_mode = 0
+!   deepbc_mode = 1
+!   swibc_file = 'aed/aed_sediment_swibc.dat'
+!   deepbc_file = 'aed/aed_sediment_deepbc.dat'
+!   swibc_filevars = ''
+!   deepbc_filevars = ''
+!   flux_scale = 1
+!   SolidInitialUnit = 'mmolLsolid'
+!   OMInitMethodL = 'LI_I'
+!   OM_topL = 1
+!   OM_minL = 0.9
+!   OM_cfL = 0.6
+!   InitMinDepthL = 99
+!   OMInitMethodR = 'LI_I'
+!   OM_topR = 1
+!   OM_minR = 0.9
+!   OM_cfR = 0.6
+!   InitMinDepthR = 99
+!   POMVR = 0.3
+!   diag_level = 10
+!   output_profiles = NA
+!   morevariables = 'Rgpp','Rrsp','FO2'
+!   output_diag_vars = 'oxy','amm','docl','docr'
+!   n_ddpths = 1
+!   output_diag_depths = 1
+!/
 &aed_zooplankton
    num_zoops = 1
    the_zoops = 1

@@ -8,7 +8,7 @@
 /
 &wq_setup
    wq_lib = 'aed'
-   wq_nml_file = 'aed/22Mar23_ch4cal_aed2.nml'
+   wq_nml_file = 'aed/aed2.nml'
    ode_method = 1
    split_factor = 1
    bioshade_feedback = .true.
@@ -45,7 +45,7 @@
 &time
    timefmt = 2
    start = '2015-07-07 12:00:00'
-   stop = '2022-05-04 12:00:00'
+   stop = '2022-05-03 12:00:00' !'2020-12-31'
    dt = 3600
    num_days = 1
    timezone = -5
@@ -82,8 +82,8 @@
    meteo_fl = 'inputs/met.csv' !precip units m/day
    subdaily = .true.
    wind_factor = 1
-   sw_factor = 1.223825
-   lw_factor = 0.75206
+   sw_factor = 1.24!1.223825
+   lw_factor = 0.87!0.75206
    at_factor = 1
    rh_factor = 1
    rain_factor = 1
@@ -102,7 +102,7 @@
    strmbd_slope = 0.05
    strmbd_drag = 0.03
    inflow_factor = 1
-   inflow_fl = 'inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow.csv'
+   inflow_fl = 'inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.99X.csv'
    inflow_varnum = 19
    inflow_vars = 'FLOW','TEMP','SALT','OXY_oxy','NIT_amm','NIT_nit','PHS_frp','OGM_doc','OGM_docr','OGM_poc','OGM_don','OGM_donr','OGM_pon','OGM_dop','OGM_dopr','OGM_pop','CAR_dic','CAR_ch4','SIL_rsi'
 /
@@ -112,7 +112,7 @@
    outl_elvs = 585.7
    bsn_len_outl = 855.03
    bsn_wid_outl = 55.96
-   outflow_fl = 'inputs/BVR_spillway_outflow_2015_2022_metInflow.csv'
+   outflow_fl = 'inputs/BVR_spillway_outflow_2015_2022_metInflow_0.9917X.csv'
    outflow_factor = 1
 /
 &snowice
@@ -127,7 +127,7 @@
    zone_heights = 6.7, 13.3
    sed_heat_Ksoil = 1.8, 1.8
    sed_temp_depth = 0.2, 0.2
-   sed_temp_mean = 10.3196967547935, 19.9832195865172
-   sed_temp_amplitude = 4, 10
-   sed_temp_peak_doy = 270, 270
+   sed_temp_mean = 9.9, 25! 10.3196967547935, 19.9832195865172
+   sed_temp_amplitude = 5.4, 10
+   sed_temp_peak_doy = 253, 270
 /

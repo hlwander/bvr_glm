@@ -11,8 +11,14 @@ print(nml)
 print(aed)
 print(aed_phytos)
 
-file.copy('22Mar23_ch4cal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed/22Mar23_ch4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
+#file.copy('22Mar23_ch4cal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+#file.copy('aed/22Mar23_ch4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
+
+#file.copy('Hipsey_glm3_rqt.nml', 'glm3.nml', overwrite = TRUE)
+#file.copy('aed/Hipsey_aed2_rqt.nml', 'aed/aed2.nml', overwrite = TRUE)
+
+file.copy('15Jul23_diccal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed/15Jul23_diccal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
 
 #run the model!
 system2(paste0(sim_folder,"/glm+.app/Contents/MacOS/glm+"), stdout = TRUE, stderr = TRUE, env = paste0("DYLD_LIBRARY_PATH=",sim_folder, "/glm+.app/Contents/MacOS"))
@@ -24,9 +30,9 @@ nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file
 
 
 #######################################################
-var='OGM_docr'
+var='temp'
 
-obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
+obs<-read.csv('field_data/CleanedObsTemp.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
   na.omit()
@@ -47,7 +53,7 @@ mod<- get_var(nc_file, var, reference="surface", z_out=depths) %>%
 #  select(DateTime, Depth, "OXY_oxy") %>%
 #  na.omit()
 
-ggplot(subset(mod, Depth==9), aes(DateTime, OGM_docr)) + geom_point() + theme_bw() + ggtitle("9 m")
+#ggplot(subset(mod, Depth==9), aes(DateTime, OGM_docr)) + geom_point() + theme_bw() + ggtitle("9 m")
 #ggplot(subset(mod, Depth==4), aes(DateTime, SIL_rsi)) + geom_point() + theme_bw() + ggtitle("4 m")
 #ggplot(subset(mod, Depth==8), aes(DateTime, SIL_rsi)) + geom_point() + theme_bw() + ggtitle("8 m")
 #ggplot(subset(mod, Depth==12), aes(DateTime, SIL_rsi)) + geom_point() + theme_bw() + ggtitle("12 m")
@@ -64,6 +70,22 @@ for(i in 1:length(depths)){
     points(tempdf$DateTime, eval(parse(text=paste0("tempdf$",var,".x"))), type="l",col='black')
   }
 }
+
+RMSE = function(m, o){
+  sqrt(mean((m - o)^2))
+}
+
+field_file<-file.path(sim_folder,'field_data/CleanedObsTemp.csv')
+
+temps <- resample_to_field(nc_file, field_file, precision="days", method='interp',
+                           var_name=var)
+temps<-temps[complete.cases(temps),]
+
+RMSE(temps[temps$Depth==c(9),4],
+     temps[temps$Depth==c(9),3])
+
+RMSE(temps[temps$Depth==c(0.1),4],
+     temps[temps$Depth==c(0.1),3])
 
 #------------------------------------------------------------------------------#
 #fit Michaelis-Menten function to data
@@ -85,8 +107,63 @@ for(i in 1:length(depths)){
 #  geom_line(data = mm$data, aes(x = S, y = fitted_v), colour = "red")
 #ksed_po4 range is proba between 1.7-2.4
 
+#------------------------------------------------------------------------------#
+#plot distribution of 9m temp obs
 
+var='temp'
 
+obs<-read.csv('field_data/CleanedObsTemp.csv', header=TRUE) %>% #read in observed chemistry data
+  dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
+  select(DateTime, Depth, var) %>%
+  na.omit()
 
+#add in a year col
+obs$year <- year(obs$DateTime)
 
+x <- hist(obs$temp[obs$Depth==9])
+median(obs$temp[obs$Depth==9])
+range(obs$temp[obs$Depth==9])
+mean(obs$temp[obs$Depth==9])
 
+plot(obs$temp[obs$Depth==9]~ obs$DateTime[obs$Depth==9])
+
+#create new df of 9m temp
+temp_9m <- obs[obs$Depth==9,]
+
+temp_9m$DateTime[temp_9m$temp == max(temp_9m$temp[temp_9m$year==2015])]    # 23 Oct 2015
+temp_9m$DateTime[temp_9m$temp == max(temp_9m$temp[temp_9m$year==2016])]    # 11 Nov 2016
+temp_9m$DateTime[temp_9m$temp == max(temp_9m$temp[temp_9m$year==2017])][1] # 7 Nov 2017
+temp_9m$DateTime[temp_9m$temp == max(temp_9m$temp[temp_9m$year==2018])]    # 2 Nov 2018
+temp_9m$DateTime[temp_9m$temp == max(temp_9m$temp[temp_9m$year==2019])]    # 6 Jun 2019
+temp_9m$DateTime[temp_9m$temp == max(temp_9m$temp[temp_9m$year==2020])][1] # 4 Jun 2020
+temp_9m$DateTime[temp_9m$temp == max(temp_9m$temp[temp_9m$year==2021])]    # 9 Aug 2021
+temp_9m$DateTime[temp_9m$temp == max(temp_9m$temp[temp_9m$year==2022])]
+
+#range of temps each year --> avg range = 10.9
+range(temp_9m$temp[temp_9m$year==2015]) # 1.5
+range(temp_9m$temp[temp_9m$year==2016]) # 6.2
+range(temp_9m$temp[temp_9m$year==2017]) # 6.4
+range(temp_9m$temp[temp_9m$year==2018]) # 6.5
+range(temp_9m$temp[temp_9m$year==2019]) # 18.7
+range(temp_9m$temp[temp_9m$year==2020]) # 15.5
+range(temp_9m$temp[temp_9m$year==2021]) # 21.4
+
+#----------------------------------------------------------------------#
+#look at inflow data to see why modeled temp peak looks so weird
+
+inflow <- read.csv('inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.99X.csv')
+outflow <- read.csv('inputs/BVR_spillway_outflow_2015_2022_metInflow_0.9917X.csv')
+
+plot(as.Date(inflow$time), inflow$FLOW)
+points(as.Date(outflow$time), outflow$FLOW, col="blue")
+
+plot(as.Date(inflow$time), inflow$TEMP)
+
+met <- read.csv('inputs/met.csv')
+
+plot(as.Date(met$time),met$AirTemp)
+plot(as.Date(met$time),met$ShortWave)
+plot(as.Date(met$time),met$LongWave)
+plot(as.Date(met$time),met$RelHum)
+plot(as.Date(met$time),met$WindSpeed)
+plot(as.Date(met$time),met$Rain)

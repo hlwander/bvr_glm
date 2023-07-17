@@ -1,43 +1,18 @@
 &aed_models
-   models = 
-   'aed_sedflux',
-   'aed_tracer',
-   'aed_noncohesive',
-   'aed_oxygen',
-   'aed_carbon',
-   'aed_silica',
-   'aed_nitrogen',
-   'aed_phosphorus',
-   'aed_organic_matter',
-   'aed_phytoplankton',
-   'aed_totals'
+   models = 'aed_sedflux','aed_tracer','aed_noncohesive','aed_oxygen','aed_carbon','aed_silica','aed_nitrogen','aed_phosphorus','aed_organic_matter','aed_phytoplankton','aed_totals'
 /
 &aed_sedflux
    sedflux_model = 'Constant2D'
 /
 &aed_sed_const2d
-   n_zones = 4
-   active_zones = 1, 2, 3, 4
-   Fsed_oxy = -44,-10, -10, -10
-   !Fsed_oxy = -32.76435121, -5.203754493, -0.181529858
-   Fsed_ch4 = 15, 15, 15, 232.6331575
-   Fsed_amm =  2.848790019, 1.0, 1.0, 1.0 !2.848790019, 1.7, 0.5, 1.59739687  !1,0.1,1
-   !Fsed_amm =  2.848790019, 2.848790019, 2.848790019, 1.59739687!1,0.1,1
-   Fsed_nit = -0.01,-0.001,-0.001,-0.0001
-   !Fsed_nit = -0.13, -0.13, -0.13, -0.001
-   !Fsed_frp = 0.009,0.009, 0.04, 0.25
-   Fsed_frp = 0.0048, 0.0048, 0.001, 0.25
+   n_zones = 2
+   active_zones = 1, 2
+   Fsed_oxy = -11.1956835719489, -1.00079329377236
+   Fsed_ch4 = 31, 1
+   Fsed_amm = 2.848790019, 0.3
+   Fsed_nit = -0.01, -1e-04
+   Fsed_frp = 0.05, 0.18
 /
-!&aed_sed_const2d
-!   n_zones = 3
-!   active_zones = 1, 2, 3
-!   Fsed_oxy = -28, -7, -1
-!   !Fsed_oxy = -32.76435121, -5.203754493, -0.181529858
-!   Fsed_ch4 = 15, 15, 232.6331575
-!   Fsed_amm = 2.848790019, 2.848790019, 1.59739687!1,0.1,1
-!   Fsed_nit = -0.13, -0.13, -0.001
-!   Fsed_frp = 0.0048, 0.001, 0.25
-!/
 &aed_tracer
    retention_time = .true.
    num_tracers = 1
@@ -56,19 +31,19 @@
    sed_porosity = 0.6
 /
 &aed_oxygen
-   oxy_initial = 225
+   oxy_initial = 200
    Fsed_oxy = -10
    Ksed_oxy = 25
-   theta_sed_oxy = 1.08
+   theta_sed_oxy = 0.51
    Fsed_oxy_variable = 'SDF_Fsed_oxy'
    oxy_min = 0
    oxy_max = 500
 /
 &aed_carbon
-   dic_initial = 91
-   Fsed_dic = 3!0.131348518!0.001
-   Ksed_dic = 98.87064869!100
-   theta_sed_dic = 1.197284209!1.199999
+   dic_initial = 60
+   Fsed_dic = 22!0.17
+   Ksed_dic = 0.6
+   theta_sed_dic = 0.87
    pH_initial = 6.2
    atm_co2 = 0.00041
    co2_model = 1
@@ -76,11 +51,11 @@
    ionic = 0.1
    co2_piston_model = 1
    ch4_initial = 5
-   Rch4ox = 0.2
-   Kch4ox = 0.2
-   vTch4ox = 1.2
-   Ksed_ch4 = 3.437
-   theta_sed_ch4 = 1.2
+   Rch4ox = 0.065
+   Kch4ox = 1
+   vTch4ox = 0.9
+   Ksed_ch4 = 2
+   theta_sed_ch4 = 1.09
    methane_reactant_variable = 'OXY_oxy'
    atm_ch4 = 1.76e-06
    ch4_piston_model = 1
@@ -97,8 +72,8 @@
    amm_initial = 2.6
    nit_initial = 0.1
    n2o_initial = 0.1
-   Rnitrif = 0.01358676
-   Knitrif = 62.02209
+   Rnitrif = 0.1
+   Knitrif = 9
    theta_nitrif = 1.08
    nitrif_reactant_variable = 'OXY_oxy'
    nitrif_ph_variable = ''
@@ -120,11 +95,11 @@
    theta_denit = 1.062862
    Rdnra = 0.01123021
    Kdnra_oxy = 0.360534
-   Ksed_amm = 41.25!30!74.02427825!30
+   Ksed_amm = 41.25
    Ksed_nit = 73.26015
    Fsed_n2o = 0
    Ksed_n2o = 100
-   theta_sed_amm = 1.068994!1.08
+   theta_sed_amm = 1.068994
    theta_sed_nit = 1.068994
    Fsed_amm = 1
    Fsed_nit = -0.05
@@ -133,7 +108,7 @@
 /
 &aed_phosphorus
    frp_initial = 0.05
-   Ksed_frp = 6.907107
+   Ksed_frp = 6.3
    theta_sed_frp = 1.06609
    phosphorus_reactant_variable = 'OXY_oxy'
    Fsed_frp_variable = 'SDF_Fsed_frp'
@@ -175,8 +150,8 @@
    f_an = 0.2063885
    K_nit = 10
    simRPools = .true.
-   Rdomr_minerl = 0.000102192
-   Rcpom_bdown = 0.05350772
+   Rdomr_minerl = 0.2
+   Rcpom_bdown = 0.7
    X_cpom_n = 0.005
    X_cpom_p = 0.001
    KeDOM = 0.005
@@ -198,7 +173,7 @@
    Xsc = 0.5
    Xsn = 0.05
    Xsp = 0.005
-   Fsed_doc = 0.1!1.408053
+   Fsed_doc = 2
    Fsed_don = 0
    Fsed_dop = 0
    Ksed_dom = 93.12891
@@ -224,8 +199,6 @@
    si_uptake_target_variable = 'SIL_rsi'
    do_uptake_target_variable = 'OXY_oxy'
    c_uptake_target_variable = 'CAR_dic'
-   !dbase = 'aed/aed2_phyto_pars_28April2022_constant.nml'
-   !dbase = 'aed/aed2_phyto_pars_20April2022_constant.nml'
    dbase = 'aed/aed2_phyto_pars_2May2022_RQT.nml'
    diag_level = 10
    min_rho = 900

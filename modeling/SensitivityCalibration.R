@@ -33,13 +33,13 @@ par(mfrow=c(1,1))
 water_level<-get_surface_height(nc_file, ice.rm = TRUE, snow.rm = TRUE)
 
 # Read in and plot water level observations
-wlevel <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2009_2022.csv") %>% select(-(...1))
+wlevel <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022.csv") %>% select(-(...1))
 wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%Y-%m-%d", tz="EST"))
 wlevel <- wlevel %>% 
-  dplyr::filter(Date>as.POSIXct("2015-07-09") & Date<as.POSIXct("2022-05-04"))
+  dplyr::filter(Date>as.POSIXct("2015-07-06") & Date<as.POSIXct("2022-05-04"))
 
 plot(water_level$DateTime,water_level$surface_height)
-points(wlevel$Date, wlevel$BVR_WaterLevel_m, type="l",col="red")
+points(wlevel$Date, wlevel$WaterLevel_m, type="l",col="red")
 
 # GET FIELD DATA FOR CALIBRATION AND VALIDATION  ---------------------------
 # WTR AND OXY DATA
@@ -64,9 +64,8 @@ gases$DateTime <-as.POSIXct(strptime(gases$DateTime, "%Y-%m-%d", tz="EST"))
 # 1) water temperature, following ISIMIP approach
 #first, copy & paste your glm3.nml and aed2.nml within their respective directories
 # and rename as glm4.nml and aed4.nml; these 4.nml versions are going to be rewritten
-file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
-#file.copy('aed/aed4.nml', 'aed/aed2.nml', overwrite = TRUE)
-file.copy('./aed/aed4_20210204_2DOCpools.nml', './aed/aed2.nml', overwrite = TRUE)
+file.copy('22Mar23_ch4cal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed/default_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
 var = 'temp'
 calib <- matrix(c('par', 'lb', 'ub', 'x0', #THIS LIST WILL BE EDITED BUT START WITH ALL VARS
                   'wind_factor', 0.75, 1.25, 1,
@@ -81,17 +80,12 @@ calib <- matrix(c('par', 'lb', 'ub', 'x0', #THIS LIST WILL BE EDITED BUT START W
                   'ce', 0.0005, 0.002, 0.0013,
                   'ch', 0.0005, 0.002, 0.0013,
                   'cd', 0.0005, 0.002, 0.0013,
-                  #'zone_heights', 0.1,9.5,5,
-                  #'zone_heights', 0.1,9.5,9,
-                  #'rain_factor', 0.75, 1.25, 1,
-                  #'at_factor', 0.75, 1.25, 1,
-                  #'rh_factor', 0.75, 1.25, 1,
-                  'sed_temp_mean',3,20,11,
-                  'sed_temp_mean',3,20,17,
-                  'sed_temp_amplitude',2,12,6,
-                  'sed_temp_amplitude',2,12,6,
-                  'sed_temp_peak_doy',250,280,272,
-                  'sed_temp_peak_doy',250,280,272
+                  'sed_temp_mean',3,20,10,
+                  'sed_temp_mean',10,30,17,
+                  'sed_temp_amplitude',2,12,5.4,
+                  'sed_temp_amplitude',2,12,10,
+                  'sed_temp_peak_doy',240,280,253,
+                  'sed_temp_peak_doy',250,280,270
                   ), nrow = 19,ncol = 4, byrow = TRUE) #EDIT THE NROW TO REFLECT # OF ROWS IN ANALYSIS
 write.table(calib, file = paste0('sensitivity/sample_sensitivity_config_',var,'.csv'), row.names = FALSE, 
             col.names = FALSE, sep = ',',
@@ -109,8 +103,8 @@ run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 #this part isn't working because morris_cluster=0 and all_ee is 0 too
 
 #water temperature CALIBRATION 
-file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('./aed/aed4_20210204_2DOCpools.nml', './aed/aed2_20210204_2DOCpools.nml', overwrite = TRUE)
+file.copy('22Mar23_ch4cal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed/22Mar23_ch4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
 #file.copy('./aed/aed2_phyto_pars_2May2022_RQT.nml', './aed/aed2_phyto_pars_13Mar23.nml', overwrite = TRUE) #FIX THIS
 var = 'temp'
 calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
@@ -155,17 +149,17 @@ nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file
 water_level<-get_surface_height(nc_file, ice.rm = TRUE, snow.rm = TRUE)
 
 # Read in and plot water level observations
-wlevel <- read_csv("./Data_Output/09Apr20_BVR_WaterLevelDailyVol.csv")
-wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%m/%d/%Y", tz="EST"))
+wlevel <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022.csv")
+wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%Y-%m-%d", tz="EST"))
 wlevel <- wlevel %>% 
-  dplyr::filter(Date>as.POSIXct('2015-07-08') & Date<as.POSIXct('2020-01-01'))
+  dplyr::filter(Date>as.POSIXct('2015-07-06') & Date<as.POSIXct('2022-05-04'))
 
 plot(water_level$DateTime,water_level$surface_height)
-points(wlevel$Date, wlevel$BVR_WaterLevel_m, type="l",col="red")
+points(wlevel$Date, wlevel$WaterLevel_m, type="l",col="red")
 
 # Calculate NSE (good call, Heather!)
-NSE(water_level$surface_height,wlevel$BVR_WaterLevel_m)
-rmse(water_level$surface_height,wlevel$BVR_WaterLevel_m)
+NSE(water_level$surface_height,wlevel$WaterLevel_m)
+rmse(water_level$surface_height,wlevel$WaterLevel_m)
 
 
 #------------------------------------------------------------------------------#
@@ -198,8 +192,8 @@ os = 'Compiled'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
 #dissolved oxygen CALIBRATION
-file.copy('20230312_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('./aed/aed4.nml', './aed/aed2.nml', overwrite = TRUE)
+file.copy('1Jul23_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('./aed/22Mar23_ch4cal_aed2.nml', './aed/aed2.nml', overwrite = TRUE)
 var = 'OXY_oxy'
 calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
 cal_pars = calib
@@ -274,8 +268,8 @@ os = 'Compiled'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
 #dissolved inorganic carbon CALIBRATION
-file.copy('20230314_docal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed/20230314_docal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
+file.copy('15Jul23_oxycal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed/15Jul23_oxycal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
 var = 'CAR_dic'
 calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
 cal_pars = calib

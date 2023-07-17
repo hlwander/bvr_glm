@@ -61,11 +61,6 @@ plot(inflow$time, inflow$FLOW, type = "o")
 plot(inflow$time, inflow$TEMP, type = "l", col = "red")
 
 #now let's merge with chemistry
-#first pull in BVR chem data from 2013-2022 from EDI
-#inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/199/11/509f39850b6f95628d10889d66885b76" 
-#infile1 <- paste0(getwd(),"/inputs/chem_2013_2022.csv")
-#try(download.file(inUrl1,infile1,method="curl"))
-#if (is.na(file.size(infile1))) download.file(inUrl1,infile1,method="auto")
 
 BVRchem <- read.csv("./inputs/chem_2013_2022.csv", header=T) %>%
   select(Reservoir:DIC_mgL) %>%
@@ -161,7 +156,7 @@ inflow <- inflow %>% filter(time <= "2022-05-05")
 
 alldata<-merge(inflow, bvr_nuts, by="time", all.x=TRUE)
 
-#read in lab dataset of CH4 from 2015-2022
+#read in lab dataset of CH4 from 2015-2019
 # for BVR: Only have a handful of days w/ CH4 in inflows (BVR 100 and 200); aggregate all time points
 # and average CH4 - use average as CH4 input for the entier year
 ghg <- read.csv("./inputs/BVR_GHG_Inflow_20200619.csv", header=T) %>%
@@ -232,38 +227,40 @@ total_inflow$TEMP <- (1.5 * total_inflow$TEMP) - 9.21
 #make sure time is 12:00
 total_inflow$time <- total_inflow$time +  hours(12) + minutes(00) + seconds(00)
 
+#scale inflow down because water level is weird
+total_inflow$FLOW <- total_inflow$FLOW * 0.99
+
+plot(total_inflow$time, total_inflow$FLOW, type="l")
+
+#save scaled file
+write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.99X.csv", row.names = F)
+
 #write file for inflow for the weir, with 2 pools of OC (DOC + DOCR)  
-write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow.csv", row.names = F)
+#write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow.csv", row.names = F)
 
 
 ##############################################################
 ##############################################################
 
 #REGARDLESS OF YOUR OC POOLS, WILL NEED TO MAKE OUTFLOW!
-# For BVR, need to take into account changing water level as well!
-# Used script originally developed in BVR_outflow.R
-# Note: Last recorded day of water level was 12-6-19 - assumed water level was the same through 12-31-19
+# For BVR, need to take into account changing water level as well
 
 # Load in water level + volume data for BVR
-# Calculated using WVWA + Carey Lab BVR water level observations and joined DEM + 2018 Bathymetry survey
-# See: BVR_Volume script for Matlab
-vol <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2009_2022.csv") %>% select(-(...1))
+# Calculated in WaterLevel_BVR.Rmd (inputs/water_level)
+vol <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022.csv") %>% select(-(...1))
 vol$Date <- as.POSIXct(strptime(vol$Date, "%Y-%m-%d", tz = "EST"))
 
-vol1 <- vol %>% filter(Date>=as.Date('2015-07-06')&Date<=as.Date('2022-05-03')) %>% select(Date,BVR_Vol_m3)
-vol2 <- vol %>% filter(Date>=as.Date('2015-07-07')&Date<=as.Date('2022-05-04')) %>% select(Date,BVR_Vol_m3)
+vol1 <- vol %>% filter(Date>=as.Date('2015-07-07')&Date<=as.Date('2022-05-03')) %>% select(Date,vol_m3)
+vol2 <- vol %>% filter(Date>=as.Date('2015-07-08')&Date<=as.Date('2022-05-04')) %>% select(Date,vol_m3)
 
-dvol <- vol %>% filter(Date>=as.Date('2015-07-07')&Date<=as.Date('2022-05-04')) %>% select(Date)
+dvol <- vol %>% filter(Date>=as.Date('2015-07-07')&Date<=as.Date('2022-05-03')) %>% select(Date)
 
 # Calculate dVol/dt by vol2-vol1/s
-vol3 <- as.data.frame((vol2$BVR_Vol_m3 - vol1$BVR_Vol_m3)/(24*60*60))
+vol3 <- as.data.frame((vol2$vol_m3 - vol1$vol_m3)/(24*60*60))
 names(vol3)[1] <- "dv_m3s"
 
 dvol <- cbind.data.frame(dvol,vol3)
 alldata<-merge(inflow, bvr_nuts, by="time", all.x=TRUE)
-
-#dvol repeats for 2018-11-04 so delete row 1214
-dvol <- dvol[-c(1218),]
 
 # Check change in water level
 ggplot(dvol,mapping=aes(x=Date,y=dv_m3s))+
@@ -272,6 +269,8 @@ ggplot(dvol,mapping=aes(x=Date,y=dv_m3s))+
 #drop rows that are NA in alldata
 alldata <- alldata[!(is.na(alldata$FLOW)),]
 
+#drop last date so dfs line up
+alldata <- alldata[c(1:2493),]
 
 #manually line up these 2 datasets 2015-11-01, 2016-11-06, 2017-11-05, 2019-11-03 repeated twice
 #dvol <- dvol[-c(118,489,853,1581),]
@@ -289,21 +288,20 @@ outflow <- outflow %>% select(Date,FLOW) %>%
 names(outflow)[1] <- "time"
 
 
-#outflow <- outflow %>% filter(time<as.POSIXct("2014-08-19"))
-#stream_flow <- inflow %>% filter(time>as.POSIXct("2014-08-19")) %>% select(time,FLOW)
-#outflow <- rbind.data.frame(outflow,stream_flow)
-
 #diagnostic plot
 ggplot()+
-  geom_line(outflow,mapping=aes(x=time,y=FLOW,color="Outflow"))+
-  geom_line(inflow,mapping=aes(x=time,y=FLOW,color="Inflow"))+
+  geom_line(outflow,mapping=aes(x=as.Date(time),y=FLOW,color="Outflow"))+
+  geom_line(inflow,mapping=aes(x=as.Date(time),y=FLOW,color="Inflow"))+
   theme_classic(base_size=15)
 
 #make sure time is 12:00
 outflow$time <- outflow$time +  hours(12) + minutes(00) + seconds(00)
 
+#scale outflow to fix water level issue
+outflow$FLOW <- outflow$FLOW * 0.9918
+
 #write file
-write.csv(outflow, "./inputs/BVR_spillway_outflow_2015_2022_metInflow.csv", row.names=F)
+write.csv(outflow, "./inputs/BVR_spillway_outflow_2015_2022_metInflow_0.9917X.csv", row.names=F)
   
 
 

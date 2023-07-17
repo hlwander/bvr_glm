@@ -7,8 +7,8 @@
 &aed_sed_const2d
    n_zones = 2
    active_zones = 1, 2
-   Fsed_oxy = -38.5514681213708, -30.8879889628294
-   Fsed_ch4 = 31, 76
+   Fsed_oxy = -56, -5!-38.5514681213708, -30.8879889628294
+   Fsed_ch4 = 31, 1!31, 76
    Fsed_amm = 2.848790019, 0.3!2.848790019, 0.3
    Fsed_nit = -0.01, -1e-04
    Fsed_frp = 0.05, 0.18!0.0043, 0.25
@@ -31,19 +31,19 @@
    sed_porosity = 0.6
 /
 &aed_oxygen
-   oxy_initial = 225
+   oxy_initial = 200
    Fsed_oxy = -10
    Ksed_oxy = 25
-   theta_sed_oxy = 1.08
+   theta_sed_oxy = 0.51!1.08
    Fsed_oxy_variable = 'SDF_Fsed_oxy'
    oxy_min = 0
    oxy_max = 500
 /
 &aed_carbon
-   dic_initial = 91
-   Fsed_dic = 0.8202591
-   Ksed_dic = 2.00098
-   theta_sed_dic = 0.93
+   dic_initial = 60
+   Fsed_dic = 0.17!0.8202591
+   Ksed_dic = 0.6!2.00098
+   theta_sed_dic = 0.87!0.93
    pH_initial = 6.2
    atm_co2 = 0.00041
    co2_model = 1
@@ -51,11 +51,11 @@
    ionic = 0.1
    co2_piston_model = 1
    ch4_initial = 5
-   Rch4ox = 1
+   Rch4ox = 0.065!1
    Kch4ox = 1
-   vTch4ox = 1.2
-   Ksed_ch4 = 6
-   theta_sed_ch4 = 1.2
+   vTch4ox = 0.9!1.2
+   Ksed_ch4 = 2!6
+   theta_sed_ch4 = 1.09!1.2
    methane_reactant_variable = 'OXY_oxy'
    atm_ch4 = 1.76e-06
    ch4_piston_model = 1
@@ -129,14 +129,14 @@
    don_initial = 1.1
    pop_initial = 0.1
    dop_initial = 0.01
-   docr_initial = 300!150
+   docr_initial = 150
    donr_initial = 9
    dopr_initial = 0.15
    cpom_initial = 0
-   Rdom_minerl = 0.08!0.01348416
-   Rpoc_hydrol = 0.003!0.001
-   Rpon_hydrol = 0.006!0.001
-   Rpop_hydrol = 0.04!1e-04
+   Rdom_minerl = 0.01348416
+   Rpoc_hydrol = 0.001
+   Rpon_hydrol = 0.001
+   Rpop_hydrol = 1e-04
    theta_hydrol = 1.07
    theta_minerl = 1.07
    Kpom_hydrol = 33.66593
@@ -150,8 +150,8 @@
    f_an = 0.2063885
    K_nit = 10
    simRPools = .true.
-   Rdomr_minerl = 0.00009!0.04!0.000102192
-   Rcpom_bdown = 0.5!0.05350772
+   Rdomr_minerl = 0.2!0.000102192
+   Rcpom_bdown = 0.7!0.05350772
    X_cpom_n = 0.005
    X_cpom_p = 0.001
    KeDOM = 0.005
@@ -173,7 +173,7 @@
    Xsc = 0.5
    Xsn = 0.05
    Xsp = 0.005
-   Fsed_doc = 0.1
+   Fsed_doc = 2!0.1
    Fsed_don = 0
    Fsed_dop = 0
    Ksed_dom = 93.12891
