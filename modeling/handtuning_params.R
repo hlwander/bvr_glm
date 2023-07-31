@@ -167,3 +167,10 @@ plot(as.Date(met$time),met$LongWave)
 plot(as.Date(met$time),met$RelHum)
 plot(as.Date(met$time),met$WindSpeed)
 plot(as.Date(met$time),met$Rain)
+
+#looking at water temp obs just to make sure things are okay
+temp <- read.csv('field_data/CleanedObsTemp.csv')
+
+ggplot(temp, aes(DateTime, temp, color=as.factor(Depth))) + geom_point() +
+  theme_bw() + facet_wrap(~Depth)
+

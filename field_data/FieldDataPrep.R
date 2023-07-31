@@ -283,12 +283,47 @@ chla <- more1 %>%
   drop_na() %>% 
   write.csv("field_data/CleanedObsChla.csv", row.names = F)
 
-#fcr <- more1 %>%
-#  select(time, depth, temp, DO) %>%
-#  rename(DateTime = time, Depth = depth, OXY_oxy=DO) %>%
-#  mutate(OXY_oxy = OXY_oxy*1000/32) %>% #to convert mg/L to molar units
-#  write.csv("field_FCR.csv", row.names = F)
+# Find 'winter' depth profiles to use for initial model conditions
+more1$depth <- as.numeric(more1$depth)
+more1$temp <- as.numeric(more1$temp)
+more1$DO <- as.numeric(more1$DO)
 
+ggplot(more1,mapping=aes(x=time,y=temp,color=as.factor(depth)))+
+  geom_line()
+
+ggplot(more1,mapping=aes(x=time,y=DO,color=as.factor(depth)))+
+  geom_line()
+
+ggplot(more1,mapping=aes(x=time,y=chla,color=as.factor(depth)))+
+  geom_line()
+
+ggplot(more1,mapping=aes(x=temp,y=-depth,color=as.factor(time)))+
+  geom_line()
+
+sup <- more1 %>% mutate(doy = yday(time)) %>% filter(doy %in% c(186,187,188,189,190,191))
+
+ggplot(sup,mapping=aes(x=DO,y=-depth,color=as.factor(time)))+
+  geom_line()
+
+sup <- sup %>% group_by(depth) %>% summarize_all(funs(mean)) # Average of 07-09-2015-2020
+
+# Convert oxygen to correct units
+sup <- sup %>% mutate(DO = DO*1000/32) #to convert mg/L to molar units
+
+# Extrapolate to initial depths needed
+depth <- c(0.1, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 
+           7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11)
+initdepths <- rep(-99,length(depth))
+
+initdepths <- cbind.data.frame(depth,initdepths)
+initdepths <- merge(initdepths, sup, by="depth", all.x=TRUE, all.y=TRUE)
+
+initdepths <- initdepths %>% mutate(temp = na.fill(na.approx(temp,na.rm=FALSE),"extend")) %>% 
+  mutate(DO = na.fill(na.approx(DO,na.rm=FALSE),"extend")) %>% 
+  select(depth,temp,DO,chla) #%>% 
+ # write.csv("Init_CTD.csv", row.names = F)
+
+initdepths$DO
 
 ###########################################################
 ###### WATER CHEM DATA FROM EDI

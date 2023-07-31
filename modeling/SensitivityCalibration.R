@@ -4,7 +4,7 @@
 #modified for BVR 8 Aug 2020 HLW
 #starting to calibrate again on 7 Feb 2023
 
-pacman::p_load(GLMr,glmtools,tidyverse,lubridate,ncdf4,hydroGOF)
+pacman::p_load(GLMr,glmtools,tidyverse,lubridate,ncdf4,hydroGOF, reshape2, signal)
 
 rm(list = ls()) #let's clean up that workspace!
 

@@ -7,7 +7,7 @@
 &aed_sed_const2d
    n_zones = 2
    active_zones = 1, 2
-   Fsed_oxy = -11.1956835719489, -1.00079329377236
+   Fsed_oxy = -17, 2!-11.1956835719489, -1.00079329377236
    Fsed_ch4 = 31, 1
    Fsed_amm = 2.848790019, 0.3
    Fsed_nit = -0.01, -1e-04
@@ -31,7 +31,7 @@
    sed_porosity = 0.6
 /
 &aed_oxygen
-   oxy_initial = 200
+   oxy_initial = 100
    Fsed_oxy = -10
    Ksed_oxy = 25
    theta_sed_oxy = 0.51
