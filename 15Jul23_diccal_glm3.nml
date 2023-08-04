@@ -23,12 +23,12 @@
    Kw = 0.4
 /
 &mixing
-   coef_mix_conv = 1.5!0.2
-   coef_wind_stir = 0.21!0.23
+   coef_mix_conv = 3!0.2
+   coef_wind_stir = 0.63!0.23
    coef_mix_shear = 0.3
-   coef_mix_turb = 0.7!0.005!0.51
-   coef_mix_KH = 0.02!0.3
-   coef_mix_hyp = 0.0001!0.51
+   coef_mix_turb = 0.49!0.51
+   coef_mix_KH = 0.3
+   coef_mix_hyp = 0.44!0.51
    deep_mixing = .true.
    coef_mix_shreq = 0
 /
@@ -81,15 +81,15 @@
    cloud_mode = 4
    meteo_fl = 'inputs/met.csv'
    subdaily = .true.
-   wind_factor = 0.78!1
-   sw_factor = 1!1.1
-   lw_factor = 1.02
+   wind_factor = 0.8!1
+   sw_factor = 1.01!1.1
+   lw_factor = 1.06!1.02
    at_factor = 1
    rh_factor = 1
    rain_factor = 1
-   cd = 0.0013
-   ce = 0.0013
-   ch = 0.0013
+   cd = 0.0031!0.0013
+   ce = 0.006!0.0013
+   ch = 0.0001!0.0013
    rain_threshold = 0.04
    runoff_coef = 0.2
    time_fmt = 'YYYY-MM-DD hh:mm:ss'
@@ -126,8 +126,8 @@
    n_zones = 2
    zone_heights = 6.7, 13.3
    sed_heat_Ksoil = 1.8, 1.8
-   sed_temp_depth = 0.2, 0.2
-   sed_temp_mean = 8.5, 15.9!8, 18
-   sed_temp_amplitude = 0.8, 6!1.4, 7.1!1, 3.5!5.4, 10
-   sed_temp_peak_doy = 245, 270!253, 270
+   sed_temp_depth = 0.03, 0.2!0.2, 0.2
+   sed_temp_mean = 9, 20.6!!8, 18
+   sed_temp_amplitude = 0.8, 16.3!5.4, 10
+   sed_temp_peak_doy = 253, 201!253, 270
 /

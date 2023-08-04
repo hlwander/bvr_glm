@@ -1051,7 +1051,7 @@ ggsave(file=paste0('results/mod_obs_phyto_',filename,'.png'), g5, dpi = 300,widt
 
 
 
-temp_obs <- read_field_obs('field_data/field_BVR.csv', 'temp')
+temp_obs <- read_field_obs('field_data/CleanedObsTemp.csv', 'temp')
 deps_interp <- seq(0,24.5,0.5)
 temp_interp <- matrix(0, ncol = length(deps_interp), nrow= length(unique(temp_obs$DateTime)))
 for (ii in 1:length(unique(temp_obs$DateTime))){
@@ -1081,12 +1081,15 @@ head(df_temp_sim)
 thermo_obs <- ts.thermo.depth(df_temp_interp, Smin = 0.1, na.rm = FALSE)
 thermo_sim <- ts.thermo.depth(df_temp_sim, Smin = 0.1, na.rm = TRUE)
 
-source('Scripts/functions-glm.R')
+#datetime format
+thermo_sim$datetime <- as.Date(thermo_sim$datetime)
+
+source('modeling/functions-glm.R')
 h <- paste('DO_thermodepth')
-png(paste0('results/stratif_',filename,'.png'), width = 1800, height = 600)
+#png(paste0('results/stratif_',filename,'.png'), width = 1800, height = 600)
 plot_contour_thermodep(mod_nc = out, reference = 'surface', h, var='OXY_oxy', 
                          unit='mmol/m3',tlevels=seq(0, 600, 50), td=thermo_sim) 
-dev.off()
+#dev.off()
 
 # CHLOROPHYLL-A DATA
 # metabolism_all <- read_csv("field_data/ntl129_1_v5.csv")
