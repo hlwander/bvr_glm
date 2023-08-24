@@ -298,10 +298,10 @@ ggplot()+
 outflow$time <- outflow$time +  hours(12) + minutes(00) + seconds(00)
 
 #scale outflow to fix water level issue
-outflow$FLOW <- outflow$FLOW * 0.9918
+outflow$FLOW <- outflow$FLOW * 0.9865
 
 #write file
-write.csv(outflow, "./inputs/BVR_spillway_outflow_2015_2022_metInflow_0.9917X.csv", row.names=F)
+write.csv(outflow, "./inputs/BVR_spillway_outflow_2015_2022_metInflow_0.9865X.csv", row.names=F)
   
 
 

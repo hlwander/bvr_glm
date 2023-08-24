@@ -112,7 +112,7 @@
    outl_elvs = 585.7
    bsn_len_outl = 855.03
    bsn_wid_outl = 55.96
-   outflow_fl = 'inputs/BVR_spillway_outflow_2015_2022_metInflow_0.9917X.csv'
+   outflow_fl = 'inputs/BVR_spillway_outflow_2015_2022_metInflow_0.9865X.csv'
    outflow_factor = 1
 /
 &snowice
