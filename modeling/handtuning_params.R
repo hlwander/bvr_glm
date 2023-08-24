@@ -87,7 +87,7 @@ RMSE(temps[temps$Depth==c(9),4],
 RMSE(temps[temps$Depth==c(0.1),4],
      temps[temps$Depth==c(0.1),3])
 
-RMSE(temps$Modeled_temp, temps$Observed_temp)
+RMSE(temps$Modeled_OXY_oxy, temps$Observed_OXY_oxy)
 
 #------------------------------------------------------------------------------#
 #fit Michaelis-Menten function to data

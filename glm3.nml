@@ -23,7 +23,7 @@
    Kw = 0.4
 /
 &mixing
-   coef_mix_conv = 0.2!3!0.2
+   coef_mix_conv = 3!0.2
    coef_wind_stir = 0.63!0.23
    coef_mix_shear = 0.3
    coef_mix_turb = 0.49!0.51
@@ -112,7 +112,7 @@
    outl_elvs = 585.7
    bsn_len_outl = 855.03
    bsn_wid_outl = 55.96
-   outflow_fl = 'inputs/BVR_spillway_outflow_2015_2022_metInflow_0.9917X.csv'
+   outflow_fl = 'inputs/BVR_spillway_outflow_2015_2022_metInflow_0.9865X.csv'
    outflow_factor = 1
 /
 &snowice

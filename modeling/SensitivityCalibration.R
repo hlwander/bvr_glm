@@ -152,7 +152,7 @@ water_level<-get_surface_height(nc_file, ice.rm = TRUE, snow.rm = TRUE)
 wlevel <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022.csv")
 wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%Y-%m-%d", tz="EST"))
 wlevel <- wlevel %>% 
-  dplyr::filter(Date>as.POSIXct('2015-07-06') & Date<as.POSIXct('2022-05-04'))
+  dplyr::filter(Date>as.POSIXct('2015-07-08') & Date<as.POSIXct('2022-05-04'))
 
 plot(water_level$DateTime,water_level$surface_height)
 points(wlevel$Date, wlevel$WaterLevel_m, type="l",col="red")
