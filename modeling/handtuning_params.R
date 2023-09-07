@@ -30,9 +30,9 @@ nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file
 
 
 #######################################################
-var='OXY_oxy'
+var='CAR_ch4'
 
-obs<-read.csv('field_data/CleanedObsOXY.csv', header=TRUE) %>% #read in observed chemistry data
+obs<-read.csv('field_data/field_gases.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
   na.omit()
@@ -75,7 +75,7 @@ RMSE = function(m, o){
   sqrt(mean((m - o)^2))
 }
 
-field_file<-file.path(sim_folder,'field_data/CleanedObsOXY.csv')
+field_file<-file.path(sim_folder,'field_data/field_gases.csv')
 
 temps <- resample_to_field(nc_file, field_file, precision="days", method='interp',
                            var_name=var)
@@ -87,7 +87,7 @@ RMSE(temps[temps$Depth==c(9),4],
 RMSE(temps[temps$Depth==c(0.1),4],
      temps[temps$Depth==c(0.1),3])
 
-RMSE(temps$Modeled_OXY_oxy, temps$Observed_OXY_oxy)
+RMSE(temps$Modeled_CAR_ch4, temps$Observed_CAR_ch4)
 
 #------------------------------------------------------------------------------#
 #fit Michaelis-Menten function to data

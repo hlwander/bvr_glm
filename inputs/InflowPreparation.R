@@ -227,13 +227,10 @@ total_inflow$TEMP <- (1.5 * total_inflow$TEMP) - 9.21
 #make sure time is 12:00
 total_inflow$time <- total_inflow$time +  hours(12) + minutes(00) + seconds(00)
 
-#scale inflow down because water level is weird
-total_inflow$FLOW <- total_inflow$FLOW * 0.99
-
 plot(total_inflow$time, total_inflow$FLOW, type="l")
 
 #save scaled file
-write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.99X.csv", row.names = F)
+write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow.csv", row.names = F)
 
 #write file for inflow for the weir, with 2 pools of OC (DOC + DOCR)  
 #write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow.csv", row.names = F)
@@ -297,11 +294,8 @@ ggplot()+
 #make sure time is 12:00
 outflow$time <- outflow$time +  hours(12) + minutes(00) + seconds(00)
 
-#scale outflow to fix water level issue
-outflow$FLOW <- outflow$FLOW * 0.9865
-
 #write file
-write.csv(outflow, "./inputs/BVR_spillway_outflow_2015_2022_metInflow_0.9865X.csv", row.names=F)
+write.csv(outflow, "./inputs/BVR_spillway_outflow_2015_2022_metInflow.csv", row.names=F)
   
 
 

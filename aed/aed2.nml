@@ -8,7 +8,7 @@
    n_zones = 2
    active_zones = 1, 2
    Fsed_oxy = -27, -2!-11.1956835719489, -1.00079329377236
-   Fsed_ch4 = 31, 1
+   Fsed_ch4 = 300, 5!31, 1
    Fsed_amm = 2.848790019, 0.3
    Fsed_nit = -0.01, -1e-04
    Fsed_frp = 0.05, 0.18
@@ -41,9 +41,9 @@
 /
 &aed_carbon
    dic_initial = 60
-   Fsed_dic = 0.001
-   Ksed_dic = 0.6
-   theta_sed_dic = 0.87
+   Fsed_dic = 0.65!0.001
+   Ksed_dic = 26!0.6
+   theta_sed_dic = 0.94!0.87
    pH_initial = 6.2
    atm_co2 = 0.00041
    co2_model = 1
@@ -51,11 +51,11 @@
    ionic = 0.1
    co2_piston_model = 1
    ch4_initial = 5
-   Rch4ox = 0.065
-   Kch4ox = 1
-   vTch4ox = 0.9
-   Ksed_ch4 = 2
-   theta_sed_ch4 = 1.09
+   Rch4ox = 0.04!0.065
+   Kch4ox = 0.7!1
+   vTch4ox = 1.1!0.9
+   Ksed_ch4 = 3.5!2
+   theta_sed_ch4 = 1.24!1.09
    methane_reactant_variable = 'OXY_oxy'
    atm_ch4 = 1.76e-06
    ch4_piston_model = 1
