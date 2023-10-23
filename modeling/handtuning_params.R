@@ -30,9 +30,10 @@ nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file
 
 
 #######################################################
-var='CAR_ch4'
+var= 'NIT_amm'
+var= 'NIT_nit'
 
-obs<-read.csv('field_data/field_gases.csv', header=TRUE) %>% #read in observed chemistry data
+obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
   na.omit()
@@ -75,7 +76,7 @@ RMSE = function(m, o){
   sqrt(mean((m - o)^2))
 }
 
-field_file<-file.path(sim_folder,'field_data/field_gases.csv')
+field_file<-file.path(sim_folder,'field_data/field_chem_2DOCpools.csv')
 
 temps <- resample_to_field(nc_file, field_file, precision="days", method='interp',
                            var_name=var)
@@ -87,7 +88,8 @@ RMSE(temps[temps$Depth==c(9),4],
 RMSE(temps[temps$Depth==c(0.1),4],
      temps[temps$Depth==c(0.1),3])
 
-RMSE(temps$Modeled_CAR_ch4, temps$Observed_CAR_ch4)
+RMSE(temps$Modeled_NIT_amm, temps$Observed_NIT_amm)
+RMSE(temps$Modeled_NIT_nit, temps$Observed_NIT_nit)
 
 #------------------------------------------------------------------------------#
 #fit Michaelis-Menten function to data
@@ -153,8 +155,8 @@ range(temp_9m$temp[temp_9m$year==2021]) # 21.4
 #----------------------------------------------------------------------#
 #look at inflow data to see why modeled temp peak looks so weird
 
-inflow <- read.csv('inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.99X.csv')
-outflow <- read.csv('inputs/BVR_spillway_outflow_2015_2022_metInflow_0.9917X.csv')
+inflow <- read.csv('inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow.csv')
+outflow <- read.csv('inputs/BVR_spillway_outflow_2015_2022_metInflow.csv')
 
 plot(as.Date(inflow$time), inflow$FLOW)
 points(as.Date(outflow$time), outflow$FLOW, col="blue")
@@ -175,4 +177,17 @@ temp <- read.csv('field_data/CleanedObsTemp.csv')
 
 ggplot(temp, aes(DateTime, temp, color=as.factor(Depth))) + geom_point() +
   theme_bw() + facet_wrap(~Depth)
+
+#----------------------------------------------------------------#
+#silica plots
+
+plot(obs$DateTime[obs$Depth==0],obs$SIL_rsi[obs$Depth==0])
+plot(obs$DateTime[obs$Depth==4],obs$SIL_rsi[obs$Depth==4])
+plot(obs$DateTime[obs$Depth==8],obs$SIL_rsi[obs$Depth==8])
+
+
+plot(mod$DateTime[mod$Depth==0],mod$SIL_rsi[mod$Depth==0] )
+plot(mod$DateTime[mod$Depth==4],mod$SIL_rsi[mod$Depth==4] )
+plot(mod$DateTime[mod$Depth==8],mod$SIL_rsi[mod$Depth==8] )
+
 

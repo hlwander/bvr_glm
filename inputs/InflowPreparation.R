@@ -218,7 +218,10 @@ for(i in 1:length(total_inflow$TEMP)){
 total_inflow <- total_inflow %>%
   select(time, FLOW, TEMP, SALT, OXY_oxy, NIT_amm:CAR_dic, CAR_ch4) %>% 
   mutate(SIL_rsi = rep(median(silica$DRSI_mgL),length(total_inflow$time))) %>%
-  mutate(SIL_rsi = SIL_rsi*1000*(1/60.08)) %>% #setting the Silica concentration to the median 2014 inflow concentration for consistency
+  mutate(SIL_rsi = SIL_rsi*1000*(1/60.08) * 0.65) %>% #setting the Silica concentration to the median 2014 inflow concentration for consistency
+  #note scaling silica down bc too high!!
+  mutate(NIT_nit = NIT_nit * 0.2) %>% #scaling nitrate inflow by 0.2 bc too high
+  mutate(NIT_amm = NIT_amm * 0.4) %>% #scaling ammonium inflow by 0.4 bc too high
   mutate_if(is.numeric, round, 4) #round to 4 digits 
 
 #estimate bvr inflow temp based on relationship between bvr and fcr inflows
@@ -230,7 +233,7 @@ total_inflow$time <- total_inflow$time +  hours(12) + minutes(00) + seconds(00)
 plot(total_inflow$time, total_inflow$FLOW, type="l")
 
 #save scaled file
-write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow.csv", row.names = F)
+write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.65X_silica_0.2X_nitrate_0.4X_ammonium.csv", row.names = F)
 
 #write file for inflow for the weir, with 2 pools of OC (DOC + DOCR)  
 #write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow.csv", row.names = F)

@@ -9,8 +9,8 @@
    active_zones = 1, 2
    Fsed_oxy = -27, -2!-11.1956835719489, -1.00079329377236
    Fsed_ch4 = 300, 5!31, 1
-   Fsed_amm = 2.848790019, 0.3
-   Fsed_nit = -0.01, -1e-04
+   Fsed_amm = 6.6, 2.3!2.848790019, 1
+   Fsed_nit = -0.01, -0.001!-1e-04
    Fsed_frp = 0.05, 0.18
 /
 &aed_tracer
@@ -62,19 +62,19 @@
    Fsed_ch4_variable = 'SDF_Fsed_ch4'
 /
 &aed_silica
-   rsi_initial = 100
-   Fsed_rsi = 1.001876
-   Ksed_rsi = 1.002457
-   theta_sed_rsi = 1.037413
+   rsi_initial = 85
+   Fsed_rsi = 16!1.001876
+   Ksed_rsi = 1.02!1.002457
+   theta_sed_rsi = 1.11!1.037413
    silica_reactant_variable = 'OXY_oxy'
 /
 &aed_nitrogen
    amm_initial = 2.6
-   nit_initial = 0.1
+   nit_initial = 0.05
    n2o_initial = 0.1
-   Rnitrif = 0.1
-   Knitrif = 9
-   theta_nitrif = 1.08
+   Rnitrif = 0.01!0.003!0.4!0.9!0.002!0.4!0.1
+   Knitrif = 62!1!6!9
+   theta_nitrif = 1.07!1.08!1.01!1.04!1.15!1!1.08
    nitrif_reactant_variable = 'OXY_oxy'
    nitrif_ph_variable = ''
    simNitrfpH = .false.
@@ -87,24 +87,25 @@
    atm_n2o = 3.2e-07
    n2o_piston_model = 4
    Rnh4no2 = 0.001
-   kanammox = 0.001
-   Kanmx_nit = 1.320344
-   Kanmx_amm = 0.8666655
-   Rdenit = 9.968717
-   Kdenit = 29.86566
-   theta_denit = 1.062862
-   Rdnra = 0.01123021
-   Kdnra_oxy = 0.360534
-   Ksed_amm = 41.25
+   kanammox = 0.001!2!0.00005!2!0.9!2!0.1!0.001
+   Kanmx_nit = 1.32!5!0.001!1.320344
+   Kanmx_amm = 0.86!5!0.001!0.01!5!2.1!0.02!0.01!.6!0.8666655
+   Rdenit = 2!9.97!2!0.05!2!1.3!9.968717
+   Kdenit = 29.87!42!50!29.86566
+   theta_denit = 1.06!1.15!1.02!1.15!1.06!1.062862
+   Rdnra = 0.01!2!1!0.01123021
+   Kdnra_oxy = 0.36!5!0.8!1.03!!0.360534
+   Ksed_amm = 30!41.25!13!10!30!1!21!41.25
    Ksed_nit = 73.26015
    Fsed_n2o = 0
    Ksed_n2o = 100
-   theta_sed_amm = 1.068994
-   theta_sed_nit = 1.068994
-   Fsed_amm = 1
+   theta_sed_amm = 1.15!1.11!1.06!1.15!1.03!1.05!1.068994
+   theta_sed_nit = 1.15!1.15!1.068994
+   Fsed_amm = 18!1!8!20!3!1
    Fsed_nit = -0.05
    Fsed_amm_variable = 'SDF_Fsed_amm'
    Fsed_nit_variable = 'SDF_Fsed_nit'
+   Fsed_nit_model = 0
 /
 &aed_phosphorus
    frp_initial = 0.05
