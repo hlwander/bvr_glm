@@ -11,12 +11,6 @@ print(nml)
 print(aed)
 print(aed_phytos)
 
-#file.copy('22Mar23_ch4cal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-#file.copy('aed/22Mar23_ch4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
-
-#file.copy('Hipsey_glm3_rqt.nml', 'glm3.nml', overwrite = TRUE)
-#file.copy('aed/Hipsey_aed2_rqt.nml', 'aed/aed2.nml', overwrite = TRUE)
-
 file.copy('15Jul23_diccal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('aed/15Jul23_diccal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
 
@@ -30,8 +24,7 @@ nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file
 
 
 #######################################################
-var= 'NIT_amm'
-var= 'NIT_nit'
+var= 'PHS_frp'
 
 obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
@@ -88,8 +81,7 @@ RMSE(temps[temps$Depth==c(9),4],
 RMSE(temps[temps$Depth==c(0.1),4],
      temps[temps$Depth==c(0.1),3])
 
-RMSE(temps$Modeled_NIT_amm, temps$Observed_NIT_amm)
-RMSE(temps$Modeled_NIT_nit, temps$Observed_NIT_nit)
+RMSE(temps$Modeled_PHS_frp, temps$Observed_PHS_frp)
 
 #------------------------------------------------------------------------------#
 #fit Michaelis-Menten function to data
