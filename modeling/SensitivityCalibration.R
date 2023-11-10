@@ -36,7 +36,7 @@ water_level<-get_surface_height(nc_file, ice.rm = TRUE, snow.rm = TRUE)
 wlevel <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022.csv") %>% select(-(...1))
 wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%Y-%m-%d", tz="EST"))
 wlevel <- wlevel %>% 
-  dplyr::filter(Date>as.POSIXct("2015-07-06") & Date<as.POSIXct("2022-05-04"))
+  dplyr::filter(Date>as.POSIXct("2015-07-06") & Date<as.POSIXct("2020-12-31"))
 
 plot(water_level$DateTime,water_level$surface_height)
 points(wlevel$Date, wlevel$WaterLevel_m, type="l",col="red")
@@ -704,9 +704,9 @@ run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,500,50), par
 #------------------------------------------------------------------------------#
 # 8) chlorophyll a - SENSITIVITY
 file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
-file.copy('./aed2/aed4_phyto_pars_30June2020.nml', './aed2/aed2_phyto_pars_30June2020.nml', overwrite = TRUE) #FIX THIS
-var = 'PHY_TCHLA'
+#file.copy('./aed2/aed4_20210204_2DOCpools.nml', './aed2/aed2_bvr.nml', overwrite = TRUE)
+#file.copy('./aed2/aed4_phyto_pars_30June2020.nml', './aed2/aed2_phyto_pars_30June2020.nml', overwrite = TRUE) #FIX THIS
+var = 'PHY_tchla'
 calib <- matrix(c('par', 'lb', 'ub', 'x0',
                   'pd%w_p', -0.1, 0.10, -0.001,
                   'pd%Xcc', 30, 500, 100,

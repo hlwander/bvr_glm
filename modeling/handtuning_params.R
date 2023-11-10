@@ -24,9 +24,9 @@ nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file
 
 
 #######################################################
-var= 'PHS_frp'
+var= 'PHY_tchla'
 
-obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
+obs<-read.csv('field_data/CleanedObsChla.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
   na.omit()
@@ -69,7 +69,7 @@ RMSE = function(m, o){
   sqrt(mean((m - o)^2))
 }
 
-field_file<-file.path(sim_folder,'field_data/field_chem_2DOCpools.csv')
+field_file<-file.path(sim_folder,'field_data/CleanedObsChla.csv')
 
 temps <- resample_to_field(nc_file, field_file, precision="days", method='interp',
                            var_name=var)
@@ -81,8 +81,8 @@ RMSE(temps[temps$Depth==c(9),4],
 RMSE(temps[temps$Depth==c(0.1),4],
      temps[temps$Depth==c(0.1),3])
 
-RMSE(temps$Modeled_PHS_frp, temps$Observed_PHS_frp)
-
+RMSE(temps$Modeled_PHY_tchla, temps$Observed_PHY_tchla)
+summary(lm(temps$Modeled_PHY_tchla ~ temps$Observed_PHY_tchla))$r.squared
 #------------------------------------------------------------------------------#
 #fit Michaelis-Menten function to data
 #library(renz)
@@ -181,5 +181,18 @@ plot(obs$DateTime[obs$Depth==8],obs$SIL_rsi[obs$Depth==8])
 plot(mod$DateTime[mod$Depth==0],mod$SIL_rsi[mod$Depth==0] )
 plot(mod$DateTime[mod$Depth==4],mod$SIL_rsi[mod$Depth==4] )
 plot(mod$DateTime[mod$Depth==8],mod$SIL_rsi[mod$Depth==8] )
+
+#plot(mod$PHS_frp[mod$Depth==9]~mod$DateTime[mod$Depth==9], type="l")
+#lines(obs$PHS_frp[obs$Depth==9]~obs$DateTime[obs$Depth==9], type='p', col="red", pch=16)
+
+#----------------------------------------------------------------#
+#make a model for doc - try plotting doc vs. doy, inflow, airtemp, water temp, precip
+
+plot(obs$OGM_doc, lubridate::yday(obs$DateTime))
+
+#read in inflow
+inf <- read_csv("./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.65X_silica_0.2X_nitrate_0.4X_ammonium_2X_docr_2Xdoc.csv")
+plot(obs$OGM_doc[obs$Depth==0.1], 
+     inf$FLOW[as.Date(inf$time) %in% as.Date(obs$DateTime[obs$Depth==0.1])]) 
 
 

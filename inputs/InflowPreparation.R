@@ -222,7 +222,12 @@ total_inflow <- total_inflow %>%
   #note scaling silica down bc too high!!
   mutate(NIT_nit = NIT_nit * 0.2) %>% #scaling nitrate inflow by 0.2 bc too high
   mutate(NIT_amm = NIT_amm * 0.4) %>% #scaling ammonium inflow by 0.4 bc too high
+  mutate(OGM_docr = OGM_docr * 1.9) %>% #docr too low
+  mutate(OGM_doc = OGM_doc * 1.7) %>% #bc docr:doc needs to be 10:1
   mutate_if(is.numeric, round, 4) #round to 4 digits 
+
+#note that labile doc is higher in more eutrophic systems - maybe 20% as an avg, but could be a greater % of TOC pool
+#wetzel says that ratio in reservoirs w/ high allochthonous loading could be 4:1
 
 #estimate bvr inflow temp based on relationship between bvr and fcr inflows
 total_inflow$TEMP <- (1.5 * total_inflow$TEMP) - 9.21
@@ -233,7 +238,7 @@ total_inflow$time <- total_inflow$time +  hours(12) + minutes(00) + seconds(00)
 plot(total_inflow$time, total_inflow$FLOW, type="l")
 
 #save scaled file
-write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.65X_silica_0.2X_nitrate_0.4X_ammonium.csv", row.names = F)
+write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.65X_silica_0.2X_nitrate_0.4X_ammonium_1.9X_docr_1.7Xdoc.csv", row.names = F)
 
 #write file for inflow for the weir, with 2 pools of OC (DOC + DOCR)  
 #write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow.csv", row.names = F)

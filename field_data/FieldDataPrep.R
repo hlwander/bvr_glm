@@ -279,7 +279,7 @@ chla <- more1 %>%
  # dplyr::filter(!(time==as_date("2015-04-16") & depth == 2)) %>% 
  # dplyr::filter(!(time==as_date("2015-04-16") & depth == 1)) %>% 
  # dplyr::filter(!(time==as_date("2015-04-16") & depth == 0.1)) %>% 
-  rename(DateTime = time, Depth = depth, PHY_TCHLA=chla) %>%
+  rename(DateTime = time, Depth = depth, PHY_tchla=chla) %>%
   drop_na() %>% 
   write.csv("field_data/CleanedObsChla.csv", row.names = F)
 
@@ -449,3 +449,106 @@ write.csv(pH, "field_data/field_pH.csv", row.names=F)
 
 ggplot(pH, aes(time, pH, colour= depth)) + 
   geom_point() 
+
+###########################################################
+###### ZOOP FROM EDI (currently staged in 2023)
+
+#first pull in zoop data from 2014-2022 from EDI
+#inUrl1  <- "https://pasta-s.lternet.edu/package/data/eml/edi/1090/14/c7a04035b0a99adc489f5b6daec1cd52" 
+#infile1 <- paste0(getwd(),"/field_data/zoop_summary_2014-2022.csv")
+#try(download.file(inUrl1,infile1,method="curl"))
+#if (is.na(file.size(infile1))) download.file(inUrl1,infile1,method="auto")
+
+zoops <- read.csv("field_data/zoop_summary_2014-2022.csv", header=T) %>%
+  dplyr::filter(Reservoir=="BVR") %>%
+  dplyr::filter(Site==50) %>%
+  dplyr::filter(CollectionMethod=="Tow") %>%
+  dplyr::filter(StartDepth_m > 8.6) %>%
+  #dplyr::filter(Taxon %in% c("Cladocera","Copepoda", "Rotifera")) %>%
+  #dplyr::filter(Flag_Density_m==0) %>%
+  dplyr::rename(Depth = StartDepth_m) %>%
+  dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d %H:%M:%S", tz="EST"))) %>%
+  dplyr::mutate(date = as.Date(DateTime)) %>%
+  dplyr::select(DateTime, date, Depth, Rep, Taxon, Density_IndPerL) %>%
+  dplyr::filter(DateTime > as.Date("2015-07-07")) %>%
+  dplyr::filter(hour(DateTime) %in% c(9, 10, 11, 12, 13)) %>%
+  dplyr::group_by(date, Depth, Taxon, DateTime) %>%
+  dplyr::summarise(Density_IndPerL = mean(Density_IndPerL)) %>% #average reps
+
+#sum taxa densities to get cladocera, copepod, and rotifer densities for 2014-2016
+#rotifers = total rotifers
+#cyclopoids + diaptomus + nauplii = copepods
+#d. ambigua, d. catawba, bosmina, chydorus = cladocerans
+#zoops_2014_2018 <- zoops %>% dplyr::filter(year(DateTime)<2019) %>%
+#  dplyr::group_by(DateTime, Depth, Taxon) %>%
+#  tidyr::pivot_wider(names_from = Taxon, values_from = Density_IndPerL) %>% 
+#  dplyr::mutate(ifelse(year(DateTime)))
+
+#write.csv(secchi, "field_data/field_zoops.csv", row.names=F)
+
+p1 <- hist(zoops$MeanLength_mm[zoops$Taxon %in% c("Rotifera")])
+p2 <- hist(zoops$MeanLength_mm[zoops$Taxon %in% c("Cladocera")])
+p3 <- hist(zoops$MeanLength_mm[zoops$Taxon %in% c("Copepoda")])
+plot(p1, col=rgb(1,0,0,1/4), xlim(0,1.2))
+plot(p2, col=rgb(1,0,1,1/4), xlim(0,1.2), add=T)
+
+ggplot(data=subset(zoops, Taxon %in% c("Rotifera","Copepoda","Cladocera") &
+                     as.Date(DateTime) > "2019-01-01"), 
+       aes(MeanLength_mm, fill = Taxon)) + geom_density(alpha = 0.2) +
+  theme_bw()
+
+ggplot(data=subset(zoops, Taxon %in% c("Cladocera") &
+                     as.Date(DateTime) > "2019-01-01"), 
+       aes(MeanLength_mm, fill = Taxon)) + geom_density(alpha = 0.2) +
+  theme_bw()
+
+ggplot(data=subset(zoops, Taxon %in% c("Bosmina","Daphnia","Ceriodaphnia") &
+                     as.Date(DateTime) > "2019-01-01"), 
+       aes(MeanLength_mm, fill = Taxon)) + geom_density(alpha = 0.2) +
+  theme_bw()
+
+ggplot(data=subset(zoops, Taxon %in% c("Copepoda") &
+                     as.Date(DateTime) > "2019-01-01"), 
+       aes(MeanLength_mm, fill = Taxon)) + geom_density(alpha = 0.2) +
+  theme_bw()
+
+ggplot(data=subset(zoops, Taxon %in% c("Cyclopoida","Calanoida", "nauplius") &
+                     as.Date(DateTime) > "2019-01-01"), 
+       aes(MeanLength_mm, fill = Taxon)) + geom_density(alpha = 0.2) +
+  theme_bw()
+
+ggplot(data=subset(zoops, Taxon %in% c("Rotifera") &
+                     as.Date(DateTime) > "2019-01-01"), 
+       aes(MeanLength_mm, fill = Taxon)) + geom_density(alpha = 0.2) +
+  theme_bw()
+
+ggplot(data=subset(zoops, Taxon %in% c("Conochilus","Lecane","Asplanchna","Kellicottia",
+                                       "Keratella","Synchaeta", "Hexarthra", "Monostyla",
+                                       "Lepadella", "Trichocerca", "Ascomorpha","Polyarthra") &
+                     as.Date(DateTime) > "2019-01-01"), 
+       aes(MeanLength_mm, fill = Taxon)) + geom_density(alpha = 0.2) +
+  theme_bw()
+
+#trying to pull from other summary file with more taxa 
+zoops_2019 <- read.csv("/Users/heatherwander/Documents/VirginiaTech/research/bvr_zoops_code/output/FCR_ZooplanktonSummary2019.csv")
+zoops_2020 <- read.csv("/Users/heatherwander/Documents/VirginiaTech/research/bvr_zoops_code/output/FCR_ZooplanktonSummary2020.csv")
+zoops_2021 <- read.csv("/Users/heatherwander/Documents/VirginiaTech/research/bvr_zoops_code/output/FCR_ZooplanktonSummary2021.csv")
+
+all_zoops <- rbind(zoops_2019,zoops_2020,zoops_2021)
+
+#only select mean length
+all_zoops <- all_zoops |> 
+  tidyr::pivot_longer(cols=ZoopDensity_No.pL:Lecane_PercentOftotalbiomassConcentration) |>
+dplyr::filter(grepl("size", name, ignore.case=T))
+
+ggplot(data=subset(all_zoops, name %in% c("RotiferaMeanSize_mm",
+                                           "CopepodaMeanSize_mm",
+                                           "CladoceraMeanSize_mm")), 
+       aes(value, fill = name)) + geom_density(alpha = 0.2) +
+  theme_bw()
+
+ggplot(data=subset(all_zoops, name %in% c("DaphniidaeMeanSize_mm",
+                                          "BosminidaeMeanSize_mm",
+                                          "CeriodaphniaMeanSize_mm")), 
+       aes(value, fill = name)) + geom_density(alpha = 0.2) +
+  theme_bw()

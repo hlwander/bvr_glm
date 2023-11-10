@@ -39,13 +39,15 @@ water_level<-get_surface_height(nc_file, ice.rm = TRUE, snow.rm = TRUE)
 wlevel <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022.csv") |> select(-...1)
   
 wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%Y-%m-%d", tz="EST"))
-wlevel <- wlevel %>% filter(Date>as.POSIXct("2015-07-06") & Date<as.POSIXct("2022-05-03"))
+wlevel <- wlevel %>% filter(Date>as.POSIXct("2015-07-06") & Date<as.POSIXct("2020-12-31"))
 
 plot(water_level$DateTime,water_level$surface_height)
 points(wlevel$Date, wlevel$WaterLevel_m, type="l",col="red")
 
 #calculate RMSE
 RMSE(water_level$surface_height,wlevel$WaterLevel_m)
+
+summary(lm(water_level$surface_height ~ wlevel$WaterLevel_m))$r.squared
 
 #get WRT
 volume<-get_var(nc_file, "Tot_V", reference="surface") #in m3
@@ -60,29 +62,16 @@ plot(evap$time, evap$evap)
 plot(precip$time, precip$precip)
 
 outflow<-read.csv("inputs/BVR_spillway_outflow_2015_2022_metInflow.csv", header=T)
-inflow_weir<-read.csv("inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow.csv", header=T)
+inflow_weir<-read.csv("inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.65X_silica_0.2X_nitrate_0.4X_ammonium_1.9X_docr_1.7Xdoc.csv", header=T)
 
 #plot inflow temp
 plot(as.Date(inflow_weir$time), inflow_weir$TEMP, type="l")
-
-#scale docr by 2 becuase too low
-inflow_scaled <- inflow_weir
-inflow_scaled$OGM_docr <- inflow_weir$OGM_docr * 2
-
-#save as new inflow file
-#write.csv(inflow_scaled,"inputs/BVR_inflow_2015_2021_allfractions_2poolsDOC_withch4_metInflow_2xdocr.csv", row.names = FALSE)
-
-inflow_weir<-read.csv("inputs/BVR_inflow_2015_2021_allfractions_2poolsDOC_withch4_metInflow_2xdocr.csv", header=T)
 
 outflow$time<-as.POSIXct(strptime(outflow$time, "%Y-%m-%d", tz="EST"))
 inflow_weir$time<-as.POSIXct(strptime(inflow_weir$time, "%Y-%m-%d", tz="EST"))
 
 #plot modeled docr with scaled inflows
 plot(as.Date(inflow_weir$time), inflow_weir$OGM_docr, type="l")
-
-
-# Scaled to inflow_scaling (as of 20200702 = 1.05)
-plot(inflow_weir$time,inflow_weir$FLOW*1.05)
 
 # Calculate WRT from modeled volume and measured outflow
 volume$time<-as.POSIXct(strptime(volume$time, "%Y-%m-%d", tz="EST"))
@@ -705,7 +694,7 @@ RMSE(mod,obs)
 #######################################################
 #### chlorophyll a #######
 
-var="PHY_TCHLA"
+var="PHY_tchla"
 field_file <- file.path(sim_folder,'/field_data/CleanedObsChla.csv') 
 
 obs<-read.csv('field_data/CleanedObsChla.csv', header=TRUE) %>% #read in observed chemistry data
@@ -771,32 +760,17 @@ r2 <-lm(mod ~ obs)
 #plot_var(file=nc_file,"PHY_DIATOMPCH4",reference="surface", col_lim=c(0,50))
 
 cyano <- get_var(file=nc_file,var_name = 'PHY_cyano',z_out=0.1,reference = 'surface') 
-plot(cyano$DateTime, cyano$PHY_cyano_0.1, col="cyan", type="l", ylab="Phyto C mmol/m3", ylim=c(0,30))
+plot(cyano$DateTime, cyano$PHY_cyano_0.1, col="cyan", type="l", ylab="Phyto C mmol/m3", ylim=c(0,100))
 green <- get_var(file=nc_file,var_name = 'PHY_green',z_out=0.1,reference = 'surface') 
 lines(green$DateTime, green$PHY_green_0.1, col="green")
 diatoms <- get_var(file=nc_file,var_name = 'PHY_diatom',z_out=0.1,reference = 'surface') 
 lines(diatoms$DateTime, diatoms$PHY_diatom_0.1, col="brown")
 legend("topleft", legend=c("Cyano", "Greens", "Diatoms"), fill= c("cyan", "green","brown"), cex=0.8)
-chla <- get_var(file=nc_file,var_name = 'PHY_TCHLA',z_out=0.1,reference = 'surface') 
-lines(chla$DateTime, chla$PHY_TCHLA_0.1, col="red")
+chla <- get_var(file=nc_file,var_name = 'PHY_tchla',z_out=0.1,reference = 'surface') 
+lines(chla$DateTime, chla$PHY_tchla_0.1, col="red")
 
-phytos <- get_var(file=nc_file,var_name = 'PHY_AGGREGATE',z_out=0.1,reference = 'surface') 
-plot(phytos$DateTime, phytos$PHY_AGGREGATE_0.1, col="cyan", type="l", ylab="Phyto C mmol/m3", ylim=c(0,30))
-
-cyano1 <- get_var(file=nc_file,var_name = 'PHY_CYANOPCH1',z_out=0.1,reference = 'surface') 
-plot(cyano1$DateTime, cyano1$PHY_CYANOPCH1_0.1, col="cyan", type="l", ylab="Phyto C mmol/m3", ylim=c(0,30))
-cyano2 <- get_var(file=nc_file,var_name = 'PHY_CYANONPCH2',z_out=0.1,reference = 'surface') 
-lines(cyano2$DateTime, cyano2$PHY_CYANONPCH2_0.1, col="blue")
-greens <- get_var(file=nc_file,var_name = 'PHY_CHLOROPCH3',z_out=0.1,reference = 'surface') 
-lines(greens$DateTime, greens$PHY_CHLOROPCH3_0.1, col="green")
-diatoms <- get_var(file=nc_file,var_name = 'PHY_DIATOMPCH4',z_out=0.1,reference = 'surface') 
-lines(diatoms$DateTime, diatoms$PHY_DIATOMPCH4_0.1, col="brown")
-legend("topleft", legend=c("Cyano1", "Cyano2","Greens", "Diatoms"), fill= c("cyan", "blue","green","brown"), cex=0.8)
-chla <- get_var(file=nc_file,var_name = 'PHY_TCHLA',z_out=0.1,reference = 'surface') 
-lines(chla$DateTime, chla$PHY_TCHLA_0.1, col="red")
-
-phytos <- get_var(file=nc_file,var_name = 'PHY_AGGREGATE',z_out=0.1,reference = 'surface') 
-plot(phytos$DateTime, phytos$PHY_AGGREGATE_0.1, col="cyan", type="l", ylab="Phyto C mmol/m3", ylim=c(0,30))
+phytos <- get_var(file=nc_file,var_name = 'PHY_tphy',z_out=0.1,reference = 'surface') 
+plot(phytos$DateTime, phytos$PHY_tphy_0.1, col="cyan", type="l", ylab="Phyto C mmol/m3", ylim=c(0,100))
 
 
 # ############
