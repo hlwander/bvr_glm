@@ -31,12 +31,12 @@ plot(inflow$time, inflow$FLOW)
 # going to assume temperature measured at FCR 100 is close to BVR inflow temp
 
 # Download FCR inflow data from EDI
-#inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/202/10/c065ff822e73c747f378efe47f5af12b" 
-#infile1 <- paste0(getwd(),"/inputs/Inflow_2013_2022.csv")
-#try(download.file(inUrl1,infile1,method="curl"))
-#if (is.na(file.size(infile1))) download.file(inUrl1,infile1,method="auto")
+inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/202/9/c065ff822e73c747f378efe47f5af12b" 
+infile1 <- tempfile()
+try(download.file(inUrl1,infile1,method="curl"))
+if (is.na(file.size(infile1))) download.file(inUrl1,infile1,method="auto")
 
-temp <- read.csv("./inputs/Inflow_2013_2022.csv") 
+temp <- read.csv(infile1)
 temp$DateTime = as.POSIXct(strptime(temp$DateTime,"%Y-%m-%d", tz="EST"))
 temp <- temp %>% select(DateTime, WVWA_Temp_C) %>% 
   rename(time=DateTime, TEMP=WVWA_Temp_C) %>%
@@ -61,8 +61,12 @@ plot(inflow$time, inflow$FLOW, type = "o")
 plot(inflow$time, inflow$TEMP, type = "l", col = "red")
 
 #now let's merge with chemistry
+inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/199/11/509f39850b6f95628d10889d66885b76" 
+infile1 <- tempfile()
+try(download.file(inUrl1,infile1,method="curl"))
+if (is.na(file.size(infile1))) download.file(inUrl1,infile1,method="auto")
 
-BVRchem <- read.csv("./inputs/chem_2013_2022.csv", header=T) %>%
+BVRchem <- read.csv(infile1, header=T) %>%
   select(Reservoir:DIC_mgL) %>%
   dplyr::filter(Reservoir=="BVR") %>%
   dplyr::filter(Site==100 | Site==200) %>%

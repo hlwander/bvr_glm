@@ -53,8 +53,8 @@ sensor_depth$WaterLevel[is.nan(sensor_depth$WaterLevel)] <- sensor_depth$WaterLe
 ```{r combine WL obs }
 # Get Water level observations to compare to calculated waterlevel to get an offset
 
-bvr_wl_obs <- dir(path = "/Users/heatherwander/Documents/VirginiaTech/research/Reservoirs/Data/DataNotYetUploadedToEDI/BVR drawdown/Data", pattern = "WaterLevel.csv")%>%  
-  map_df(~ read_csv(file.path(path = "/Users/heatherwander/Documents/VirginiaTech/research/Reservoirs/Data/DataNotYetUploadedToEDI/BVR drawdown/Data", .), col_types = cols(.default = "c"), skip = 0))%>%
+bvr_wl_obs <- dir(path = "/Users/heatherwander/Documents/VirginiaTech/research/BVR_GLM/bvr_glm/inputs/water_level", pattern = "WaterLevel.csv")%>%  
+  map_df(~ read_csv(file.path(path = "/Users/heatherwander/Documents/VirginiaTech/research/BVR_GLM/bvr_glm/inputs/water_level", .), col_types = cols(.default = "c"), skip = 0))%>%
   filter(Reservoir=="BVR")%>%
   drop_na(WaterLevel_ft)
 
