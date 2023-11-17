@@ -24,11 +24,11 @@
 /
 &mixing
    coef_mix_conv = 3!0.2
-   coef_wind_stir = 0.63!0.23
+   coef_wind_stir = 0.23
    coef_mix_shear = 0.3
-   coef_mix_turb = 0.49!0.51
+   coef_mix_turb = 0.51
    coef_mix_KH = 0.3
-   coef_mix_hyp = 0.44!0.51
+   coef_mix_hyp = 0.51
    deep_mixing = .true.
    coef_mix_shreq = 0
 /
@@ -83,7 +83,7 @@
    subdaily = .true.
    wind_factor = 0.8!1
    sw_factor = 1.01!1.1
-   lw_factor = 1.06!1.02
+   lw_factor = 1.02
    at_factor = 1
    rh_factor = 1
    rain_factor = 1
@@ -101,7 +101,7 @@
    strm_hf_angle = 55
    strmbd_slope = 0.05
    strmbd_drag = 0.03
-   inflow_factor = 0.99
+   inflow_factor = 0.9898!0.99
    inflow_fl = 'inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.65X_silica_0.2X_nitrate_0.4X_ammonium_1.9X_docr_1.7Xdoc.csv'
    inflow_varnum = 19
    inflow_vars = 'FLOW','TEMP','SALT','OXY_oxy','NIT_amm','NIT_nit','PHS_frp','OGM_doc','OGM_docr','OGM_poc','OGM_don','OGM_donr','OGM_pon','OGM_dop','OGM_dopr','OGM_pop','CAR_dic','CAR_ch4','SIL_rsi'
@@ -113,7 +113,7 @@
    bsn_len_outl = 855.03
    bsn_wid_outl = 55.96
    outflow_fl = 'inputs/BVR_spillway_outflow_2015_2022_metInflow.csv'
-   outflow_factor = 0.9865
+   outflow_factor = 0.9872
 /
 &snowice
    snow_albedo_factor = 1

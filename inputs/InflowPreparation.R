@@ -239,13 +239,13 @@ total_inflow$TEMP <- (1.5 * total_inflow$TEMP) - 9.21
 #make sure time is 12:00
 total_inflow$time <- total_inflow$time +  hours(12) + minutes(00) + seconds(00)
 
+#scale inflow so that water level AND wrt look reasonable
+#total_inflow$FLOW <- total_inflow$FLOW 
+
 plot(total_inflow$time, total_inflow$FLOW, type="l")
 
 #save scaled file
 write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.65X_silica_0.2X_nitrate_0.4X_ammonium_1.9X_docr_1.7Xdoc.csv", row.names = F)
-
-#write file for inflow for the weir, with 2 pools of OC (DOC + DOCR)  
-#write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow.csv", row.names = F)
 
 
 ##############################################################
@@ -256,7 +256,7 @@ write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_wi
 
 # Load in water level + volume data for BVR
 # Calculated in WaterLevel_BVR.Rmd (inputs/water_level)
-vol <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022.csv") %>% select(-(...1))
+vol <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022_interp.csv") %>% select(-(...1))
 vol$Date <- as.POSIXct(strptime(vol$Date, "%Y-%m-%d", tz = "EST"))
 
 vol1 <- vol %>% filter(Date>=as.Date('2015-07-07')&Date<=as.Date('2022-05-03')) %>% select(Date,vol_m3)
@@ -281,10 +281,6 @@ alldata <- alldata[!(is.na(alldata$FLOW)),]
 #drop last date so dfs line up
 alldata <- alldata[c(1:2493),]
 
-#manually line up these 2 datasets 2015-11-01, 2016-11-06, 2017-11-05, 2019-11-03 repeated twice
-#dvol <- dvol[-c(118,489,853,1581),]
-#alldata <- alldata[!(alldata$time=="2016-03-13" | alldata$time=="2017-03-12" | alldata$time=="2018-03-11"),] 
-
 #check to make sure dates line up
 df <- data.frame(one = alldata$time, two=dvol$Date) #had to drop 4 dates because missing between the 2 dfs
 
@@ -299,16 +295,16 @@ names(outflow)[1] <- "time"
 
 #diagnostic plot
 ggplot()+
-  geom_line(outflow,mapping=aes(x=as.Date(time),y=FLOW,color="Outflow"))+
+  #geom_line(outflow,mapping=aes(x=as.Date(time),y=FLOW,color="Outflow"))+
   geom_line(inflow,mapping=aes(x=as.Date(time),y=FLOW,color="Inflow"))+
   theme_classic(base_size=15)
 
 #make sure time is 12:00
 outflow$time <- outflow$time +  hours(12) + minutes(00) + seconds(00)
 
+#set negative and 0 flow = 0.0001
+outflow$FLOW[outflow$FLOW<=0] <- 0.0001
+
 #write file
 write.csv(outflow, "./inputs/BVR_spillway_outflow_2015_2022_metInflow.csv", row.names=F)
-  
-
-
 

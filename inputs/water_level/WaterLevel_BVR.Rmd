@@ -123,7 +123,10 @@ ts2 <- data.frame(Date = ts)
 
 # Join water level data with list of dates+time
 wl_pre_sensors <- left_join(ts2, wl_final, by = 'Date')%>%
-  fill(WaterLevel_m, .direction = "up")%>% # back fill based on obs from staff gauge
+  mutate(WaterLevel_m = ifelse(Date=="2015-07-07", 11.3, WaterLevel_m)) %>% #make first date be 11.3 for interpolation
+    mutate(WaterLevel_m = ifelse(Date=="2020-06-17", 11.9, WaterLevel_m)) %>% #make last date be 11.9 for interpolation
+  mutate(WaterLevel_m = zoo::na.approx(WaterLevel_m)) %>%
+  #fill(WaterLevel_m, .direction = "up")%>% # back fill based on obs from staff gauge
   mutate(Reservoir="BVR",
          Site=50)%>%
   select(Date, WaterLevel_m)
@@ -141,9 +144,9 @@ calc_sensor_depth<- sensor_depth%>%
   filter(Date<as.Date("2022-05-05"))
   
 
-wl_final<-rbind(wl_pre_sensors, calc_sensor_depth)
+wl_final<-rbind(wl_pre_sensors, calc_sensor_depthr_depth)
 
-write.csv(wl_final, "/Users/heatherwander/Documents/VirginiaTech/research/BVR_GLM/bvr_glm/inputs/water_level/BVR_WaterLevel_2015_2022.csv", row.names = F)
+write.csv(wl_final, "/Users/heatherwander/Documents/VirginiaTech/research/BVR_GLM/bvr_glm/inputs/water_level/BVR_WaterLevel_2015_2022_interp.csv", row.names = F)
 
 ```
 
@@ -203,7 +206,7 @@ bvr_wl_final$vol_m3 <- total_bathy$approx_volume / 1000
 bvr_wl_final$Date <- as.Date(bvr_wl_final$Date)
 
 #export file
-write.csv(bvr_wl_final, "/Users/heatherwander/Documents/VirginiaTech/research/BVR_GLM/bvr_glm/inputs/BVR_Daily_WaterLevel_Vol_2015_2022.csv")
+write.csv(bvr_wl_final, "/Users/heatherwander/Documents/VirginiaTech/research/BVR_GLM/bvr_glm/inputs/BVR_Daily_WaterLevel_Vol_2015_2022_interp.csv")
 
 ```
 
