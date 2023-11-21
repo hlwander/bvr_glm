@@ -84,8 +84,6 @@ plot(wrt$time,wrt$wrt)
 
 plot(volume$time,volume$Tot_V)
 
-test <- wrt[wrt$wrt<=2000,]
-
 hist(wrt$wrt, xlim = c(0,2000), breaks=1000)
 median(wrt$wrt)
 mean(wrt$wrt)
@@ -448,7 +446,7 @@ for(i in 1:length(depths)){
 #calculate RMSE
 NO3 <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
                              var_name=var)
-NO3 <-newdata[complete.cases(newdata),]
+NO3 <-NO3[complete.cases(NO3),]
 
 m_NO3 <- NO3$Modeled_NIT_nit[NO3$Depth>=0.1 & NO3$Depth<=0.1] #0.1
 o_NO3 <-  NO3$Observed_NIT_nit[NO3$Depth>=0.1 & NO3$Depth<=0.1]
@@ -462,20 +460,18 @@ m_NO3 <- NO3$Modeled_NIT_nit[NO3$Depth>=0 & NO3$Depth<=11] #all depths
 o_NO3 <-  NO3$Observed_NIT_nit[NO3$Depth>=0 & NO3$Depth<=11] 
 RMSE(m_NO3,o_NO3)
 
-summary(lm(NH4$Modeled_NIT_amm ~ NH4$Observed_NIT_amm))$r.squared
+summary(lm(NO3$Modeled_NIT_nit ~ NO3$Observed_NIT_nit))$r.squared
 
 #######################################################
 #### phosphate ########################################
 
 var="PHS_frp"
-field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
+field_file <- file.path(sim_folder,'/field_data/field_chem_2DOCpools.csv') 
 
 obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
   na.omit()
-
-#plot_var_compare(nc_file,field_file,var_name = var, precision="days",col_lim = c(0,1)) #compare obs vs modeled
 
 #get modeled concentrations for focal depths
 depths<- sort(as.numeric(unique(obs$Depth)))
@@ -492,47 +488,43 @@ compare<-na.omit(compare)
 for(i in 1:length(depths)){
   tempdf<-subset(compare, compare$Depth==depths[i])
   if(nrow(tempdf)>1){
-    plot(tempdf$DateTime,eval(parse(text=paste0("tempdf$",var,".y"))), type='l', col='red',
-         ylab=var, xlab='time',
+    plot(tempdf$DateTime,eval(parse(text=paste0("tempdf$",var,".y"))), type='p', col='red',
+         ylab=var, xlab='time', pch=19,
          main = paste0("Obs=Red,Mod=Black,Depth=",depths[i]))
     points(tempdf$DateTime, eval(parse(text=paste0("tempdf$",var,".x"))), type="l",col='black')
   }
 }
 
 #calculate RMSE 
-newdata <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
-                             var_name=var)
-newdata <-newdata[complete.cases(newdata),]
+PO4 <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
+                         var_name=var)
+PO4 <-PO4[complete.cases(PO4),]
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=0.1 & newdata$Depth<=0.1] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=0.1 & newdata$Depth<=0.1] 
-RMSE(mod,obs)
+m_PO4 <- PO4$Modeled_PHS_frp[PO4$Depth>=0.1 & PO4$Depth<=0.1] #0.1
+o_PO4 <-  PO4$Observed_PHS_frp[PO4$Depth>=0.1 & PO4$Depth<=0.1]
+RMSE(m_PO4,o_PO4)
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=9 & newdata$Depth<=9] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=9 & newdata$Depth<=9] 
-RMSE(mod,obs)
+m_PO4 <- PO4$Modeled_PHS_frp[PO4$Depth>=9 & PO4$Depth<=9] #9m
+o_PO4 <-  PO4$Observed_PHS_frp[PO4$Depth>=9 & PO4$Depth<=9] 
+RMSE(m_PO4,o_PO4)
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=5 & newdata$Depth<=5] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=5 & newdata$Depth<=5] 
-RMSE(mod,obs)
+m_PO4 <- PO4$Modeled_PHS_frp[PO4$Depth>=0 & PO4$Depth<=11] #all depths
+o_PO4 <-  PO4$Observed_PHS_frp[PO4$Depth>=0 & PO4$Depth<=11] 
+RMSE(m_PO4,o_PO4)
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=0.1 & newdata$Depth<=9.3] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=0.1 & newdata$Depth<=9.3] 
-RMSE(mod,obs)
+summary(lm(PO4$Modeled_PHS_frp ~ PO4$Observed_PHS_frp))$r.squared
 
 
 #######################################################
 #### dissolved organic carbon: recalcitrant ###########
 
 var="OGM_docr"
-field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
+field_file <- file.path(sim_folder,'/field_data/field_chem_2DOCpools.csv') 
 
 obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
   na.omit()
-
-#plot_var_compare(nc_file,field_file,var_name = var, precision="days",col_lim = c(0,300)) #compare obs vs modeled
 
 #get modeled concentrations for focal depths
 depths<- sort(as.numeric(unique(obs$Depth)))
@@ -549,56 +541,42 @@ compare<-na.omit(compare)
 for(i in 1:length(depths)){
   tempdf<-subset(compare, compare$Depth==depths[i])
   if(nrow(tempdf)>1){
-    plot(tempdf$DateTime,eval(parse(text=paste0("tempdf$",var,".y"))), type='o', col='red',
-         ylab=var, xlab='time',
+    plot(tempdf$DateTime,eval(parse(text=paste0("tempdf$",var,".y"))), type='p', col='red',
+         ylab=var, xlab='time', pch=19,
          main = paste0("Obs=Red,Mod=Black,Depth=",depths[i]))
     points(tempdf$DateTime, eval(parse(text=paste0("tempdf$",var,".x"))), type="l",col='black')
   }
 }
 
 #calculate RMSE
-newdata <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
-                             var_name=var)
-newdata <-newdata[complete.cases(newdata),]
+docr <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
+                         var_name=var)
+docr <-docr[complete.cases(docr),]
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=0.1 & newdata$Depth<=0.1] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=0.1 & newdata$Depth<=0.1] 
-RMSE(mod,obs)
+m_docr <- docr$Modeled_OGM_docr[docr$Depth>=0.1 & docr$Depth<=0.1] #0.1
+o_docr <-  docr$Observed_OGM_docr[docr$Depth>=0.1 & docr$Depth<=0.1]
+RMSE(m_docr,o_docr)
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=9 & newdata$Depth<=9] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=9 & newdata$Depth<=9] 
-RMSE(mod,obs)
+m_docr <- docr$Modeled_OGM_docr[docr$Depth>=9 & docr$Depth<=9] #9m
+o_docr <-  docr$Observed_OGM_docr[docr$Depth>=9 & docr$Depth<=9] 
+RMSE(m_docr,o_docr)
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=5 & newdata$Depth<=5] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=5 & newdata$Depth<=5] 
-RMSE(mod,obs)
+m_docr <- docr$Modeled_OGM_docr[docr$Depth>=0 & docr$Depth<=11] #all depths
+o_docr <-  docr$Observed_OGM_docr[docr$Depth>=0 & docr$Depth<=11] 
+RMSE(m_docr,o_docr)
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=0.1 & newdata$Depth<=9.3] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=0.1 & newdata$Depth<=9.3] 
-RMSE(mod,obs)
+summary(lm(docr$Modeled_OGM_docr ~ docr$Observed_OGM_docr))$r.squared
 
 
 #######################################################
 #### dissolved organic carbon: labile ###########
 
-var="OGM_docr"
+var="OGM_doc"
 
 obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
   na.omit()
-
-obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE)
-
-#scale doc values up by 2 bc having a hard time matching modeled to observed
-docr_scaled <- obs[,c(1:6,8)]
-docr_scaled$OGM_docr <- obs$OGM_docr *2
-
-#save new doc file
-#write.csv(docr_scaled, "field_data/field_chem_2DOCpools_docr_scaled.csv", row.names = FALSE)
-
-
-#plot_var_compare(nc_file,field_file,var_name = var, precision="days",col_lim = c(0,400)) #compare obs vs modeled
 
 #get modeled concentrations for focal depths
 depths<- sort(as.numeric(unique(obs$Depth)))
@@ -615,34 +593,31 @@ compare<-na.omit(compare)
 for(i in 1:length(depths)){
   tempdf<-subset(compare, compare$Depth==depths[i])
   if(nrow(tempdf)>1){
-    plot(tempdf$DateTime,eval(parse(text=paste0("tempdf$",var,".y"))), type='l', col='red',
-         ylab=var, xlab='time',
+    plot(tempdf$DateTime,eval(parse(text=paste0("tempdf$",var,".y"))), type='p', col='red',
+         ylab=var, xlab='time', pch=19,
          main = paste0("Obs=Red,Mod=Black,Depth=",depths[i]))
     points(tempdf$DateTime, eval(parse(text=paste0("tempdf$",var,".x"))), type="l",col='black')
   }
 }
 
-#calculate RMSE for DIC
-newdata <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
-                             var_name=var)
-newdata <-newdata[complete.cases(newdata),]
+#calculate RMSE for DOC labile
+doc <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
+                          var_name=var)
+doc <-doc[complete.cases(doc),]
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=0.1 & newdata$Depth<=0.1] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=0.1 & newdata$Depth<=0.1] 
-RMSE(mod,obs)
+m_doc <- doc$Modeled_OGM_doc[doc$Depth>=0.1 & doc$Depth<=0.1] #0.1
+o_doc <-  doc$Observed_OGM_doc[doc$Depth>=0.1 & doc$Depth<=0.1]
+RMSE(m_doc,o_doc)
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=9 & newdata$Depth<=9] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=9 & newdata$Depth<=9] 
-RMSE(mod,obs)
+m_doc <- doc$Modeled_OGM_doc[doc$Depth>=9 & doc$Depth<=9] #9m
+o_doc <-  doc$Observed_OGM_doc[doc$Depth>=9 & doc$Depth<=9] 
+RMSE(m_doc,o_doc)
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=5 & newdata$Depth<=5] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=5 & newdata$Depth<=5] 
-RMSE(mod,obs)
+m_doc <- doc$Modeled_OGM_doc[doc$Depth>=0 & doc$Depth<=11] #all depths
+o_doc <-  doc$Observed_OGM_doc[doc$Depth>=0 & doc$Depth<=11] 
+RMSE(m_doc,o_doc)
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=0.1 & newdata$Depth<=9.3] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=0.1 & newdata$Depth<=9.3] 
-RMSE(mod,obs)
-
+summary(lm(doc$Modeled_OGM_doc ~ doc$Observed_OGM_doc))$r.squared
 
 #######################################################
 #### chlorophyll a #######
@@ -655,8 +630,6 @@ obs<-read.csv('field_data/CleanedObsChla.csv', header=TRUE) %>% #read in observe
   select(DateTime, Depth, var) %>%
   na.omit()
 
-#plot_var_compare(nc_file,field_file,var_name = var, precision="days",col_lim = c(0,50)) #compare obs vs modeled
-
 #get modeled concentrations for focal depths
 depths<- sort(as.numeric(unique(obs$Depth)))
 
@@ -672,46 +645,33 @@ compare<-na.omit(compare)
 for(i in 1:length(depths)){
   tempdf<-subset(compare, compare$Depth==depths[i])
   if(nrow(tempdf)>1){
-    plot(tempdf$DateTime,eval(parse(text=paste0("tempdf$",var,".y"))), type='l', col='red',
-         ylab=var, xlab='time',
+    plot(tempdf$DateTime,eval(parse(text=paste0("tempdf$",var,".y"))), type='p', col='red',
+         ylab=var, xlab='time', pch=19,
          main = paste0("Obs=Red,Mod=Black,Depth=",depths[i]))
     points(tempdf$DateTime, eval(parse(text=paste0("tempdf$",var,".x"))), type="l",col='black')
   }
 }
 
 #calculate RMSE
-newdata <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
-                             var_name=var)
-newdata <-newdata[complete.cases(newdata),]
+chl <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
+                         var_name=var)
+chl <-chl[complete.cases(chl),]
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=0.1 & newdata$Depth<=0.1] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=0.1 & newdata$Depth<=0.1] 
-RMSE(mod,obs)
+m_chl <- chl$Modeled_PHY_tchla[chl$Depth>=0.1 & chl$Depth<=0.1] #0.1
+o_chl <-  chl$Observed_PHY_tchla[chl$Depth>=0.1 & chl$Depth<=0.1]
+RMSE(m_chl,o_chl)
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=9 & newdata$Depth<=9] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=9 & newdata$Depth<=9] 
-RMSE(mod,obs)
+m_chl <- chl$Modeled_PHY_tchla[chl$Depth>=9 & chl$Depth<=9] #9m
+o_chl <-  chl$Observed_PHY_tchla[chl$Depth>=9 & chl$Depth<=9] 
+RMSE(m_chl,o_chl)
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=5 & newdata$Depth<=5] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=5 & newdata$Depth<=5] 
-RMSE(mod,obs)
+m_chl <- chl$Modeled_PHY_tchla[chl$Depth>=0 & chl$Depth<=11] #all depths
+o_chl <-  chl$Observed_PHY_tchla[chl$Depth>=0 & chl$Depth<=11] 
+RMSE(m_chl,o_chl)
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=0.1 & newdata$Depth<=9.3] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=0.1 & newdata$Depth<=9.3] 
-RMSE(mod,obs)
+summary(lm(chl$Modeled_PHY_tchla ~ chl$Observed_PHY_tchla))$r.squared
 
-mod <- eval(parse(text=paste0("newdata$Modeled_",var)))[newdata$Depth>=1 & newdata$Depth<=1] 
-obs <- eval(parse(text=paste0("newdata$Observed_",var)))[newdata$Depth>=1 & newdata$Depth<=1] 
-RMSE(mod,obs)
-r2 <-lm(mod ~ obs)
-
-#plot individual phyto groups
-#plot_var(file=nc_file,"PHY_TCHLA",reference="surface", col_lim=c(0,30))
-#plot_var(file=nc_file,"PHY_CYANOPCH1",reference="surface", col_lim=c(0,50))
-#plot_var(file=nc_file,"PHY_CYANONPCH2",reference="surface", col_lim=c(0,50))
-#plot_var(file=nc_file,"PHY_CHLOROPCH3",reference="surface", col_lim=c(0,50))
-#plot_var(file=nc_file,"PHY_DIATOMPCH4",reference="surface", col_lim=c(0,50))
-
+#community
 cyano <- get_var(file=nc_file,var_name = 'PHY_cyano',z_out=0.1,reference = 'surface') 
 plot(cyano$DateTime, cyano$PHY_cyano_0.1, col="cyan", type="l", ylab="Phyto C mmol/m3", ylim=c(0,100))
 green <- get_var(file=nc_file,var_name = 'PHY_green',z_out=0.1,reference = 'surface') 
@@ -725,38 +685,11 @@ lines(chla$DateTime, chla$PHY_tchla_0.1, col="red")
 phytos <- get_var(file=nc_file,var_name = 'PHY_tphy',z_out=0.1,reference = 'surface') 
 plot(phytos$DateTime, phytos$PHY_tphy_0.1, col="cyan", type="l", ylab="Phyto C mmol/m3", ylim=c(0,100))
 
+#######################################################
+#### ZOOPS! #######
 
-# ############
-# #calculate RMSE for CHLA Just May-Oct
-# 
-# field_file <- file.path(sim_folder,'ARIMA_chla_2013_2016.csv') 
-# CHLA <- resample_to_field(nc_file, field_file, precision="days", method='interp', var_name="PHY_TCHLA")
-# CHLA <-CHLA[complete.cases(CHLA),]
-# 
-# m_CHLA <- CHLA$Modeled_PHY_TCHLA[CHLA$Depth>=1 & CHLA$Depth<=1] #depths from 6-9m
-# o_CHLA <- CHLA$Observed_PHY_TCHLA[CHLA$Depth>=1 & CHLA$Depth<=1] #depths from 6-9m
-# RMSE(m_CHLA,o_CHLA)
-# r2 <-lm(m_CHLA ~ o_CHLA)
-# 
-# obs_chla <- read.csv("ARIMA_chla_2013_2016.csv", header=T)
-# obs_chla$DateTime<-as.POSIXct(strptime(obs_chla$DateTime, "%Y-%m-%d", tz="EST")) 
-# depths<- c(1.0)  
-# mod_chla <- get_var(nc_file, "PHY_TCHLA", reference="surface", z_out=depths)
-# colnames(mod_chla) <- c("time", "1.0")
-# long_mod_chla <- gather(mod_chla, key = "depth", value="obsPHY_TCHLA", "1.0", factor_key = TRUE) #go from wide to long
-# long_mod_chla$depth <- as.numeric(levels(long_mod_chla$depth))[long_mod_chla$depth] 
-# colnames(long_mod_chla)=c("DateTime", "Depth", "modeledPHY_TCHLA")
-# #lets do depth by depth comparisons of the sims
-# chla_compare<-merge(long_mod_chla, obs_chla, by=c("DateTime","Depth"))
-# chla_compare <- chla_compare[complete.cases(chla_compare), ]
-# for(i in 1:length(unique(chla_compare$Depth))){
-#   tempdf<-subset(chla_compare, chla_compare$Depth==depths[i])
-#   plot(tempdf$DateTime,tempdf$PHY_TCHLA, type='l', col='red',
-#        ylab='Chla ug/L', xlab='time',
-#        main = paste0("Obs=Red,Mod=Black,Depth=",depths[i]) ,ylim=c(-0.00001,15))
-#   points(tempdf$DateTime, tempdf$modeledPHY_TCHLA, type="l",col='black')
-# }
-#write.csv(mod_chla, "Chla1mForWhitney_28June2019.csv")
+
+
 
 #######################################################
 #### ancillary code #######
@@ -781,24 +714,16 @@ plot(DICish$DateTime, DICish$CAR_dic_0.1)
 
 #Particulate organic P
 pop9 <- get_var(file=nc_file,var_name = 'OGM_pop',z_out=9,reference = 'surface') 
-plot(pop9$DateTime, pop9$OGM_pop_9, ylim=c(0,0.5))
+plot(pop9$DateTime, pop9$OGM_pop_9, ylim=c(0,2.3))
 
-get_var(file=nc_file,var_name = 'CAR_atm_ch4_flux',reference = "bottom",z_out = 1) #, z_out=1, reference='surface')
-
-nc<-nc_open("output/output.nc")
-names(nc$var)#get list of variables in data
-names(nc$dim)#get list of variables in data
-time <- ncvar_get(nc, 'time')
-time_1 <- as.POSIXct('2013-05-15 00:00:00' , tz = 'EST') + time*60*60
-ch4flux<-t(as.data.frame(ncvar_get(nc,varid="CAR_atm_ch4_flux")))
-data<-as.data.frame(cbind(time_1,ch4flux[,1]))
-data$time_1<-as.POSIXct(strptime(data$time_1, "%Y-%m-%d", tz="EST"))
-plot(time_1,ch4flux[,1], ylim=c(0,2.5), ylab="CH4 flux, mmol/m2/d", xlab="Date")
-points(time_1,(ch4flux[,1]+sample(rnorm(1,mean=0.3,sd=0.3))), col="red")
+ch4 <- get_var(file=nc_file,var_name = 'CAR_ch4_atm',reference = "bottom",z_out = 1) #, z_out=1, reference='surface')
+plot(ch4$DateTime, ch4$CAR_ch4_atm)
+points(ch4$DateTime, (ch4$CAR_ch4_atm + sample(rnorm(1,mean=0.3,sd=0.3))), col="red")
 legend("topleft", c("Baseline","+2 degrees"), fill=c("black","red"))
 
+nc <- ncdf4::nc_open(nc_file)
+names(nc$var)#get list of variables in data
 
-nc_close(nc)
-
-ads <- get_var(file=nc_file,var_name = 'PHS_frp_ads',z_out=c(1,5,9),reference = 'surface') 
-plot(ads$DateTime, ads$PHS_frp_ads_9)
+#exchange across sed water interface
+ads <- get_var(file=nc_file,var_name = 'PHS_frp_dsf',z_out=c(1,5,9),reference = 'surface') 
+plot(ads$DateTime, ads$PHS_frp_dsf)

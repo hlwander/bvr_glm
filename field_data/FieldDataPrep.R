@@ -459,96 +459,71 @@ ggplot(pH, aes(time, pH, colour= depth)) +
 #try(download.file(inUrl1,infile1,method="curl"))
 #if (is.na(file.size(infile1))) download.file(inUrl1,infile1,method="auto")
 
-zoops <- read.csv("field_data/zoop_summary_2014-2022.csv", header=T) %>%
-  dplyr::filter(Reservoir=="BVR") %>%
-  dplyr::filter(Site==50) %>%
-  dplyr::filter(CollectionMethod=="Tow") %>%
-  dplyr::filter(StartDepth_m > 8.6) %>%
-  #dplyr::filter(Taxon %in% c("Cladocera","Copepoda", "Rotifera")) %>%
-  #dplyr::filter(Flag_Density_m==0) %>%
-  dplyr::rename(Depth = StartDepth_m) %>%
-  dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d %H:%M:%S", tz="EST"))) %>%
-  dplyr::mutate(date = as.Date(DateTime)) %>%
-  dplyr::select(DateTime, date, Depth, Rep, Taxon, Density_IndPerL) %>%
-  dplyr::filter(DateTime > as.Date("2015-07-07")) %>%
-  dplyr::filter(hour(DateTime) %in% c(9, 10, 11, 12, 13)) %>%
-  dplyr::group_by(date, Depth, Taxon, DateTime) %>%
-  dplyr::summarise(Density_IndPerL = mean(Density_IndPerL)) %>% #average reps
+#read in bvr tow data
+zoops <- read.csv("field_data/zoop_summary_2014-2022.csv", header=T) |>
+  filter(CollectionMethod=="Tow" & Reservoir %in% c("BVR") &
+           StartDepth_m > 7.1) |> 
+  select(-c(Site,EndDepth_m,CollectionMethod, Reservoir))
 
-#sum taxa densities to get cladocera, copepod, and rotifer densities for 2014-2016
-#rotifers = total rotifers
-#cyclopoids + diaptomus + nauplii = copepods
-#d. ambigua, d. catawba, bosmina, chydorus = cladocerans
-#zoops_2014_2018 <- zoops %>% dplyr::filter(year(DateTime)<2019) %>%
-#  dplyr::group_by(DateTime, Depth, Taxon) %>%
-#  tidyr::pivot_wider(names_from = Taxon, values_from = Density_IndPerL) %>% 
-#  dplyr::mutate(ifelse(year(DateTime)))
+#split data into pre 2019 and post
+zoops_2016_2018 <- zoops[as.Date(zoops$DateTime)<"2019-01-01",]
+zoops_2019_2021 <- zoops[as.Date(zoops$DateTime)>="2019-01-01",]
 
-#write.csv(secchi, "field_data/field_zoops.csv", row.names=F)
+#calculate cladoceran, copepod, and rotifer density for 2014-2018 data
+zoops_3groups_pre <- zoops_2016_2018 |> 
+  group_by(DateTime, StartDepth_m) |> 
+  summarise(Cladocera_Density_IndPerL = sum(Density_IndPerL[
+    Taxon %in% c("Bosmina","D. catawba", "Chydorus","D. ambigua",
+                 "Diaphanosoma","Ceriodaphnia")]),
+            Copepoda_Density_IndPerL = sum(Density_IndPerL[
+              Taxon %in% c("Diaptomus","Nauplii", "Cyclopoids")]),
+            Rotifera_Density_IndPerL = sum(Density_IndPerL[
+              Taxon %in% c("Total Rotifers")]))
 
-p1 <- hist(zoops$MeanLength_mm[zoops$Taxon %in% c("Rotifera")])
-p2 <- hist(zoops$MeanLength_mm[zoops$Taxon %in% c("Cladocera")])
-p3 <- hist(zoops$MeanLength_mm[zoops$Taxon %in% c("Copepoda")])
-plot(p1, col=rgb(1,0,0,1/4), xlim(0,1.2))
-plot(p2, col=rgb(1,0,1,1/4), xlim(0,1.2), add=T)
+zoops_final_pre <- zoops_3groups_pre |> 
+  group_by(DateTime, StartDepth_m) |> 
+  pivot_longer(cols=Cladocera_Density_IndPerL:Rotifera_Density_IndPerL,
+               names_to = c("Taxon"),
+               values_to = "Density_IndPerL") |> 
+  mutate(DateTime = as.Date(DateTime)) |> 
+  mutate(Density_IndPerL = Density_IndPerL * (1/0.031)) |>  #10m bvr neteff from 2016 (n=2) - note that 7m neteff was also 0.31
+  #avg from 2020 and 2021 is 0.021...
+  mutate(Taxon = str_extract(Taxon, "[^_]+")) #extract taxon before the first _
 
-ggplot(data=subset(zoops, Taxon %in% c("Rotifera","Copepoda","Cladocera") &
-                     as.Date(DateTime) > "2019-01-01"), 
-       aes(MeanLength_mm, fill = Taxon)) + geom_density(alpha = 0.2) +
-  theme_bw()
+#average reps when appropriate
+zoops_final_post <- zoops_2019_2021 |> 
+  mutate(DateTime = as.POSIXct(DateTime, format="%Y-%m-%d %H:%M:%S", tz="UTC")) |> 
+  filter(hour(DateTime) %in% c(9,10,11,12,13,14)) |> #drop nighttime samples
+  filter(Taxon %in% c("Cladocera","Copepoda","Rotifera")) |> 
+  mutate(DateTime = as.Date(DateTime)) |> 
+  group_by(StartDepth_m, DateTime, Taxon) |> 
+  summarise(Density_IndPerL = mean(Density_IndPerL))
 
-ggplot(data=subset(zoops, Taxon %in% c("Cladocera") &
-                     as.Date(DateTime) > "2019-01-01"), 
-       aes(MeanLength_mm, fill = Taxon)) + geom_density(alpha = 0.2) +
-  theme_bw()
+#combine all zoop data
+all_zoops_final <- bind_rows(zoops_final_pre, zoops_final_post) |> 
+  mutate_all(~replace(., is.nan(.), NA)) |>  #replace NAN with NA
+  ungroup() |> select(-StartDepth_m) #dropping, but note that depths range from 8-11.5m....
 
-ggplot(data=subset(zoops, Taxon %in% c("Bosmina","Daphnia","Ceriodaphnia") &
-                     as.Date(DateTime) > "2019-01-01"), 
-       aes(MeanLength_mm, fill = Taxon)) + geom_density(alpha = 0.2) +
-  theme_bw()
+#write.csv(all_zoops_final, "field_data/field_zoops.csv", row.names=F)
 
-ggplot(data=subset(zoops, Taxon %in% c("Copepoda") &
-                     as.Date(DateTime) > "2019-01-01"), 
-       aes(MeanLength_mm, fill = Taxon)) + geom_density(alpha = 0.2) +
-  theme_bw()
+#ggplot(data=subset(all_zoops_final, DateTime <= "2019-01-01"), 
+#       aes(DateTime,Density_IndPerL, group = Taxon)) + 
+#  geom_point() + theme_bw() + facet_wrap(~Taxon, scales="free_y", nrow=3)
+#
+#ggplot(data=subset(all_zoops_final, DateTime >= "2019-01-01"), 
+#       aes(DateTime,Density_IndPerL, group = Taxon)) + 
+#  geom_point() + theme_bw() + facet_wrap(~Taxon, scales="free_y", nrow=3)
 
-ggplot(data=subset(zoops, Taxon %in% c("Cyclopoida","Calanoida", "nauplius") &
-                     as.Date(DateTime) > "2019-01-01"), 
-       aes(MeanLength_mm, fill = Taxon)) + geom_density(alpha = 0.2) +
-  theme_bw()
 
-ggplot(data=subset(zoops, Taxon %in% c("Rotifera") &
-                     as.Date(DateTime) > "2019-01-01"), 
-       aes(MeanLength_mm, fill = Taxon)) + geom_density(alpha = 0.2) +
-  theme_bw()
+ggplot(all_zoops_final, aes(DateTime,Density_IndPerL, group = Taxon)) + 
+  geom_point() + theme_bw() + facet_wrap(~Taxon, scales="free_y", nrow=3)
 
-ggplot(data=subset(zoops, Taxon %in% c("Conochilus","Lecane","Asplanchna","Kellicottia",
-                                       "Keratella","Synchaeta", "Hexarthra", "Monostyla",
-                                       "Lepadella", "Trichocerca", "Ascomorpha","Polyarthra") &
-                     as.Date(DateTime) > "2019-01-01"), 
-       aes(MeanLength_mm, fill = Taxon)) + geom_density(alpha = 0.2) +
-  theme_bw()
+#add doy and year column
+all_zoops_final$doy <- yday(all_zoops_final$DateTime)
+all_zoops_final$year <- year(all_zoops_final$DateTime)
 
-#trying to pull from other summary file with more taxa 
-zoops_2019 <- read.csv("/Users/heatherwander/Documents/VirginiaTech/research/bvr_zoops_code/output/FCR_ZooplanktonSummary2019.csv")
-zoops_2020 <- read.csv("/Users/heatherwander/Documents/VirginiaTech/research/bvr_zoops_code/output/FCR_ZooplanktonSummary2020.csv")
-zoops_2021 <- read.csv("/Users/heatherwander/Documents/VirginiaTech/research/bvr_zoops_code/output/FCR_ZooplanktonSummary2021.csv")
-
-all_zoops <- rbind(zoops_2019,zoops_2020,zoops_2021)
-
-#only select mean length
-all_zoops <- all_zoops |> 
-  tidyr::pivot_longer(cols=ZoopDensity_No.pL:Lecane_PercentOftotalbiomassConcentration) |>
-dplyr::filter(grepl("size", name, ignore.case=T))
-
-ggplot(data=subset(all_zoops, name %in% c("RotiferaMeanSize_mm",
-                                           "CopepodaMeanSize_mm",
-                                           "CladoceraMeanSize_mm")), 
-       aes(value, fill = name)) + geom_density(alpha = 0.2) +
-  theme_bw()
-
-ggplot(data=subset(all_zoops, name %in% c("DaphniidaeMeanSize_mm",
-                                          "BosminidaeMeanSize_mm",
-                                          "CeriodaphniaMeanSize_mm")), 
-       aes(value, fill = name)) + geom_density(alpha = 0.2) +
-  theme_bw()
+#look at doy on x and year by color
+ggplot(all_zoops_final, aes(doy, Density_IndPerL, color=as.factor(year))) + 
+  geom_point() + theme_bw() + facet_wrap(~Taxon, scales="free_y", nrow=3) +
+  geom_line()
+  

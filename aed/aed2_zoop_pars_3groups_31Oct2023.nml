@@ -33,7 +33,7 @@
 !         prey(3)%zoop_prey : [  string] - State variable name for zooplankton prey
 !         prey(3)%Pzoo_prey : [    real] - Preference factors for zooplankton predators grazing on prey
 &zoop_params
-  zoop_param%zoop_name            =       'cladocerans',      'copepods',      'rotifers',      
+  zoop_param%zoop_name            =       'cladocerans',      'copepods',      'rotifers'
   zoop_param%zoop_initial         =           2.9,          4.3,           40          
   zoop_param%min_zoo              =           0.1,      0.1,         0.03        
   zoop_param%Rgrz_zoo             =           1.1,         1.67,          0.5         
