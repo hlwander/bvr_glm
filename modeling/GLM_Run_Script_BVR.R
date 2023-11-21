@@ -688,6 +688,55 @@ plot(phytos$DateTime, phytos$PHY_tphy_0.1, col="cyan", type="l", ylab="Phyto C m
 #######################################################
 #### ZOOPS! #######
 
+var="ZOO_cladocerans"
+var="ZOO_copepods"
+var="ZOO_rotifers"
+
+obs<-read.csv('field_data/field_zoops.csv', header=TRUE) %>% #read in observed chemistry data
+  dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
+  select(DateTime, var) %>%
+  na.omit()
+
+#get modeled concentrations for focal depths
+depths<- sort(as.numeric(unique(obs$Depth)))
+
+#mod<- get_var(nc_file, var, reference="surface") %>%
+#  pivot_longer(cols=starts_with(paste0(var,"_")), names_to="Depth", names_prefix=paste0(var,"_"), values_to = var) %>%
+#  mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
+#  na.omit()
+
+#lets do depth by depth comparisons of the sims
+compare<-merge(mod, obs, by=c("DateTime","Depth"))
+compare<-na.omit(compare)
+for(i in 1:length(depths)){
+  tempdf<-subset(compare, compare$Depth==depths[i])
+  if(nrow(tempdf)>1){
+    plot(tempdf$DateTime,eval(parse(text=paste0("tempdf$",var,".y"))), type='p', col='red',
+         ylab=var, xlab='time', pch=19,
+         main = paste0("Obs=Red,Mod=Black,Depth=",depths[i]))
+    points(tempdf$DateTime, eval(parse(text=paste0("tempdf$",var,".x"))), type="l",col='black')
+  }
+}
+
+#calculate RMSE for DOC labile
+doc <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
+                         var_name=var)
+doc <-doc[complete.cases(doc),]
+
+m_doc <- doc$Modeled_OGM_doc[doc$Depth>=0.1 & doc$Depth<=0.1] #0.1
+o_doc <-  doc$Observed_OGM_doc[doc$Depth>=0.1 & doc$Depth<=0.1]
+RMSE(m_doc,o_doc)
+
+m_doc <- doc$Modeled_OGM_doc[doc$Depth>=9 & doc$Depth<=9] #9m
+o_doc <-  doc$Observed_OGM_doc[doc$Depth>=9 & doc$Depth<=9] 
+RMSE(m_doc,o_doc)
+
+m_doc <- doc$Modeled_OGM_doc[doc$Depth>=0 & doc$Depth<=11] #all depths
+o_doc <-  doc$Observed_OGM_doc[doc$Depth>=0 & doc$Depth<=11] 
+RMSE(m_doc,o_doc)
+
+summary(lm(doc$Modeled_OGM_doc ~ doc$Observed_OGM_doc))$r.squared
+
 
 
 

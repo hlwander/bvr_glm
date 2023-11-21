@@ -23,9 +23,9 @@
  'DOmin_zoo',2,2,2
  'Cmin_grz_zoo',0.05,0.05,0.05
  'num_prey',3,3,3
- 'prey(1)%zoop_prey', 'PHY_green', 'PHY_green', 'PHY_green'
- 'prey(1)%Pzoo_prey',0.5,0.5,0.7
- 'prey(2)%zoop_prey', 'PHY_diatom', 'PHY_diatom', 'PHY_diatom'
- 'prey(2)%Pzoo_prey',0.3,0.1,0.1
- 'prey(3)%zoop_prey', 'OGM_poc', 'OGM_poc', 'OGM_poc'
- 'prey(3)%Pzoo_prey',0.2,0.4,0.2
+'prey(1)%zoop_prey', 'PHY_green', 'PHY_green', 'PHY_green'
+'prey(1)%Pzoo_prey',0.5,0.5,0.7
+'prey(2)%zoop_prey', 'PHY_diatom', 'PHY_diatom', 'PHY_diatom'
+'prey(2)%Pzoo_prey',0.3,0.1,0.1
+'prey(3)%zoop_prey', 'OGM_poc', 'OGM_poc', 'OGM_poc'
+'prey(3)%Pzoo_prey',0.2,0.4,0.2

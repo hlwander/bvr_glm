@@ -485,6 +485,7 @@ zoops_final_pre <- zoops_3groups_pre |>
   pivot_longer(cols=Cladocera_Density_IndPerL:Rotifera_Density_IndPerL,
                names_to = c("Taxon"),
                values_to = "Density_IndPerL") |> 
+  filter(hour(DateTime) %in% c(9,10,11,12,13,14)) |> #drop nighttime samples
   mutate(DateTime = as.Date(DateTime)) |> 
   mutate(Density_IndPerL = Density_IndPerL * (1/0.031)) |>  #10m bvr neteff from 2016 (n=2) - note that 7m neteff was also 0.31
   #avg from 2020 and 2021 is 0.021...
@@ -500,9 +501,17 @@ zoops_final_post <- zoops_2019_2021 |>
   summarise(Density_IndPerL = mean(Density_IndPerL))
 
 #combine all zoop data
-all_zoops_final <- bind_rows(zoops_final_pre, zoops_final_post) |> 
+all_zoops <- bind_rows(zoops_final_pre, zoops_final_post) |> 
   mutate_all(~replace(., is.nan(.), NA)) |>  #replace NAN with NA
   ungroup() |> select(-StartDepth_m) #dropping, but note that depths range from 8-11.5m....
+
+#reformat forr glm aed
+all_zoops_final <- all_zoops |> group_by(Taxon) |> 
+  pivot_wider(names_from = Taxon, values_from = Density_IndPerL,
+               names_glue = "{Taxon}_density_NopL") |> 
+  rename(ZOO_cladocerans = Cladocera_density_NopL,
+         ZOO_copepods = Copepoda_density_NopL,
+         ZOO_rotifers = Rotifera_density_NopL)
 
 #write.csv(all_zoops_final, "field_data/field_zoops.csv", row.names=F)
 
@@ -515,15 +524,19 @@ all_zoops_final <- bind_rows(zoops_final_pre, zoops_final_post) |>
 #  geom_point() + theme_bw() + facet_wrap(~Taxon, scales="free_y", nrow=3)
 
 
-ggplot(all_zoops_final, aes(DateTime,Density_IndPerL, group = Taxon)) + 
-  geom_point() + theme_bw() + facet_wrap(~Taxon, scales="free_y", nrow=3)
+ggplot(all_zoops_final, aes(DateTime,ZOO_cladocerans)) + 
+  geom_point() + theme_bw() 
+ggplot(all_zoops_final, aes(DateTime,ZOO_copepods)) + 
+  geom_point() + theme_bw() 
+ggplot(all_zoops_final, aes(DateTime,ZOO_rotifers)) + 
+  geom_point() + theme_bw() 
 
 #add doy and year column
 all_zoops_final$doy <- yday(all_zoops_final$DateTime)
 all_zoops_final$year <- year(all_zoops_final$DateTime)
 
 #look at doy on x and year by color
-ggplot(all_zoops_final, aes(doy, Density_IndPerL, color=as.factor(year))) + 
+ggplot(all_zoops_final, aes(doy, ZOO_cladocerans, color=as.factor(year))) + 
   geom_point() + theme_bw() + facet_wrap(~Taxon, scales="free_y", nrow=3) +
   geom_line()
   

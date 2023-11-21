@@ -257,8 +257,8 @@
    output_diag_depths = 1
 /
 &aed_zooplankton
-   num_zoops = 1
-   the_zoops = 1
+   num_zoops = 3
+   the_zoops = 1, 2, 3
    dn_target_variable = 'OGM_don'
    pn_target_variable = 'OGM_pon'
    dp_target_variable = 'OGM_dop'
@@ -266,6 +266,7 @@
    dc_target_variable = 'OGM_doc'
    pc_target_variable = 'OGM_poc'
    dbase = 'aed/aed_zoop_pars.nml'
+   simZoopFeedback = .false.
 /
 &aed_bivalve
    num_biv = 1
