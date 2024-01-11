@@ -1,8 +1,7 @@
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(RCurl)
-library(tidyverse)
-library(lubridate)
+pacman::p_load(RCurl, tidyverse, lubridate, gsheet)
+
 ```
 
 ```{r}
@@ -53,16 +52,47 @@ sensor_depth$WaterLevel[is.nan(sensor_depth$WaterLevel)] <- sensor_depth$WaterLe
 ```{r combine WL obs }
 # Get Water level observations to compare to calculated waterlevel to get an offset
 
-bvr_wl_obs <- dir(path = "/Users/heatherwander/Documents/VirginiaTech/research/BVR_GLM/bvr_glm/inputs/water_level", pattern = "WaterLevel.csv")%>%  
-  map_df(~ read_csv(file.path(path = "/Users/heatherwander/Documents/VirginiaTech/research/BVR_GLM/bvr_glm/inputs/water_level", .), col_types = cols(.default = "c"), skip = 0))%>%
-  filter(Reservoir=="BVR")%>%
+bv_wl_19 <- gsheet::gsheet2tbl("https://docs.google.com/spreadsheets/d/1XLJu5T7qsWtbQDBDEv3_63yfNB_GVXgs/edit#gid=353013140") |> 
+  mutate(WaterLevel_ft = as.numeric(WaterLevel_ft),
+         DateTime_temp = as.POSIXct(DateTime, format="%m/%d/%y %H:%M", tz="EST"),
+         DateTime_temp2 = as.POSIXct(paste0(DateTime,"12:00:00"), format="%m/%d/%Y %H:%M:%S", tz="EST"),
+         DateTime = ifelse(is.na(DateTime_temp), DateTime_temp2, DateTime_temp),
+         DateTime = as.POSIXct(DateTime, format="%m/%d/%Y %H:%M:%S", tz="EST")) |> 
+  select(-c(DateTime_temp, DateTime_temp2))
+           
+bv_wl_20 <- gsheet::gsheet2tbl("https://docs.google.com/spreadsheets/d/1AsFAufJM2k1u2CQwpb3tu6S6ts8DNG6C/edit#gid=1740372423") |> 
+    mutate(WaterLevel_ft = as.numeric(WaterLevel_ft),
+         DateTime_temp = as.POSIXct(DateTime, format="%m/%d/%y %H:%M", tz="EST"),
+         DateTime_temp2 = as.POSIXct(paste0(DateTime,"12:00:00"), format="%m/%d/%Y %H:%M:%S", tz="EST"),
+         DateTime = ifelse(is.na(DateTime_temp), DateTime_temp2, DateTime_temp),
+         DateTime = as.POSIXct(DateTime, format="%m/%d/%Y %H:%M:%S", tz="EST")) |> 
+  select(-c(DateTime_temp, DateTime_temp2))
+
+bv_wl_21 <- gsheet::gsheet2tbl("https://docs.google.com/spreadsheets/d/1ZeWmGQHiOYXUDrpeqgkGeA-KOBTq3-SDSPCZfeLz3NQ/edit#gid=0") |> 
+  mutate(WaterLevel_ft = as.numeric(WaterLevel_ft),
+         DateTime_temp = as.POSIXct(DateTime, format="%m/%d/%y %H:%M", tz="EST"),
+         DateTime_temp2 = as.POSIXct(paste0(DateTime,"12:00:00"), format="%m/%d/%Y %H:%M:%S", tz="EST"),
+         DateTime = ifelse(is.na(DateTime_temp), DateTime_temp2, DateTime_temp),
+         DateTime = as.POSIXct(DateTime, format="%m/%d/%Y %H:%M:%S", tz="EST")) |> 
+  select(-c(DateTime_temp, DateTime_temp2))
+
+bv_wl_22 <- gsheet::gsheet2tbl("https://docs.google.com/spreadsheets/d/1y6pI3BsWh_uM1WBQc2WCAkG1eFbScWTvvBv--jQ2WIY/edit#gid=0") |> 
+    mutate(WaterLevel_ft = as.numeric(WaterLevel_ft),
+         DateTime_temp = as.POSIXct(DateTime, format="%m/%d/%y %H:%M", tz="EST"),
+         DateTime_temp2 = as.POSIXct(paste0(DateTime,"12:00:00"), format="%m/%d/%Y %H:%M:%S", tz="EST"),
+         DateTime = ifelse(is.na(DateTime_temp), DateTime_temp2, DateTime_temp),
+         DateTime = as.POSIXct(DateTime, format="%m/%d/%Y %H:%M:%S", tz="EST")) |> 
+  select(-c(DateTime_temp, DateTime_temp2))
+
+#merge bvr wl files
+bvr_wl_obs <- dplyr::bind_rows(bv_wl_19,bv_wl_20,bv_wl_21,bv_wl_22) |> 
+   filter(Reservoir=="BVR") |> 
   drop_na(WaterLevel_ft)
 
 #add in WVWA water level obs to supplement VT obs
-wvwa_bvr_wl <- read_csv("/Users/heatherwander/Documents/VirginiaTech/research/BVR_GLM/bvr_glm/inputs/water_level/09Nov20_BVR_WaterLevel.csv",skip=0)
+wvwa_bvr_wl <- read_csv("https://raw.githubusercontent.com/CareyLabVT/BVR-GLM/fb418db53a1d85618b5403d28d7e0472beb65038/Data_Output/09Nov20_BVR_WaterLevel.csv")
 
 wvwa_bvr_wl$Date <-   parse_date_time(wvwa_bvr_wl$Date, orders = c("%Y-%m-%d")) 
-bvr_wl_obs$DateTime<- parse_date_time(bvr_wl_obs$DateTime, orders = c("%m/%d/%y %H:%M", "%m/%d/%Y")) 
   
   bvr_wl_obs2<-bvr_wl_obs%>%
     separate(DateTime, c("Date", "Time"), " ")%>%
@@ -144,7 +174,7 @@ calc_sensor_depth<- sensor_depth%>%
   filter(Date<as.Date("2022-05-05"))
   
 
-wl_final<-rbind(wl_pre_sensors, calc_sensor_depthr_depth)
+wl_final<-rbind(wl_pre_sensors, calc_sensor_depth)
 
 write.csv(wl_final, "/Users/heatherwander/Documents/VirginiaTech/research/BVR_GLM/bvr_glm/inputs/water_level/BVR_WaterLevel_2015_2022_interp.csv", row.names = F)
 
@@ -206,7 +236,7 @@ bvr_wl_final$vol_m3 <- total_bathy$approx_volume / 1000
 bvr_wl_final$Date <- as.Date(bvr_wl_final$Date)
 
 #export file
-write.csv(bvr_wl_final, "/Users/heatherwander/Documents/VirginiaTech/research/BVR_GLM/bvr_glm/inputs/BVR_Daily_WaterLevel_Vol_2015_2022_interp.csv")
+write.csv(bvr_wl_final, "/Users/heatherwander/Documents/VirginiaTech/research/BVR_GLM/bvr_glm/inputs/BVR_Daily_WaterLevel_Vol_2015_2022_interp.csv", rownames = F)
 
 ```
 
