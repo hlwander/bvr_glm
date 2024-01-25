@@ -170,6 +170,25 @@ ghg <- read.csv("./inputs/BVR_GHG_Inflow_20200619.csv", header=T) %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%d-%b-%y", tz="EST"))) %>%
   rename(time = DateTime, CAR_ch4 = ch4_umolL)
 
+#read in lab dataset of pH 
+#inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/198/10/b3bd353312f9e37ca392e2a5315cc9da" 
+#infile1 <- paste0(getwd(),"/YSI_PAR_profiles_2013-2021.csv")
+#download.file(inUrl1,infile1,method="curl", extra='-k')
+
+pH <- read.csv("YSI_PAR_profiles_2013-2021.csv", header=T) %>%
+  dplyr::filter(Reservoir == "BVR") %>% 
+  dplyr::filter(Site == 50) %>% #don't have inflow ph so just going to use median deephole ph
+  select(DateTime, Depth_m, pH) %>%
+  drop_na() %>% 
+  mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
+  rename(time = DateTime,
+         CAR_pH = pH)
+
+#diagnostic plot of pH
+plot(pH$time, pH$CAR_pH)
+hist(pH$CAR_pH)
+median(pH$CAR_pH) #this median concentration is going to be used
+
 # Calculate average for the BVR data points and mutate column to alldata
 alldata <- alldata %>% mutate(CAR_ch4 = mean(ghg$CAR_ch4))
 
@@ -199,7 +218,18 @@ total_inflow <- alldata %>%
   mutate(OGM_dopr = 0.3*(TP_ugL-PHS_frp)*0.90) %>% #Wetzel page 241, 70% of total organic P = particulate organic; 30% = dissolved organic P
   mutate(OGM_pop = 0.7*(TP_ugL-PHS_frp)) %>% 
   #mutate(PHS_frp_ads = PHS_frp) %>% #Following Farrell et al. 2020 EcolMod
-  mutate(CAR_dic = DIC_mgL*1000*(1/52.515)) #Long-term avg pH of FCR is 6.5, at which point CO2/HCO3 is about 50-50
+  mutate(CAR_dic = DIC_mgL*1000*(1/52.515)) %>% #Long-term avg pH of FCR is 6.5, at which point CO2/HCO3 is about 50-50
+  mutate(CAR_pH = median(pH$CAR_pH))  %>%
+  mutate(SIL_rsi = median(silica$DRSI_mgL)) %>%
+  mutate(PHY_cyano = 0) %>%
+  mutate(PHY_cyano_IN = 0) %>%
+  mutate(PHY_cyano_IP = 0) %>%
+  mutate(PHY_green = 0) %>%
+  mutate(PHY_green_IN = 0) %>%
+  mutate(PHY_green_IP = 0) %>%
+  mutate(PHY_diatom = 0) %>%
+  mutate(PHY_diatom_IN = 0) %>%
+  mutate(PHY_diatom_IP = 0)
 #given this disparity, using a 50-50 weighted molecular weight (44.01 g/mol and 61.02 g/mol, respectively)
 #note: we are not using a DONr recalcitrant pool for inflows because "bacterial utilization of these 
 #compounds [i.e. DON] is extremely rapid" Wetzel p. 220
@@ -220,8 +250,7 @@ for(i in 1:length(total_inflow$TEMP)){
 
 #clean it up and get vars in order
 total_inflow <- total_inflow %>%
-  select(time, FLOW, TEMP, SALT, OXY_oxy, NIT_amm:CAR_dic, CAR_ch4) %>% 
-  mutate(SIL_rsi = rep(median(silica$DRSI_mgL),length(total_inflow$time))) %>%
+  select(time, FLOW, TEMP, SALT, OXY_oxy, NIT_amm:SIL_rsi, CAR_ch4, PHY_cyano:PHY_diatom_IP) %>% 
   mutate(SIL_rsi = SIL_rsi*1000*(1/60.08) * 0.65) %>% #setting the Silica concentration to the median 2014 inflow concentration for consistency
   #note scaling silica down bc too high!!
   mutate(NIT_nit = NIT_nit * 0.2) %>% #scaling nitrate inflow by 0.2 bc too high

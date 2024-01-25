@@ -154,7 +154,8 @@ save_ncdf <- function(name, time, z, wtr, oxy){
   nc_close(ncout)
 }
 
-# tadhg's function
+
+# tadhg's function to get modeled variable into dataframe (date, depth, var)
 mod2obs <- function(mod_nc, obs, reference = 'surface', var){
   deps = unique(obs[,2])
   #tim = unique(obs[,1])
@@ -167,7 +168,6 @@ mod2obs <- function(mod_nc, obs, reference = 'surface', var){
   mod <- mod[order(mod$DateTime, mod$Depth),]
   if(nrow(mod) != nrow(obs)){
     mod <- merge(obs, mod, by = c(1,2), all.x = T)
-    #mod <- merge(obs, mod, by = c(1,2), all = T)
     mod <- mod[order(mod$DateTime, mod$Depth),]
     mod <- mod[,c(1,2,4)]
     colnames(mod) <- c('DateTime', 'Depth', var)
@@ -219,6 +219,7 @@ match.tstep1 <- function(df1,df2){
   return(df2)
 }
 
+if(length(var) == 1){
 get_nse <- function(x, y){
   id1 <- !is.na(obs[,3]) 
   obs <- y[id1,3]
@@ -230,7 +231,33 @@ get_nse <- function(x, y){
   sum_bottom <- sum((obs-mean(obs))^2)
   nse <- 1- sum_up/sum_bottom
   return(nse)
-  
+}
+} else {
+  get_nse1 <- function(x, y){
+    id1 <- !is.na(obs1[,3]) 
+    obs1 <- y[id1,3]
+    mods <- x[id1,3]
+    id2 <- !is.na(mods) 
+    obs1 <- obs1[id2]
+    mods <- mods[id2]
+    sum_up <- sum((mods-obs1)^2)
+    sum_bottom <- sum((obs1-mean(obs1))^2)
+    nse <- 1- sum_up/sum_bottom
+    return(nse)
+    
+    get_nse2 <- function(x, y){
+      id1 <- !is.na(obs2[,3]) 
+      obs2 <- y[id1,3]
+      mods <- x[id1,3]
+      id2 <- !is.na(mods) 
+      obs2 <- obs2[id2]
+      mods <- mods[id2]
+      sum_up <- sum((mods-obs2)^2)
+      sum_bottom <- sum((obs2-mean(obs2))^2)
+      nse <- 1- sum_up/sum_bottom
+      return(nse)
+    }
+  }
 }
 
 get_rmse <- function(mods, obs){
@@ -496,14 +523,13 @@ random_sampling <- function(x0,p,del,lb,ub){
   k <- length(x0)
   m <- k+1
   
-  (B <- matrix(0, m, k))
-  lower.tri(B)
+  B <- matrix(0, m, k)
   B[lower.tri(B)] <- 1
   
   D_star <- diag(plus_minus_one(k), k, k)
   J_mk <- matrix( 1, m, k)
   
-  (1/2)*((2*B-J_mk)%*%D_star+J_mk)  
+  #(1/2)*((2*B-J_mk)%*%D_star+J_mk)  
   
   x_star <- sample(random_value(p,del),k)
   
@@ -564,12 +590,13 @@ glmFUNsa <- function(p){
   run_glm(os) #changed from Unix 
 
   suppressWarnings(mod <- mod2obs(mod_nc = out, obs = obs, reference = 'surface', var)) #Supressed warnings
-
+    
   fit = sum((mod[,3] - obs[,3])^2,na.rm = T)
 
   print(paste('SAE', round(fit,1)))
   return(fit)
-}
+  } 
+
 
 wrapper_scales <- function(x, lb, ub){
   y <-  lb+(ub-lb)/(10)*(x)
@@ -655,6 +682,7 @@ glmFUNrmse <- function(p){
   #  fit = signif(rmse(mod[,3], obs[,3]), 5)
   #}
   
+  if(length(var) == 1) {
   mod <- mod2obs(mod_nc = out, obs = obs, reference = 'surface', var)
   
   fit = rmse(mod[,3], obs[,3])
@@ -671,12 +699,49 @@ glmFUNrmse <- function(p){
     df = rbind.data.frame(dat, df)
     write.csv(df,paste0('results/calib_results_',calib.metric,'_',var,'.csv'), row.names = F, quote = F)
   }
-  
   print(paste(calib.metric, fit))
   return(fit)
+  
+  } else {
+    
+    mod1 <- mod2obs(mod_nc = out, obs = obs1, reference = 'surface', var[1])
+    mod2 <- mod2obs(mod_nc = out, obs = obs2, reference = 'surface', var[2])
+    
+    fit1 = rmse(mod1[,3], obs1[,3])
+    fit2 = rmse(mod2[,3], obs2[,3])
+    
+    #Create a data frame to output each calibration attempt
+    dat = data.frame(matrix(NA, ncol = (length(pars)+2), nrow = 1, dimnames = list(c(1), c('DateTime', pars, calib.metric))))
+    dat[1,] = c(format(Sys.time()),p,fit1)
+    dat[2,] = c(format(Sys.time()),p,fit2)
+  
+  #Opens and writes a csv file with datetime, parameters,and fitness
+  if(!file.exists(paste0('results/calib_results_',calib.metric,'_',var[1],'.csv'))){
+    write.csv(dat,paste0('results/calib_results_',calib.metric,'_',var[1],'.csv'), row.names = F, quote = F)
+    write.csv(dat,paste0('results/calib_results_',calib.metric,'_',var[2],'.csv'), row.names = F, quote = F)
+  }else{
+    
+  #  if (nrow(calib) %% 2 > 0){
+  #    p <- nrow(calib) *2
+  #  } else {
+  #    p <- nrow(calib) *2
+  #  }
+    
+    df1 = read.csv(paste0('results/calib_results_',calib.metric,'_',var[1],'.csv'))
+    df2 = read.csv(paste0('results/calib_results_',calib.metric,'_',var[2],'.csv'))
+    df1 = rbind.data.frame(dat[1,], df1)
+    df2 = rbind.data.frame(dat[2,], df2)
+    write.csv(df1,paste0('results/calib_results_',calib.metric,'_',var[1],'.csv'), row.names = F, quote = F)
+    write.csv(df2,paste0('results/calib_results_',calib.metric,'_',var[2],'.csv'), row.names = F, quote = F)
+  }
+  }
+  print(paste(calib.metric, fit1, fit2))
+  return(fit1) 
+ 
 }
 
 run_sensitivity <- function(var, max_r, x0, lb, ub, pars, obs, nml_file){
+
   calib <- read.csv(paste0('sensitivity/sample_sensitivity_config_',var,'.csv'), stringsAsFactors = F)
   
   all_ee <- matrix(0, nrow=max_r, ncol=length(x0))
@@ -699,7 +764,9 @@ run_sensitivity <- function(var, max_r, x0, lb, ub, pars, obs, nml_file){
   
   morris_res <- data.frame('pars'=c(pars), 'mean' = apply(abs(all_ee),2,mean), 'std' = apply(all_ee,2,sd))
   colnames(all_ee) <- pars
+
   write.csv(all_ee, paste0('results/SA_ee_results_',var,'.csv'), quote = F, row.names = F)
+
   morris_norm <- data.frame('pars'=c(pars), 'mean' = apply(abs(ee_norm),2,mean), 'std' = apply(ee_norm,2,sd))
   p6 <- ggplot(morris_norm, aes(pars,mean))+ #EDIT THIS- Originally I had it as (morris_res, aes(pars,mean))
     geom_bar(stat="identity", fill = 'blue')+
@@ -718,7 +785,7 @@ run_sensitivity <- function(var, max_r, x0, lb, ub, pars, obs, nml_file){
   mean_ss <- k.values*0
   for (k in k.values){
     km.res <- kmeans(morris_cluster, centers = k, nstart = 25)
-    ss <- silhouette(km.res$cluster, dist(morris_cluster))
+    ss <- cluster::silhouette(km.res$cluster, dist(morris_cluster))
     mean_ss[k-1] <- mean(ss[, 3])
   }
   
@@ -808,13 +875,6 @@ run_calibvalid <- function(var, var_unit, var_seq, cal_pars, pars, ub, lb, init.
     }
   }
    
-  # if (flag == 1){
-  #   file.copy('glm4.nml', 'glm3.nml', overwrite = TRUE)
-  #   file.copy('aed2/aed4.nml', 'aed2/aed2.nml', overwrite = TRUE)
-  # } else if (flag == 2){
-  #   file.copy('aed2/aed4.nml', 'aed2/aed2.nml', overwrite = TRUE)
-  # }
-
   calibration.list <- list("start" = '2015-07-07 12:00:00',
                            "stop" = '2020-12-31 12:00:00')  #EDIT THIS!
   nml <- read_nml('glm3.nml')
@@ -843,19 +903,39 @@ run_calibvalid <- function(var, var_unit, var_seq, cal_pars, pars, ub, lb, init.
   
   #begin Robert's version of the glmOPT function --> trying to comment this out to get rid of the
   # Error in approx(x = elevs_re, y = temps_re, xout = elevs_out) : need at least two non-NA values to interpolate 
-  glmOPT <- pureCMAES(init.val, glmFUNrmse, lower = rep(0,length(init.val)), 
+  
+  if(length(var) == 1) {
+  glmOPT <- adagio::pureCMAES(init.val, glmFUNrmse, lower = rep(0,length(init.val)), 
                       upper = rep(10,length(init.val)), 
                       sigma = 0.5, 
                       stopfitness = target_fit, 
                       stopeval = target_iter)
   glmFUNrmse(glmOPT$xmin)
+  
+  } 
+  else{
+    glmOPT <- optim(par = init.val, glmFUNrmse)
+    
+    glmFUNrmse(glmOPT$par)
+  }
 
   #read in calibration data
+  if(length(var) == 1) {
   calib <- read.csv(paste0('results/calib_results_',calib.metric,'_',var,'.csv'))
   eval(parse(text = paste0('best_par <- calib[which.min(calib$',calib.metric,'),]')))
   write.csv(best_par, paste0('results/calib_par_',var,'.csv'), row.names = F, quote = F)
   
   best_par <- read.csv(paste0('results/calib_par_',var,'.csv'))
+  }
+  else {
+    calib <- read.csv(paste0('results/calib_results_',calib.metric,'_',var[1],'.csv'))
+    eval(parse(text = paste0('best_par <- calib[which.min(calib$',calib.metric,'),]')))
+    write.csv(best_par, paste0('results/calib_par_',var[1],"_",var[2],'.csv'), row.names = F, quote = F)
+    
+    best_par <- read.csv(paste0('results/calib_par_',var[1],"_",var[2],'.csv'))
+  }
+  
+  
   
   #Input best parameter set
   nml <- read_nml(nml_file = nml_file)
@@ -912,6 +992,7 @@ it <- 1
   
   #Run GLM
   run_glm(os)
+  if(length(var) == 1){
   h <- paste(filename,', RMSE',
              round(get_rmse(temp_mods <- mod2obs(out, obs, reference = 'surface', var), 
                             obs),2),var_unit,'NSE',
@@ -920,14 +1001,38 @@ it <- 1
   png(paste0('results/',var,'_calibration',filename,'.png'), width = 1600, height = 900)
   plot_contour(mod_nc = out, reference = 'surface', h , var, var_unit,var_seq) 
   dev.off()
-  
+  }
+  else {
+    h1 <- paste(filename,', RMSE',
+               round(get_rmse(temp_mods <- mod2obs(out, obs1, reference = 'surface', var[1]), 
+                              obs1),2),var_unit,'NSE',
+               round(get_nse1(temp_mods <- mod2obs(out, obs1, reference = 'surface', var[1]), 
+                             obs1),2),sep=" ")
+    png(paste0('results/',var[1],'_calibration',filename,'.png'), width = 1600, height = 900)
+    plot_contour(mod_nc = out, reference = 'surface', h1 , var[1], var_unit,var_seq) 
+    dev.off()
+    
+    h2 <- paste(filename,', RMSE',
+                round(get_rmse(temp_mods <- mod2obs(out, obs2, reference = 'surface', var[2]), 
+                               obs2),2),var_unit,'NSE',
+                round(get_nse2(temp_mods <- mod2obs(out, obs2, reference = 'surface', var[2]), 
+                              obs2),2),sep=" ")
+    png(paste0('results/',var[2],'_calibration',filename,'.png'), width = 1600, height = 900)
+    plot_contour(mod_nc = out, reference = 'surface', h2 , var[2], var_unit,var_seq) 
+    dev.off()
+  }
+
+ # validation.list <- list("start" = '2015-09-08 12:00:00',
+ #                         "stop" = '2015-12-08 12:00:00') # EDIT THIS
   
   validation.list <- list("start" = '2021-01-01 12:00:00',
-                          "stop" = '2022-05-03 12:00:00') # EDITED THIS
+                          "stop" = '2022-05-03 12:00:00') # EDIT THIS
   nml <- read_nml('glm3.nml')
   nml <- set_nml(nml, arg_list = validation.list)
   write_nml(nml, 'glm3.nml')
   run_glm(os)
+  
+  if(length(var) == 1){
   h <- paste(filename,', RMSE',
              round(get_rmse(temp_mods <- mod2obs(out, obs, reference = 'surface', var), 
                             obs),2),var_unit,'NSE',
@@ -936,16 +1041,37 @@ it <- 1
   png(paste0('results/',var,'wtemp_validation',filename,'.png'), width = 1600, height = 900)
   plot_contour(mod_nc = out, reference = 'surface', h , var,var_unit,var_seq) 
   dev.off()
-  
+  }
+  else {
+    h1 <- paste(filename,', RMSE',
+               round(get_rmse(temp_mods <- mod2obs(out, obs1, reference = 'surface', var[1]), 
+                              obs1),2),var_unit,'NSE',
+               round(get_nse1(temp_mods <- mod2obs(out, obs1, reference = 'surface', var[1]), 
+                             obs1),2),sep=" ")
+    png(paste0('results/',var[1],'wtemp_validation',filename,'.png'), width = 1600, height = 900)
+    plot_contour(mod_nc = out, reference = 'surface', h1 , var[1],var_unit,var_seq) 
+    dev.off()
+    
+    h2 <- paste(filename,', RMSE',
+                round(get_rmse(temp_mods <- mod2obs(out, obs2, reference = 'surface', var[2]), 
+                               obs2),2),var_unit,'NSE',
+                round(get_nse2(temp_mods <- mod2obs(out, obs2, reference = 'surface', var[2]), 
+                              obs2),2),sep=" ")
+    png(paste0('results/',var[1],'wtemp_validation',filename,'.png'), width = 1600, height = 900)
+    plot_contour(mod_nc = out, reference = 'surface', h2 , var[2],var_unit,var_seq) 
+    dev.off()
+  }
   
   total.list <- list("start" = '2015-07-07 12:00:00', "stop" = '2022-05-03 12:00:00') #EDIT THIS!
-                #EDITED THIS
+                #EDIT THIS
                 #list("start" = '1980-04-01 00:00:00',
                 #     "stop" = '2015-12-31 00:00:00')
   nml <- read_nml('glm3.nml')
   nml <- set_nml(nml, arg_list = total.list)
   write_nml(nml, 'glm3.nml')
   run_glm(os)
+  
+  if(length(var) == 1){
   h <- paste(filename,', RMSE',
              round(get_rmse(temp_mods <- mod2obs(out, obs, reference = 'surface', var), 
                             obs),2),var_unit,'NSE',
@@ -957,6 +1083,31 @@ it <- 1
   
   g1 <- diag.plots(mod2obs(out, obs, reference = 'surface', var), obs)
   ggsave(file=paste0('results/mod_obs_',var,'totalperiod_',filename,'.png'), g1, dpi = 300,width = 384,height = 216, units = 'mm')
+  }
+  else{
+    h1 <- paste(filename,', RMSE',
+               round(get_rmse(temp_mods <- mod2obs(out, obs1, reference = 'surface', var[1]), 
+                              obs1),2),var_unit,'NSE',
+               round(get_nse1(temp_mods <- mod2obs(out, obs1, reference = 'surface', var[1]), 
+                             obs1),2),sep=" ")
+    png(paste0('results/',var[1],'wtemp_total',filename,'.png'), width = 1600, height = 900)
+    plot_contour(mod_nc = out, reference = 'surface', h1 , var[1], var_unit,var_seq) 
+    
+    h2 <- paste(filename,', RMSE',
+                round(get_rmse(temp_mods <- mod2obs(out, obs2, reference = 'surface', var[2]), 
+                               obs2),2),var_unit,'NSE',
+                round(get_nse2(temp_mods <- mod2obs(out, obs2, reference = 'surface', var[2]), 
+                              obs2),2),sep=" ")
+    png(paste0('results/',var[2],'wtemp_total',filename,'.png'), width = 1600, height = 900)
+    plot_contour(mod_nc = out, reference = 'surface', h2 , var[2], var_unit,var_seq) 
+    dev.off()
+    
+    g1 <- diag.plots(mod2obs(out, obs1, reference = 'surface', var[1]), obs1)
+    ggsave(file=paste0('results/mod_obs_',var[1],'totalperiod_',filename,'.png'), g1, dpi = 300,width = 384,height = 216, units = 'mm')
+    
+    g2 <- diag.plots(mod2obs(out, obs2, reference = 'surface', var[2]), obs2)
+    ggsave(file=paste0('results/mod_obs_',var[2],'totalperiod_',filename,'.png'), g2, dpi = 300,width = 384,height = 216, units = 'mm')
+}
   
   return()
 }

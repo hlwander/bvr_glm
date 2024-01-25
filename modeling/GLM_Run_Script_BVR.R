@@ -13,19 +13,21 @@ sim_folder <- getwd()
 #look at glm and aed nml files
 nml_file <- paste0(sim_folder,"/16Mar23_ch4cal_glm3.nml")
 aed_file <- paste0(sim_folder,"/aed/16Mar23_ch4cal_aed2.nml")
-aed_phytos_file <- paste0(sim_folder,"/aed/aed2_phyto_pars_2May2022_RQT.nml")
 nml <- read_nml(nml_file) 
 aed <- read_nml(aed_file) #you may get a warning about an incomplete final line but it doesn't matter
-aed_phytos <- read_nml(aed_phytos_file)
 print(nml)
 print(aed)
-print(aed_phytos)
 
-file.copy('15Jul23_diccal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed/15Jul23_diccal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
+file.copy('22Jan24_po4cal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed/22Jan24_po4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
+
+#testing zoops with Peisheng's files
+#file.copy('aed/aed2_Peisheng.nml', 'aed/aed2.nml', overwrite = TRUE)
+
 
 #run the model!
-system2(paste0(sim_folder,"/glm+.app/Contents/MacOS/glm+"), stdout = TRUE, stderr = TRUE, env = paste0("DYLD_LIBRARY_PATH=",sim_folder, "/glm+.app/Contents/MacOS"))
+system2(paste0(sim_folder,"/glm+.app/Contents/MacOS/glm+"), 
+        stdout = TRUE, stderr = TRUE, env = paste0("DYLD_LIBRARY_PATH=",sim_folder, "/glm+.app/Contents/MacOS"))
 # Above from CCC
 
 #sometimes, you'll get an error that says "Error in file, 'Time(Date)' is not first column!
@@ -44,8 +46,8 @@ wlevel <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022_interp.csv") |> 
 wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%Y-%m-%d", tz="EST"))
 wlevel <- wlevel %>% filter(Date>as.POSIXct("2015-07-06") & Date<as.POSIXct("2020-12-31"))
 
-plot(water_level$DateTime,water_level$surface_height)
-points(wlevel$Date, wlevel$WaterLevel_m, type="l",col="red")
+plot(water_level$DateTime,water_level$surface_height,type='l')
+points(wlevel$Date, wlevel$WaterLevel_m, type="p",col="red",cex=0.4)
 
 #calculate RMSE
 RMSE(water_level$surface_height,wlevel$WaterLevel_m)
@@ -117,7 +119,7 @@ for(i in 1:length(unique(watertemp$Depth))){
 }
 
 #thermocline depth comparison
-field_file<-file.path(sim_folder,'/field_data/CleanedObsTemp.csv')
+field_file<-file.path(sim_folder,'field_data/CleanedObsTemp.csv')
 therm_depths <- compare_to_field(nc_file, field_file, metric="thermo.depth", precision="days",method='interp',as_value=TRUE, na.rm=T)
 compare_to_field(nc_file, field_file, metric="thermo.depth", precision="days", method='interp',as_value=F, na.rm=TRUE) #prints RMSE
 plot(therm_depths$DateTime,therm_depths$mod, type="l", ylim=c(1,13),main = paste0("ThermoclineDepth: Obs=Red, Mod=Black"),
@@ -139,10 +141,12 @@ temps<-temps[complete.cases(temps),]
 m_temp <- temps$Modeled_temp[temps$Depth==c(0.1)] #1m depth (epi) RMSE
 o_temp <- temps$Observed_temp[temps$Depth==c(0.1)] 
 RMSE(m_temp,o_temp)
+summary(lm(m_temp ~ o_temp))$r.squared
 
 m_temp <- temps$Modeled_temp[temps$Depth==c(9)] #9m depth (hypo) RMSE
 o_temp <- temps$Observed_temp[temps$Depth==c(9)] 
 RMSE(m_temp,o_temp)
+summary(lm(m_temp ~ o_temp))$r.squared
 
 m_temp <- temps$Modeled_temp[temps$Depth>=0 & temps$Depth<=11] #depths from 0.1-11m (all depths)
 o_temp <- temps$Observed_temp[temps$Depth>=0 & temps$Depth<=11] 
@@ -192,10 +196,12 @@ oxygen <-oxygen[complete.cases(oxygen),] #remove missing data
 m_oxygen <- oxygen$Modeled_OXY_oxy[oxygen$Depth>=0.1 & oxygen$Depth<=0.1] #1m depth
 o_oxygen <- oxygen$Observed_OXY_oxy[oxygen$Depth>=0.1 & oxygen$Depth<=0.1] 
 RMSE(m_oxygen,o_oxygen)
+summary(lm(m_oxygen ~ o_oxygen))$r.squared
 
 m_oxygen <- oxygen$Modeled_OXY_oxy[oxygen$Depth>=9 & oxygen$Depth<=9] #9m depth
 o_oxygen <- oxygen$Observed_OXY_oxy[oxygen$Depth>=9 & oxygen$Depth<=9] 
 RMSE(m_oxygen,o_oxygen)
+summary(lm(m_oxygen ~ o_oxygen))$r.squared
 
 m_oxygen <- oxygen$Modeled_OXY_oxy[oxygen$Depth>=0 & oxygen$Depth<=11] #all depths
 o_oxygen <- oxygen$Observed_OXY_oxy[oxygen$Depth>=0 & oxygen$Depth<=11] 
@@ -205,14 +211,13 @@ summary(lm(oxygen$Modeled_OXY_oxy ~ oxygen$Observed_OXY_oxy))$r.squared
 
 mod_oxy9 <- get_var(nc_file, "OXY_oxy", reference="surface", z_out=c(9)) 
 plot(mod_oxy9$DateTime, mod_oxy9$OXY_oxy_9, type="l")
-#diagnostic plot of DO at 9.2 m (just above sediments)
+#diagnostic plot of DO at 9 m (just above sediments)
 
 
 #######################################################
 #### dissolved inorganic carbon (DIC) data ###########
 var="CAR_dic"
 field_file <- file.path(sim_folder,'/field_data/field_chem_2DOCpools.csv') 
-#note: DIC is tricky because there are no observational data between 2013-2017, so doesn't work for normal calibration period
 
 obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
@@ -253,10 +258,12 @@ DIC <-DIC[complete.cases(DIC),]
 m_DIC <- DIC$Modeled_CAR_dic[DIC$Depth>=0.1 & DIC$Depth<=0.1] #0.1
 o_DIC <- DIC$Observed_CAR_dic[DIC$Depth>=0.1 & DIC$Depth<=0.1] 
 RMSE(m_DIC,o_DIC)
+summary(lm(m_DIC ~ o_DIC))$r.squared
 
 m_DIC <- DIC$Modeled_CAR_dic[DIC$Depth>=9 & DIC$Depth<=9] #9m
 o_DIC <- DIC$Observed_CAR_dic[DIC$Depth>=9 & DIC$Depth<=9] 
 RMSE(m_DIC,o_DIC)
+summary(lm(m_DIC ~ o_DIC))$r.squared
 
 m_DIC <- DIC$Modeled_CAR_dic[DIC$Depth>=0 & DIC$Depth<=11] #all depths
 o_DIC <- DIC$Observed_CAR_dic[DIC$Depth>=0 & DIC$Depth<=11]
@@ -304,10 +311,12 @@ CH4 <-CH4[complete.cases(CH4),]
 m_CH4 <- CH4$Modeled_CAR_ch4[CH4$Depth>=0.1 & CH4$Depth<=0.1] #0.1
 o_CH4 <- CH4$Observed_CAR_ch4[CH4$Depth>=0.1 & CH4$Depth<=0.1]
 RMSE(m_CH4,o_CH4)
+summary(lm(m_CH4 ~ o_CH4))$r.squared
 
 m_CH4 <- CH4$Modeled_CAR_ch4[CH4$Depth>=9 & CH4$Depth<=9] #9m
 o_CH4 <- CH4$Observed_CAR_ch4[CH4$Depth>=9 & CH4$Depth<=9]
 RMSE(m_CH4,o_CH4)
+summary(lm(m_CH4 ~ o_CH4))$r.squared
 
 m_CH4 <- CH4$Modeled_CAR_ch4[CH4$Depth>=0 & CH4$Depth<=11] #all depths
 o_CH4 <- CH4$Observed_CAR_ch4[CH4$Depth>=0 & CH4$Depth<=11]
@@ -354,9 +363,9 @@ plot(obs$DateTime[obs$Depth==4],obs$SIL_rsi[obs$Depth==4]) #mean 94.5
 plot(obs$DateTime[obs$Depth==8],obs$SIL_rsi[obs$Depth==8]) #mean 66.0
 
 
-plot(mod$DateTime[mod$Depth==0],mod$SIL_rsi[mod$Depth==0] ) #mean 85.3
-plot(mod$DateTime[mod$Depth==4],mod$SIL_rsi[mod$Depth==4] ) #mean 84.7
-plot(mod$DateTime[mod$Depth==8],mod$SIL_rsi[mod$Depth==8] ) #mean 85.4
+plot(mod$DateTime[mod$Depth==0],mod$SIL_rsi[mod$Depth==0] ) #mean 87.8
+plot(mod$DateTime[mod$Depth==4],mod$SIL_rsi[mod$Depth==4] ) #mean 85.4
+plot(mod$DateTime[mod$Depth==8],mod$SIL_rsi[mod$Depth==8] ) #mean 99.9
 
 #######################################################
 #### ammonium #######
@@ -399,10 +408,12 @@ NH4 <-NH4[complete.cases(NH4),]
 m_NH4 <- NH4$Modeled_NIT_amm[NH4$Depth>=0.1 & NH4$Depth<=0.1] #0.1
 o_NH4 <-  NH4$Observed_NIT_amm[NH4$Depth>=0.1 & NH4$Depth<=0.1]
 RMSE(m_NH4,o_NH4)
+summary(lm(m_NH4 ~ o_NH4))$r.squared
 
 m_NH4 <- NH4$Modeled_NIT_amm[NH4$Depth>=9 & NH4$Depth<=9] #9m
 o_NH4 <-  NH4$Observed_NIT_amm[NH4$Depth>=9 & NH4$Depth<=9] 
 RMSE(m_NH4,o_NH4)
+summary(lm(m_NH4 ~ o_NH4))$r.squared
 
 m_NH4 <- NH4$Modeled_NIT_amm[NH4$Depth>=0 & NH4$Depth<=11] #all depths
 o_NH4 <-  NH4$Observed_NIT_amm[NH4$Depth>=0 & NH4$Depth<=11] 
@@ -451,10 +462,12 @@ NO3 <-NO3[complete.cases(NO3),]
 m_NO3 <- NO3$Modeled_NIT_nit[NO3$Depth>=0.1 & NO3$Depth<=0.1] #0.1
 o_NO3 <-  NO3$Observed_NIT_nit[NO3$Depth>=0.1 & NO3$Depth<=0.1]
 RMSE(m_NO3,o_NO3)
+summary(lm(m_NO3 ~ o_NO3))$r.squared
 
 m_NO3 <- NO3$Modeled_NIT_nit[NO3$Depth>=9 & NO3$Depth<=9] #9m
 o_NO3 <-  NO3$Observed_NIT_nit[NO3$Depth>=9 & NO3$Depth<=9] 
 RMSE(m_NO3,o_NO3)
+summary(lm(m_NO3 ~ o_NO3))$r.squared
 
 m_NO3 <- NO3$Modeled_NIT_nit[NO3$Depth>=0 & NO3$Depth<=11] #all depths
 o_NO3 <-  NO3$Observed_NIT_nit[NO3$Depth>=0 & NO3$Depth<=11] 
@@ -503,10 +516,12 @@ PO4 <-PO4[complete.cases(PO4),]
 m_PO4 <- PO4$Modeled_PHS_frp[PO4$Depth>=0.1 & PO4$Depth<=0.1] #0.1
 o_PO4 <-  PO4$Observed_PHS_frp[PO4$Depth>=0.1 & PO4$Depth<=0.1]
 RMSE(m_PO4,o_PO4)
+summary(lm(m_PO4 ~ o_PO4))$r.squared
 
 m_PO4 <- PO4$Modeled_PHS_frp[PO4$Depth>=9 & PO4$Depth<=9] #9m
 o_PO4 <-  PO4$Observed_PHS_frp[PO4$Depth>=9 & PO4$Depth<=9] 
 RMSE(m_PO4,o_PO4)
+summary(lm(m_PO4 ~ o_PO4))$r.squared
 
 m_PO4 <- PO4$Modeled_PHS_frp[PO4$Depth>=0 & PO4$Depth<=11] #all depths
 o_PO4 <-  PO4$Observed_PHS_frp[PO4$Depth>=0 & PO4$Depth<=11] 
@@ -627,7 +642,7 @@ field_file <- file.path(sim_folder,'/field_data/CleanedObsChla.csv')
 
 obs<-read.csv('field_data/CleanedObsChla.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
-  select(DateTime, Depth, var) %>%
+  dplyr::select(DateTime, Depth, var) %>%
   na.omit()
 
 #get modeled concentrations for focal depths
@@ -688,14 +703,28 @@ plot(phytos$DateTime, phytos$PHY_tphy_0.1, col="cyan", type="l", ylab="Phyto C m
 #######################################################
 #### ZOOPS! #######
 
+grz <- get_var(file=nc_file,var_name = 'ZOO_grz',z_out=1,reference = 'surface')
+plot(grz$DateTime, grz$ZOO_grz_1)
+
+resp <- get_var(file=nc_file,var_name = 'ZOO_resp',z_out=1,reference = 'surface')
+plot(resp$DateTime, resp$ZOO_resp_1)
+
+mort <- get_var(file=nc_file,var_name = 'ZOO_mort',z_out=1,reference = 'surface')
+plot(mort$DateTime, mort$ZOO_mort_1)
+
+
 var="ZOO_cladocerans"
 var="ZOO_copepods"
 var="ZOO_rotifers"
 
-obs<-read.csv('field_data/field_zoops.csv', header=TRUE) %>% #read in observed chemistry data
-  dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
-  select(DateTime, var) %>%
+obs<-read.csv('field_data/field_zoops.csv', header=TRUE) |>  
+  dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) |> 
+  dplyr::select(DateTime, var) %>%
   na.omit()
+
+zoops <- get_var(file=nc_file,var_name = var,z_out=0.1,reference = 'surface') 
+plot(zoops$DateTime, zoops$ZOO_cladocerans_0.1, type='l')
+points(obs$DateTime, obs$ZOO_cladocerans, col="red")
 
 #get modeled concentrations for focal depths
 depths<- sort(as.numeric(unique(obs$Depth)))
@@ -718,7 +747,12 @@ for(i in 1:length(depths)){
   }
 }
 
-#calculate RMSE for DOC labile
+
+
+
+
+#calculate RMSE for DOC labile - delete??
+
 doc <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
                          var_name=var)
 doc <-doc[complete.cases(doc),]
