@@ -64,11 +64,11 @@ gases$DateTime <-as.POSIXct(strptime(gases$DateTime, "%Y-%m-%d", tz="EST"))
 # 1) water temperature, following ISIMIP approach
 #first, copy & paste your glm3.nml and aed2.nml within their respective directories
 # and rename as glm4.nml and aed4.nml; these 4.nml versions are going to be rewritten
-file.copy('22Mar23_ch4cal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed/default_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
+file.copy('2Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed/22Jan24_po4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
 var = 'temp'
 calib <- matrix(c('par', 'lb', 'ub', 'x0', #THIS LIST WILL BE EDITED BUT START WITH ALL VARS
-                  'wind_factor', 0.75, 1.25, 1,
+                  'wind_factor', 0.5, 1.25, 1,
                   'sw_factor', 0.75, 1.25, 1,
                   'lw_factor', 0.75, 1.25, 1,
                   'coef_mix_conv', 0.1, 0.5, 0.2,
@@ -81,11 +81,11 @@ calib <- matrix(c('par', 'lb', 'ub', 'x0', #THIS LIST WILL BE EDITED BUT START W
                   'ch', 0.0005, 0.002, 0.0013,
                   'cd', 0.0005, 0.002, 0.0013,
                   'sed_temp_mean',3,20,10,
-                  'sed_temp_mean',10,30,17,
-                  'sed_temp_amplitude',2,12,5.4,
-                  'sed_temp_amplitude',2,12,10,
-                  'sed_temp_peak_doy',240,280,253,
-                  'sed_temp_peak_doy',250,280,270
+                  'sed_temp_mean',8,30,15,
+                  'sed_temp_amplitude',0.5,12,0.8,
+                  'sed_temp_amplitude',2,12,11,
+                  'sed_temp_peak_doy',200,360,253,
+                  'sed_temp_peak_doy',250,360,340
                   ), nrow = 19,ncol = 4, byrow = TRUE) #EDIT THE NROW TO REFLECT # OF ROWS IN ANALYSIS
 write.table(calib, file = paste0('sensitivity/sample_sensitivity_config_',var,'.csv'), row.names = FALSE, 
             col.names = FALSE, sep = ',',
@@ -103,8 +103,8 @@ run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 #this part isn't working because morris_cluster=0 and all_ee is 0 too
 
 #water temperature CALIBRATION 
-file.copy('22Mar23_ch4cal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed/22Mar23_ch4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
+file.copy('4Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed/22Jan24_po4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
 #file.copy('./aed/aed2_phyto_pars_2May2022_RQT.nml', './aed/aed2_phyto_pars_13Mar23.nml', overwrite = TRUE) #FIX THIS
 var = 'temp'
 calib <- read.csv(paste0('calibration_file_',var,'.csv'), stringsAsFactors = F)
@@ -116,7 +116,7 @@ ub <- cal_pars$ub
 lb <- cal_pars$lb
 #Create initial files
 #init.val <- rep(5, nrow(cal_pars))
-init.val <- (x0 - lb) *10 /(ub-lb) # NEEDS TO BE UPDATED WITH STARTING VALUES FROM YOUR CALIBRATION FILE
+init.val <- c(1, 10, 15)#(x0 - lb) *10 /(ub-lb) # NEEDS TO BE UPDATED WITH STARTING VALUES FROM YOUR CALIBRATION FILE
 obs <- read_field_obs('field_data/CleanedObsTemp.csv', var)
 method = 'cmaes'
 calib.metric = 'RMSE'

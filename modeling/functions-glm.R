@@ -185,9 +185,9 @@ run_glm <- function(os){
     file.copy('aed/aed4.nml', 'aed/aed2.nml', overwrite = TRUE)
     system("glm",ignore.stdout=TRUE)
   } else if (os == "Compiled"){
-    sim_folder = getwd() #BE SURE TO EDIT THIS!
-    system2(paste0(sim_folder,"/glm+.app/Contents/MacOS/glm+"), stdout = TRUE, stderr = TRUE, 
-            env = paste0("DYLD_LIBRARY_PATH=",sim_folder, "/glm+.app/Contents/MacOS"))
+    sim_folder = getwd() #BE SURE TO EDIT THIS! - HLW: this is now just v3.3.0 from Matt's group, not CCC/RQT!
+    system2(paste0(sim_folder,"/glm.app/Contents/MacOS/glm"), stdout = TRUE, stderr = TRUE, 
+            env = paste0("DYLD_LIBRARY_PATH=",sim_folder, "/glm.app/Contents/MacOS"))
     }
 }
 
@@ -685,7 +685,7 @@ glmFUNrmse <- function(p){
   if(length(var) == 1) {
   mod <- mod2obs(mod_nc = out, obs = obs, reference = 'surface', var)
   
-  fit = rmse(mod[,3], obs[,3])
+  fit = hydroGOF::rmse(mod[,3], obs[,3])
   
   #Create a data frame to output each calibration attempt
   dat = data.frame(matrix(NA, ncol = (length(pars)+2), nrow = 1, dimnames = list(c(1), c('DateTime', pars, calib.metric))))

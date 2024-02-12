@@ -1,22 +1,13 @@
-#trying to hand-tune ch4
+#hand-tuning script
 
-#look at glm and aed nml files
-nml_file <- paste0(sim_folder,"/16Mar23_ch4cal_glm3.nml")
-aed_file <- paste0(sim_folder,"/aed/16Mar23_ch4cal_aed2.nml")
-aed_phytos_file <- paste0(sim_folder,"/aed/aed2_phyto_pars_2May2022_RQT.nml")
-nml <- read_nml(nml_file) 
-aed <- read_nml(aed_file) #you may get a warning about an incomplete final line but it doesn't matter
-aed_phytos <- read_nml(aed_phytos_file)
-print(nml)
-print(aed)
-print(aed_phytos)
-
-file.copy('15Jul23_diccal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed/15Jul23_diccal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
+file.copy('4Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed/22Jan24_po4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
 
 #run the model!
-system2(paste0(sim_folder,"/glm+.app/Contents/MacOS/glm+"), stdout = TRUE, stderr = TRUE, env = paste0("DYLD_LIBRARY_PATH=",sim_folder, "/glm+.app/Contents/MacOS"))
-# Above from CCC
+system2(paste0(sim_folder,"/glm.app/Contents/MacOS/glm"), 
+        stdout = TRUE, stderr = TRUE, 
+        env = paste0("DYLD_LIBRARY_PATH=", sim_folder,
+                     "/glm.app/Contents/MacOS"))
 
 #sometimes, you'll get an error that says "Error in file, 'Time(Date)' is not first column!
 #in this case, open the input file in Excel, set the column in Custom ("YYYY-MM-DD") format, resave, and close the file
@@ -24,11 +15,12 @@ nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file
 
 
 #######################################################
-var= 'PHY_tchla'
+var= 'temp'
 
-obs<-read.csv('field_data/CleanedObsChla.csv', header=TRUE) %>% #read in observed chemistry data
-  dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
-  select(DateTime, Depth, var) %>%
+obs<-read.csv('field_data/CleanedObstemp.csv', header=TRUE) |>  #read in observed chemistry data
+  dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST")))  |> 
+  select(DateTime, Depth, var) |> 
+  filter(DateTime < as.POSIXct("2020-12-31"))  |> 
   na.omit()
 
 #plot_var_compare(nc_file,field_file,var_name = var, precision="days",col_lim = c(0,50)) #compare obs vs modeled
@@ -36,10 +28,11 @@ obs<-read.csv('field_data/CleanedObsChla.csv', header=TRUE) %>% #read in observe
 #get modeled concentrations for focal depths
 depths<- sort(as.numeric(unique(obs$Depth)))
 
-mod<- get_var(nc_file, var, reference="surface", z_out=depths) %>%
-  pivot_longer(cols=starts_with(paste0(var,"_")), names_to="Depth", names_prefix=paste0(var,"_"), values_to = var) %>%
-  mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
-  mutate(Depth=as.numeric(Depth)) %>%
+mod<- get_var(nc_file, var, reference="surface", z_out=depths)  |> 
+  pivot_longer(cols=starts_with(paste0(var,"_")), names_to="Depth", names_prefix=paste0(var,"_"), values_to = var)  |> 
+  mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST")))  |> 
+  mutate(Depth=as.numeric(Depth))  |> 
+  filter(DateTime < as.POSIXct("2020-12-31"))  |> 
   na.omit()
 
 #obs_o2 <- read.csv('field_data/CleanedObsOxy.csv', header=TRUE) %>% #read in observed chemistry data
@@ -69,20 +62,29 @@ RMSE = function(m, o){
   sqrt(mean((m - o)^2))
 }
 
-field_file<-file.path(sim_folder,'field_data/CleanedObsChla.csv')
+field_file<-file.path(sim_folder,'field_data/CleanedObstemp.csv')
 
 temps <- resample_to_field(nc_file, field_file, precision="days", method='interp',
                            var_name=var)
 temps<-temps[complete.cases(temps),]
 
-RMSE(temps[temps$Depth==c(9),4],
-     temps[temps$Depth==c(9),3])
-
+#rmse
 RMSE(temps[temps$Depth==c(0.1),4],
      temps[temps$Depth==c(0.1),3])
 
-RMSE(temps$Modeled_PHY_tchla, temps$Observed_PHY_tchla)
-summary(lm(temps$Modeled_PHY_tchla ~ temps$Observed_PHY_tchla))$r.squared
+RMSE(temps[temps$Depth==c(9),4],
+     temps[temps$Depth==c(9),3])
+
+RMSE(temps$Modeled_temp, temps$Observed_temp)
+
+#r2
+summary(lm(temps$Modeled_temp[temps$Depth==c(0.1)] ~ 
+             temps$Observed_temp[temps$Depth==c(0.1)]))$r.squared
+
+summary(lm(temps$Modeled_temp[temps$Depth==c(9)] ~ 
+             temps$Observed_temp[temps$Depth==c(9)]))$r.squared
+
+summary(lm(temps$Modeled_temp ~ temps$Observed_temp))$r.squared
 #------------------------------------------------------------------------------#
 #fit Michaelis-Menten function to data
 #library(renz)

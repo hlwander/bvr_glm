@@ -200,7 +200,7 @@
    si_uptake_target_variable = 'SIL_rsi'
    do_uptake_target_variable = 'OXY_oxy'
    c_uptake_target_variable = 'CAR_dic'
-   dbase = 'aed/aed2_phyto_pars_2May2022_RQT.csv'
+   dbase = 'aed/aed2_phyto_pars_2Feb2024.csv'
    diag_level = 10
    min_rho = 900
    max_rho = 1200
@@ -221,14 +221,14 @@
    root_link_variable = ''
 /
 &aed_zooplankton
-   num_zoops = 1
-   the_zoops = 1
+   num_zoops = 3
+   the_zoops = 1,2,3
    dn_target_variable = 'OGM_don'
    pn_target_variable = 'OGM_pon'
    dp_target_variable = 'OGM_dop'
    pp_target_variable = 'OGM_pop'
    dc_target_variable = 'OGM_doc'
    pc_target_variable = 'OGM_poc'
-   dbase = 'aed/aed_zoop_pars_3groups_31Oct2023.csv'
+   dbase = 'aed/aed_zoop_pars_3groups_2Feb2024.csv'
    simZoopFeedback = .true.
 /

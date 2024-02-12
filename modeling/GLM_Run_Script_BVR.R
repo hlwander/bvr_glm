@@ -18,16 +18,14 @@ aed <- read_nml(aed_file) #you may get a warning about an incomplete final line 
 print(nml)
 print(aed)
 
-file.copy('22Jan24_po4cal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('4Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('aed/22Jan24_po4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
 
-#testing zoops with Peisheng's files
-#file.copy('aed/aed2_Peisheng.nml', 'aed/aed2.nml', overwrite = TRUE)
-
-
 #run the model!
-system2(paste0(sim_folder,"/glm+.app/Contents/MacOS/glm+"), 
-        stdout = TRUE, stderr = TRUE, env = paste0("DYLD_LIBRARY_PATH=",sim_folder, "/glm+.app/Contents/MacOS"))
+system2(paste0(sim_folder,"/glm.app/Contents/MacOS/glm"), 
+        stdout = TRUE, stderr = TRUE, 
+        env = paste0("DYLD_LIBRARY_PATH=", sim_folder,
+                     "/glm.app/Contents/MacOS"))
 # Above from CCC
 
 #sometimes, you'll get an error that says "Error in file, 'Time(Date)' is not first column!
@@ -35,16 +33,17 @@ system2(paste0(sim_folder,"/glm+.app/Contents/MacOS/glm+"),
 nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file 
 
 #reality check of temp heat map
-plot_temp(nc_file)
+plot_var(nc_file, var="temp")
 
 #get water level
-water_level<-get_surface_height(nc_file, ice.rm = TRUE, snow.rm = TRUE)
+water_level<-get_surface_height(nc_file, ice.rm = TRUE, snow.rm = TRUE) |> 
+  filter(DateTime < as.POSIXct("2020-12-31"))
 
 # Read in and plot water level observations
 wlevel <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022_interp.csv") |> select(-...1)
   
 wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%Y-%m-%d", tz="EST"))
-wlevel <- wlevel %>% filter(Date>as.POSIXct("2015-07-06") & Date<as.POSIXct("2020-12-31"))
+wlevel <- wlevel %>% filter(Date>as.POSIXct("2015-07-08") & Date<as.POSIXct("2020-12-31"))
 
 plot(water_level$DateTime,water_level$surface_height,type='l')
 points(wlevel$Date, wlevel$WaterLevel_m, type="p",col="red",cex=0.4)
@@ -55,16 +54,26 @@ RMSE(water_level$surface_height,wlevel$WaterLevel_m)
 summary(lm(water_level$surface_height ~ wlevel$WaterLevel_m))$r.squared
 
 #get WRT
-volume<-get_var(nc_file, "Tot_V", reference="surface") #in m3
-evap<-get_var(nc_file, "evap", reference="surface")
-precip<-get_var(nc_file, "precip", reference="surface")
+volume<-get_var(nc_file, "lake_volume", reference="surface") |> 
+filter(DateTime < as.POSIXct("2020-12-31")) #in m3
+
+sa <-get_var(nc_file, "surface_area", reference="surface") 
+evap<-get_var(nc_file, "evaporation", reference="surface")
+precip<-get_var(nc_file, "precipitation", reference="surface")
 colnames(volume)[1]<-"time"
 colnames(precip)[1]<-"time"
 colnames(evap)[1]<-"time"
-plot(volume$time, volume$Tot_V)
+plot(volume$DateTime, volume$lake_volume)
+plot(sa$DateTime, sa$surface_area)
 points(wlevel$Date, wlevel$vol_m3, type="l",col="red")
-plot(evap$time, evap$evap)
-plot(precip$time, precip$precip)
+plot(evap$time, evap$evaporation)
+plot(precip$time, precip$precipitation)
+
+#hypsometric curve (wl vs. area/vol)
+
+water_level_sub <- water_level |> filter(DateTime %in% c(volume$DateTime))
+
+plot(water_level_sub$surface_height~ volume$lake_volume)
 
 outflow<-read.csv("inputs/BVR_spillway_outflow_2015_2022_metInflow.csv", header=T)
 inflow_weir<-read.csv("inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.65X_silica_0.2X_nitrate_0.4X_ammonium_1.9X_docr_1.7Xdoc.csv", header=T)
@@ -81,10 +90,10 @@ plot(as.Date(inflow_weir$time), inflow_weir$OGM_docr, type="l")
 # Calculate WRT from modeled volume and measured outflow
 volume$time<-as.POSIXct(strptime(volume$time, "%Y-%m-%d", tz="EST"))
 wrt<-merge(volume, outflow, by='time')
-wrt$wrt <- ((wrt$Tot_V)/(wrt$FLOW))*(1/60)*(1/60)*(1/24) #residence time in days
+wrt$wrt <- ((wrt$lake_volume)/(wrt$FLOW))*(1/60)*(1/60)*(1/24) #residence time in days
 plot(wrt$time,wrt$wrt)
 
-plot(volume$time,volume$Tot_V)
+plot(volume$time,volume$lake_volume)
 
 hist(wrt$wrt, xlim = c(0,2000), breaks=1000)
 median(wrt$wrt)
@@ -92,9 +101,9 @@ mean(wrt$wrt)
 range(wrt$wrt)
 
 #get ice
-ice<-get_var(nc_file,"hwice")
-iceblue<-get_var(nc_file,"hice")
-plot(ice$DateTime,rowSums(cbind(ice$hwice,iceblue$hice)))
+ice<-get_var(nc_file,"white_ice_thickness")
+iceblue<-get_var(nc_file,"blue_ice_thickness")
+plot(ice$DateTime,rowSums(cbind(ice$white_ice_thickness,iceblue$blue_ice_thickness)))
 
 #read in cleaned CTD temp file with long-term obs at focal depths
 obstemp<-read_csv('field_data/CleanedObsTemp.csv') %>%
@@ -126,6 +135,9 @@ plot(therm_depths$DateTime,therm_depths$mod, type="l", ylim=c(1,13),main = paste
      ylab="Thermocline depth, in m")
 points(therm_depths$DateTime, therm_depths$obs,col="red", pch=19)
 points(therm_depths$DateTime, therm_depths$obs, type="l",col="red")
+
+#also plot upper and lower metalimnetic depths
+therm_depths <- compare_to_field(nc_file, field_file, metric="thermo.depth", precision="days",method='interp',as_value=TRUE, na.rm=T)
 
 #can use this function to calculate RMSE at specific depth layers, e.g., from one depth or range of depths
 RMSE = function(m, o){
@@ -713,7 +725,7 @@ mort <- get_var(file=nc_file,var_name = 'ZOO_mort',z_out=1,reference = 'surface'
 plot(mort$DateTime, mort$ZOO_mort_1)
 
 
-var="ZOO_cladocerans"
+var="ZOO_cladoceran"
 var="ZOO_copepods"
 var="ZOO_rotifers"
 
@@ -780,10 +792,10 @@ summary(lm(doc$Modeled_OGM_doc ~ doc$Observed_OGM_doc))$r.squared
 secchi_obs <- read.csv("./field_data/field_secchi.csv")
 
 #plot Secchi depth & light extinction
-lec <- get_var(file=nc_file,var_name = 'extc_coef',z_out=1,reference = 'surface')
-plot(lec$DateTime, 1.7/lec$extc_coef_1)
+lec <- get_var(file=nc_file,var_name = 'extc',z_out=1,reference = 'surface')
+plot(lec$DateTime, 1.7/lec$extc_1)
 points(as.POSIXct(secchi_obs$DateTime), secchi_obs$Secchi_m, col="red", type="l")
-plot(lec$DateTime, lec$extc_coef_1)
+plot(lec$DateTime, lec$extc_1)
 
 #see what vars are available for diagnostics
 sim_metrics(with_nml = TRUE)
