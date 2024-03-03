@@ -97,4 +97,33 @@ meta_stats <- data.frame("layer" = c("meta_top","meta_bot"),
                               range(meta_depths_long$value[
                                 meta_depths_long$layer=="meta_bot"])[2]))
 
+#------------------------------------------------------------------------------#
+#calculate mean, median, range for epi, met, and hypo
+
+temp_epi <- obs |> filter(Depth <= 3 & year(DateTime) == 2015)
+
+temp_meta1 <- obs |> filter(Depth>3 & Depth < 6 & year(DateTime) == 2015)
+
+temp_meta2 <- obs |> filter(Depth>=6 & Depth < 9 & year(DateTime) == 2015)
+
+temp_hypo <- obs |> filter(Depth >= 9 & year(DateTime) == 2015)
+
+#create table with summary stats
+temp_stats <- data.frame("layer" = c("epi","meta1","meta2","hypo"),
+                         "mean" = c(mean(temp_epi$temp),
+                                    mean(temp_meta1$temp), 
+                                    mean(temp_meta2$temp), 
+                                    mean(temp_hypo$temp)),
+                         "median" = c(median(temp_epi$temp),
+                                      median(temp_meta1$temp), 
+                                      median(temp_meta2$temp), 
+                                      median(temp_hypo$temp)),
+                         "range1" = c(range(temp_epi$temp)[1],
+                                     range(temp_meta1$temp)[1],
+                                     range(temp_meta2$temp)[1],
+                                     range(temp_hypo$temp)[1]),
+                         "range2" = c(range(temp_epi$temp)[2],
+                                      range(temp_meta1$temp)[2], 
+                                      range(temp_meta2$temp)[2], 
+                                      range(temp_hypo$temp)[2]))
 

@@ -283,8 +283,27 @@ chla <- more1 %>%
   drop_na() %>% 
   write.csv("field_data/CleanedObsChla.csv", row.names = F)
 
-# Find 'winter' depth profiles to use for initial model conditions
-more1$depth <- as.numeric(more1$depth)
+# Find depth profiles to use for initial model conditions (2015-07-09)
+init_data <- more1[more1$time %in% as.POSIXct("2015-07-09"),]
+
+init_interp <- data.frame("depth" = seq(0,12,by=0.5)) 
+
+init_interp$depth[1] <- 0.1
+
+init_interp <- full_join(init_data, init_interp, by="depth") |> 
+  arrange(depth) |> select(depth,temp,DO)
+
+#add last value to bottom depth for interpolation
+init_interp[init_interp$depth==12,] <- c(12,7.62,0.07)
+
+#interpolate
+init_interp$temp <- zoo::na.approx(init_interp$temp)
+init_interp$DO <- zoo::na.approx(init_interp$DO)
+
+#now get DO in correct units
+init_interp$DO <- init_interp$DO*1000/32
+
+more1$depth <- as.numeric(more$depth)
 more1$temp <- as.numeric(more1$temp)
 more1$DO <- as.numeric(more1$DO)
 
@@ -313,17 +332,15 @@ sup <- sup %>% mutate(DO = DO*1000/32) #to convert mg/L to molar units
 # Extrapolate to initial depths needed
 depth <- c(0.1, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 
            7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11)
-initdepths <- rep(-99,length(depth))
-
-initdepths <- cbind.data.frame(depth,initdepths)
-initdepths <- merge(initdepths, sup, by="depth", all.x=TRUE, all.y=TRUE)
-
-initdepths <- initdepths %>% mutate(temp = na.fill(na.approx(temp,na.rm=FALSE),"extend")) %>% 
-  mutate(DO = na.fill(na.approx(DO,na.rm=FALSE),"extend")) %>% 
-  select(depth,temp,DO,chla) #%>% 
- # write.csv("Init_CTD.csv", row.names = F)
-
-initdepths$DO
+#initdepths <- rep(-99,length(depth))
+#
+#initdepths <- cbind.data.frame(depth,initdepths)
+#initdepths <- merge(initdepths, sup, by="depth", all.x=TRUE, all.y=TRUE)
+#
+#initdepths <- initdepths %>% mutate(temp = na.fill(na.approx(temp,na.rm=FALSE),"extend")) %>% 
+#  mutate(DO = na.fill(na.approx(DO,na.rm=FALSE),"extend")) %>% 
+#  select(depth,temp,DO,chla) #%>% 
+# # write.csv("Init_CTD.csv", row.names = F)
 
 ###########################################################
 ###### WATER CHEM DATA FROM EDI
@@ -359,6 +376,22 @@ ggplot(BVRchem, aes(DateTime, OGM_docr, colour=Depth)) +
   geom_point()
 
 write.csv(BVRchem, "field_data/field_chem_2DOCpools.csv", row.names = F)
+
+#get initial conditions for 'NIT_amm','NIT_nit','PHS_frp','OGM_doc'
+init_chem <- data.frame("Depth" = seq(0,12, by=0.5))
+
+chem_init <- BVRchem |> filter(DateTime %in% c("2015-07-16")) |> 
+  select(Depth, NIT_amm, NIT_nit, PHS_frp, OGM_doc)
+#16Jul is closest day with full nutrients at all the depths
+
+chem_init_final <- merge(init_chem, chem_init, by="Depth", all.x=TRUE, all.y=TRUE)
+
+chem_init_final <- chem_init_final %>% 
+  mutate(NIT_amm = na.fill(na.approx(NIT_amm,na.rm=FALSE),"extend"),
+         NIT_nit = na.fill(na.approx(NIT_nit,na.rm=FALSE),"extend"),
+         PHS_frp = na.fill(na.approx(PHS_frp,na.rm=FALSE),"extend"),
+         OGM_doc = na.fill(na.approx(OGM_doc,na.rm=FALSE),"extend")) |> 
+  filter(!Depth %in% c(0))
 
 ### Plot some exploratory graphs for Chem
 ggplot(BVRchem,aes(DateTime,NIT_nit,colour=as.factor(Depth)))+
@@ -429,7 +462,8 @@ secchi <- read.csv("field_data/Secchi_depth_2013-2022.csv", header=T) %>%
   mutate(Depth = rep(1, length(DateTime))) %>%
   mutate(extc_coef = Secchi_m/1.7) %>%
   select(DateTime, Depth, Secchi_m, extc_coef) %>%
-  filter(DateTime > as.Date("2015-07-07"))
+  filter(DateTime > as.Date("2015-07-07")) |> 
+  distinct()
 write.csv(secchi, "field_data/field_secchi.csv", row.names=F)
   
   
@@ -454,7 +488,7 @@ ggplot(pH, aes(time, pH, colour= depth)) +
 ###### ZOOP FROM EDI (currently staged in 2023)
 
 #first pull in zoop data from 2014-2022 from EDI
-#inUrl1  <- "https://pasta-s.lternet.edu/package/data/eml/edi/1090/14/c7a04035b0a99adc489f5b6daec1cd52" 
+#inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/197/3/9eb6db370194bd3b2824726d89a008a6" 
 #infile1 <- paste0(getwd(),"/field_data/zoop_summary_2014-2022.csv")
 #try(download.file(inUrl1,infile1,method="curl"))
 #if (is.na(file.size(infile1))) download.file(inUrl1,infile1,method="auto")
@@ -514,14 +548,6 @@ all_zoops_final <- all_zoops |> group_by(Taxon) |>
          ZOO_rotifers = Rotifera_density_NopL)
 
 #write.csv(all_zoops_final, "field_data/field_zoops.csv", row.names=F)
-
-#ggplot(data=subset(all_zoops_final, DateTime <= "2019-01-01"), 
-#       aes(DateTime,Density_IndPerL, group = Taxon)) + 
-#  geom_point() + theme_bw() + facet_wrap(~Taxon, scales="free_y", nrow=3)
-#
-#ggplot(data=subset(all_zoops_final, DateTime >= "2019-01-01"), 
-#       aes(DateTime,Density_IndPerL, group = Taxon)) + 
-#  geom_point() + theme_bw() + facet_wrap(~Taxon, scales="free_y", nrow=3)
 
 
 ggplot(all_zoops_final, aes(DateTime,ZOO_cladocerans)) + 

@@ -18,7 +18,7 @@ aed <- read_nml(aed_file) #you may get a warning about an incomplete final line 
 print(nml)
 print(aed)
 
-file.copy('4Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('14Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('aed/22Jan24_po4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
 
 #run the model!
@@ -68,12 +68,6 @@ plot(sa$DateTime, sa$surface_area)
 points(wlevel$Date, wlevel$vol_m3, type="l",col="red")
 plot(evap$time, evap$evaporation)
 plot(precip$time, precip$precipitation)
-
-#hypsometric curve (wl vs. area/vol)
-
-water_level_sub <- water_level |> filter(DateTime %in% c(volume$DateTime))
-
-plot(water_level_sub$surface_height~ volume$lake_volume)
 
 outflow<-read.csv("inputs/BVR_spillway_outflow_2015_2022_metInflow.csv", header=T)
 inflow_weir<-read.csv("inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.65X_silica_0.2X_nitrate_0.4X_ammonium_1.9X_docr_1.7Xdoc.csv", header=T)
@@ -152,6 +146,11 @@ temps<-temps[complete.cases(temps),]
 
 m_temp <- temps$Modeled_temp[temps$Depth==c(0.1)] #1m depth (epi) RMSE
 o_temp <- temps$Observed_temp[temps$Depth==c(0.1)] 
+RMSE(m_temp,o_temp)
+summary(lm(m_temp ~ o_temp))$r.squared
+
+m_temp <- temps$Modeled_temp[temps$Depth==c(5)] #1m depth (meta) RMSE
+o_temp <- temps$Observed_temp[temps$Depth==c(5)] 
 RMSE(m_temp,o_temp)
 summary(lm(m_temp ~ o_temp))$r.squared
 

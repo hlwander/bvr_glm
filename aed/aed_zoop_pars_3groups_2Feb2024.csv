@@ -11,7 +11,6 @@
  'fexcr_zoo',0.7,0.7,0.7
  'ffecal_sed',0.15,0.15,0.15
  'theta_resp_zoo',1,1,1
- 'Tsd_zoo',20,20,20
  'Topt_zoo',22,22,22
  'Tmax_zoo',38,34,32
  'saltfunc_zoo',1,1,1

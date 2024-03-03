@@ -141,7 +141,7 @@ save_ncdf <- function(name, time, z, wtr, oxy){
   
   fillvalue <- 1e32
   dlname <- 'water temperature'
-  tmp_def <- ncvar_def("wtr", "deg_C", list(dimZ, dimT), fillvalue, dlname, prec="single")
+  tmp_def <- ncvar_def("wtr", "celsius", list(dimZ, dimT), fillvalue, dlname, prec="single")
   dlname <- 'dissolved oxygen'
   oxy_def <- ncvar_def("do", "mgperLitre", list(dimZ, dimT), fillvalue, dlname, prec="single")
   
@@ -159,7 +159,7 @@ save_ncdf <- function(name, time, z, wtr, oxy){
 mod2obs <- function(mod_nc, obs, reference = 'surface', var){
   deps = unique(obs[,2])
   #tim = unique(obs[,1])
-  mod <- glmtools::get_var(file = mod_nc,var,reference = reference, z_out = deps)
+  mod <- glmtools::get_var(file = out,var,reference = reference, z_out = deps)
   mod <- match.tstep1(obs, mod) #From gotm_functions.R        #EDIT THIS
   mod <- reshape2::melt(mod, id.vars = 1)
   mod[,2] <- as.character(mod[,2])

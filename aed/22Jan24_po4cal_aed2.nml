@@ -5,13 +5,13 @@
    sedflux_model = 'Constant2D'
 /
 &aed_sed_const2d
-   n_zones = 2
-   active_zones = 1, 2
-   Fsed_oxy = -50, -1
-   Fsed_ch4 = 40.0320880871239, 39.3101535068239
-   Fsed_amm = 3.7127727598308, 1.21597061324819
-   Fsed_nit = -0.01, -1e-04
-   Fsed_frp = 0.005, 0.01
+   n_zones = 4
+   active_zones = 1, 2, 3, 4
+   Fsed_oxy = -50, -1, -1, -1
+   Fsed_ch4 = 40.0320880871239, 39.3101535068239, 39, 39
+   Fsed_amm = 3.7127727598308, 1.21597061324819, 1.2, 1.2
+   Fsed_nit = -0.01, -1e-04, -1e-04, -1e-04
+   Fsed_frp = 0.005, 0.01, 0.01, 0.01
 /
 &aed_tracer
    retention_time = .true.

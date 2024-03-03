@@ -1,6 +1,6 @@
 #hand-tuning script
 
-file.copy('4Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('14Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('aed/22Jan24_po4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
 
 #run the model!
@@ -72,6 +72,12 @@ temps<-temps[complete.cases(temps),]
 RMSE(temps[temps$Depth==c(0.1),4],
      temps[temps$Depth==c(0.1),3])
 
+RMSE(temps[temps$Depth==c(3),4],
+     temps[temps$Depth==c(3),3])
+
+RMSE(temps[temps$Depth==c(6),4],
+     temps[temps$Depth==c(6),3])
+
 RMSE(temps[temps$Depth==c(9),4],
      temps[temps$Depth==c(9),3])
 
@@ -80,6 +86,12 @@ RMSE(temps$Modeled_temp, temps$Observed_temp)
 #r2
 summary(lm(temps$Modeled_temp[temps$Depth==c(0.1)] ~ 
              temps$Observed_temp[temps$Depth==c(0.1)]))$r.squared
+
+summary(lm(temps$Modeled_temp[temps$Depth==c(3)] ~ 
+             temps$Observed_temp[temps$Depth==c(3)]))$r.squared
+
+summary(lm(temps$Modeled_temp[temps$Depth==c(6)] ~ 
+             temps$Observed_temp[temps$Depth==c(6)]))$r.squared
 
 summary(lm(temps$Modeled_temp[temps$Depth==c(9)] ~ 
              temps$Observed_temp[temps$Depth==c(9)]))$r.squared
@@ -149,7 +161,7 @@ range(temp_9m$temp[temp_9m$year==2021]) # 21.4
 #----------------------------------------------------------------------#
 #look at inflow data to see why modeled temp peak looks so weird
 
-inflow <- read.csv('inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow.csv')
+inflow <- read.csv('inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.65X_silica_0.2X_nitrate_0.4X_ammonium_1.9X_docr_1.7Xdoc.csv')
 outflow <- read.csv('inputs/BVR_spillway_outflow_2015_2022_metInflow.csv')
 
 plot(as.Date(inflow$time), inflow$FLOW)
@@ -170,7 +182,7 @@ plot(as.Date(met$time),met$Rain)
 temp <- read.csv('field_data/CleanedObsTemp.csv')
 
 ggplot(temp, aes(DateTime, temp, color=as.factor(Depth))) + geom_point() +
-  theme_bw() + facet_wrap(~Depth)
+  theme_bw() + facet_wrap(~Depth, scales = "free_y")
 
 #----------------------------------------------------------------#
 #silica plots

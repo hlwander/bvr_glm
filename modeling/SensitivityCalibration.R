@@ -20,7 +20,10 @@ sim_vars(out)
 
 sim_folder<-getwd()
 
-system2(paste0(sim_folder,"/glm+.app/Contents/MacOS/glm+"), stdout = TRUE, stderr = TRUE, env = paste0("DYLD_LIBRARY_PATH=",sim_folder, "/glm+.app/Contents/MacOS"))
+system2(paste0(sim_folder,"/glm.app/Contents/MacOS/glm"), 
+        stdout = TRUE, stderr = TRUE, 
+        env = paste0("DYLD_LIBRARY_PATH=", sim_folder,
+                     "/glm.app/Contents/MacOS"))
 
 # Check temperature and DO
 nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file 
@@ -100,10 +103,10 @@ obs <- read_field_obs('field_data/CleanedObsTemp.csv', var)
 nml_file = 'glm3.nml'
 os = 'Compiled'
 run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
-#this part isn't working because morris_cluster=0 and all_ee is 0 too
+
 
 #water temperature CALIBRATION 
-file.copy('4Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('14Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('aed/22Jan24_po4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
 #file.copy('./aed/aed2_phyto_pars_2May2022_RQT.nml', './aed/aed2_phyto_pars_13Mar23.nml', overwrite = TRUE) #FIX THIS
 var = 'temp'
@@ -116,7 +119,7 @@ ub <- cal_pars$ub
 lb <- cal_pars$lb
 #Create initial files
 #init.val <- rep(5, nrow(cal_pars))
-init.val <- c(1, 10, 15)#(x0 - lb) *10 /(ub-lb) # NEEDS TO BE UPDATED WITH STARTING VALUES FROM YOUR CALIBRATION FILE
+init.val <- x0 #(x0 - lb) *10 /(ub-lb) # NEEDS TO BE UPDATED WITH STARTING VALUES FROM YOUR CALIBRATION FILE
 obs <- read_field_obs('field_data/CleanedObsTemp.csv', var)
 method = 'cmaes'
 calib.metric = 'RMSE'
@@ -126,10 +129,10 @@ target_iter = 1000 #1000*length(init.val)^2
 nml_file = 'glm3.nml'
 nml <- read_nml(nml_file) 
 print(nml)
-var_unit = 'degreesC'
+var_unit = 'celsius'
 var_seq = seq(-5,35,1)
 flag = c()
-run_calibvalid(var, var_unit = 'degreesC', var_seq = seq(-5,35,1), cal_pars, pars, ub, lb, init.val, obs, method, 
+run_calibvalid(var, var_unit = 'celsius', var_seq = seq(-5,35,1), cal_pars, pars, ub, lb, init.val, obs, method, 
                calib.metric, os, target_fit, target_iter, nml_file, flag = c()) #var_seq is contour color plot range
 
 #to visualize how params can converge

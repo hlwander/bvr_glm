@@ -313,7 +313,7 @@ alldata <- alldata[c(1:2493),]
 #check to make sure dates line up
 df <- data.frame(one = alldata$time, two=dvol$Date) #had to drop 4 dates because missing between the 2 dfs
 
-# Calculate outflow as the total inflow - change in water level 
+# Calculate outflow as the total inflow - change in volume 
 outflow <- as.data.frame(alldata$FLOW-dvol$dv_m3s) 
 names(outflow)[1] <- "FLOW"
 outflow <- cbind.data.frame(dvol,outflow)
