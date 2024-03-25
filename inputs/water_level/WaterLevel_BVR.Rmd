@@ -52,56 +52,22 @@ sensor_depth$WaterLevel[is.nan(sensor_depth$WaterLevel)] <- sensor_depth$WaterLe
 ```{r combine WL obs }
 # Get Water level observations to compare to calculated waterlevel to get an offset
 
-bv_wl_19 <- gsheet::gsheet2tbl("https://docs.google.com/spreadsheets/d/1XLJu5T7qsWtbQDBDEv3_63yfNB_GVXgs/edit#gid=353013140") |> 
-  mutate(WaterLevel_ft = as.numeric(WaterLevel_ft),
-         DateTime_temp = as.POSIXct(DateTime, format="%m/%d/%y %H:%M", tz="EST"),
-         DateTime_temp2 = as.POSIXct(paste0(DateTime,"12:00:00"), format="%m/%d/%Y %H:%M:%S", tz="EST"),
-         DateTime = ifelse(is.na(DateTime_temp), DateTime_temp2, DateTime_temp),
-         DateTime = as.POSIXct(DateTime, format="%m/%d/%Y %H:%M:%S", tz="EST")) |> 
-  select(-c(DateTime_temp, DateTime_temp2))
-           
-bv_wl_20 <- gsheet::gsheet2tbl("https://docs.google.com/spreadsheets/d/1AsFAufJM2k1u2CQwpb3tu6S6ts8DNG6C/edit#gid=1740372423") |> 
-    mutate(WaterLevel_ft = as.numeric(WaterLevel_ft),
-         DateTime_temp = as.POSIXct(DateTime, format="%m/%d/%y %H:%M", tz="EST"),
-         DateTime_temp2 = as.POSIXct(paste0(DateTime,"12:00:00"), format="%m/%d/%Y %H:%M:%S", tz="EST"),
-         DateTime = ifelse(is.na(DateTime_temp), DateTime_temp2, DateTime_temp),
-         DateTime = as.POSIXct(DateTime, format="%m/%d/%Y %H:%M:%S", tz="EST")) |> 
-  select(-c(DateTime_temp, DateTime_temp2))
-
-bv_wl_21 <- gsheet::gsheet2tbl("https://docs.google.com/spreadsheets/d/1ZeWmGQHiOYXUDrpeqgkGeA-KOBTq3-SDSPCZfeLz3NQ/edit#gid=0") |> 
-  mutate(WaterLevel_ft = as.numeric(WaterLevel_ft),
-         DateTime_temp = as.POSIXct(DateTime, format="%m/%d/%y %H:%M", tz="EST"),
-         DateTime_temp2 = as.POSIXct(paste0(DateTime,"12:00:00"), format="%m/%d/%Y %H:%M:%S", tz="EST"),
-         DateTime = ifelse(is.na(DateTime_temp), DateTime_temp2, DateTime_temp),
-         DateTime = as.POSIXct(DateTime, format="%m/%d/%Y %H:%M:%S", tz="EST")) |> 
-  select(-c(DateTime_temp, DateTime_temp2))
-
-bv_wl_22 <- gsheet::gsheet2tbl("https://docs.google.com/spreadsheets/d/1y6pI3BsWh_uM1WBQc2WCAkG1eFbScWTvvBv--jQ2WIY/edit#gid=0") |> 
-    mutate(WaterLevel_ft = as.numeric(WaterLevel_ft),
-         DateTime_temp = as.POSIXct(DateTime, format="%m/%d/%y %H:%M", tz="EST"),
-         DateTime_temp2 = as.POSIXct(paste0(DateTime,"12:00:00"), format="%m/%d/%Y %H:%M:%S", tz="EST"),
-         DateTime = ifelse(is.na(DateTime_temp), DateTime_temp2, DateTime_temp),
-         DateTime = as.POSIXct(DateTime, format="%m/%d/%Y %H:%M:%S", tz="EST")) |> 
-  select(-c(DateTime_temp, DateTime_temp2))
-
-#merge bvr wl files
-bvr_wl_obs <- dplyr::bind_rows(bv_wl_19,bv_wl_20,bv_wl_21,bv_wl_22) |> 
-   filter(Reservoir=="BVR") |> 
-  drop_na(WaterLevel_ft)
+bvr_wl_obs <- read_csv("https://raw.githubusercontent.com/CareyLabVT/Reservoirs/master/Data/DataNotYetUploadedToEDI/Raw_waterlevel/BVR/BVR_WaterLevel_2009_2023.csv") |> 
+  filter(Reservoir=="BVR") |> 
+  drop_na(WaterLevel_m) |> 
+  select(DateTime, WaterLevel_m)
 
 #add in WVWA water level obs to supplement VT obs
 wvwa_bvr_wl <- read_csv("https://raw.githubusercontent.com/CareyLabVT/BVR-GLM/fb418db53a1d85618b5403d28d7e0472beb65038/Data_Output/09Nov20_BVR_WaterLevel.csv")
 
 wvwa_bvr_wl$Date <-   parse_date_time(wvwa_bvr_wl$Date, orders = c("%Y-%m-%d")) 
   
-  bvr_wl_obs2<-bvr_wl_obs%>%
-    separate(DateTime, c("Date", "Time"), " ")%>%
-    mutate(Time=ifelse(Time=="00:00:00", "12:00:00", Time))%>%
-    unite(., col='DateTime', c('Date', 'Time'), sep=' ')%>%
-    mutate(DateTime=ymd_hms(DateTime))%>%
-    mutate(WaterLevel_ft=as.numeric(WaterLevel_ft))%>%
-    mutate(WaterLevel_m=WaterLevel_ft*0.3048)%>%
-    mutate(WaterLevel_m=WaterLevel_m+13)
+  bvr_wl_obs2<-bvr_wl_obs |> 
+    mutate(DateTime = as.character(DateTime)) |> 
+    separate(DateTime, c("Date", "Time"), " ") |> 
+    mutate(Time=ifelse(Time=="00:00:00", "12:00:00", Time)) |> #not necessary anymore 
+    unite(col='DateTime', c('Date', 'Time'), sep=' ') |> 
+    mutate(DateTime=ymd_hms(DateTime))
   
 ```
 
@@ -236,7 +202,7 @@ bvr_wl_final$vol_m3 <- total_bathy$approx_volume / 1000
 bvr_wl_final$Date <- as.Date(bvr_wl_final$Date)
 
 #export file
-write.csv(bvr_wl_final, "/Users/heatherwander/Documents/VirginiaTech/research/BVR_GLM/bvr_glm/inputs/BVR_Daily_WaterLevel_Vol_2015_2022_interp.csv", rownames = F)
+write.csv(bvr_wl_final, "/Users/heatherwander/Documents/VirginiaTech/research/BVR_GLM/bvr_glm/inputs/BVR_Daily_WaterLevel_Vol_2015_2022_interp.csv", row.names = FALSE)
 
 ```
 
