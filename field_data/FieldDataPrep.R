@@ -219,7 +219,7 @@ more1 <- more %>%
 for(i in 1:length(unique(more1$depth))){
   tempdf<-subset(more1, more1$depth==depths[i])
   plot(tempdf$time,tempdf$DO, type='p', col='red',
-       ylab='Oxygen mmol/m3', xlab='time',
+       ylab='Oxygen mg/L', xlab='time',
        main = paste0("Combined CTD & YSI data,Depth=",depths[i]),ylim=c(0,15))
 }
 
@@ -425,12 +425,16 @@ silica <- na.omit(silica)
 write.csv(silica, "field_data/field_silica.csv", row.names = F)
 
 #read in lab dataset of dissolved methane concentrations, measured in FCR
-ch4 <- read.csv(file.path(getwd(),"inputs/Dissolved_GHG_data_FCR_BVR_site50_inf_wet_15_19_not_final.csv"), header=T) %>%
+inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/551/8/454c11035c491710243cae0423efbe7b" 
+infile1 <- paste0(getwd(),"/field_data/ghg_2015_2023.csv")
+download.file(inUrl1,infile1,method="curl")
+
+ch4 <- read.csv(file.path(getwd(),"field_data/ghg_2015_2023.csv"), header=T) %>%
   dplyr::filter(Reservoir=="BVR") %>%
-  dplyr::filter(Depth_m < 50) %>% #to remove weir inflow site
+  dplyr::filter(Site == 50) %>% #just deep site
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   dplyr::filter(DateTime > as.Date("2015-07-07")) %>%
-  rename(Depth = Depth_m, CAR_ch4 = ch4_umolL, CAR_pCO2 = co2_umolL) %>%
+  rename(Depth = Depth_m, CAR_ch4 = CH4_umolL, CAR_pCO2 = CO2_umolL) %>%
   select(DateTime, Depth, CAR_ch4, CAR_pCO2) %>%
   mutate(CAR_pCO2 = CAR_pCO2*(0.0018/1000000)/0.0005667516) %>% #to convert umol/L to pCO2
   group_by(DateTime, Depth) %>%
@@ -503,26 +507,25 @@ zoops <- read.csv("field_data/zoop_summary_2014-2022.csv", header=T) |>
 zoops_2016_2018 <- zoops[as.Date(zoops$DateTime)<"2019-01-01",]
 zoops_2019_2021 <- zoops[as.Date(zoops$DateTime)>="2019-01-01",]
 
-#calculate cladoceran, copepod, and rotifer density for 2014-2018 data
+#calculate cladoceran, copepod, and rotifer biomass for 2014-2018 data
 zoops_3groups_pre <- zoops_2016_2018 |> 
   group_by(DateTime, StartDepth_m) |> 
-  summarise(Cladocera_Density_IndPerL = sum(Density_IndPerL[
+  summarise(Cladocera_Biomass_ugL = sum(Biomass_ugL[
     Taxon %in% c("Bosmina","D. catawba", "Chydorus","D. ambigua",
-                 "Diaphanosoma","Ceriodaphnia")]),
-            Copepoda_Density_IndPerL = sum(Density_IndPerL[
-              Taxon %in% c("Diaptomus","Nauplii", "Cyclopoids")]),
-            Rotifera_Density_IndPerL = sum(Density_IndPerL[
-              Taxon %in% c("Total Rotifers")]))
+                 "Diaphanosoma","Ceriodaphnia")], na.rm=T),
+            Copepoda_Biomass_ugL = sum(Biomass_ugL[
+              Taxon %in% c("Diaptomus","Nauplii", "Cyclopoids")], na.rm=T),
+            Rotifera_Biomass_ugL = sum(Biomass_ugL[
+              Taxon %in% c("Total Rotifers")], na.rm=T))
 
 zoops_final_pre <- zoops_3groups_pre |> 
   group_by(DateTime, StartDepth_m) |> 
-  pivot_longer(cols=Cladocera_Density_IndPerL:Rotifera_Density_IndPerL,
+  pivot_longer(cols=Cladocera_Biomass_ugL:Rotifera_Biomass_ugL,
                names_to = c("Taxon"),
-               values_to = "Density_IndPerL") |> 
+               values_to = "Biomass_ugL") |> 
   filter(hour(DateTime) %in% c(9,10,11,12,13,14)) |> #drop nighttime samples
   mutate(DateTime = as.Date(DateTime)) |> 
-  mutate(Density_IndPerL = Density_IndPerL * (1/0.031)) |>  #10m bvr neteff from 2016 (n=2) - note that 7m neteff was also 0.31
-  #avg from 2020 and 2021 is 0.021...
+  mutate(Biomass_ugL = Biomass_ugL * (1/0.031)) |>  #correct for net inefficiency
   mutate(Taxon = str_extract(Taxon, "[^_]+")) #extract taxon before the first _
 
 #average reps when appropriate
@@ -532,7 +535,7 @@ zoops_final_post <- zoops_2019_2021 |>
   filter(Taxon %in% c("Cladocera","Copepoda","Rotifera")) |> 
   mutate(DateTime = as.Date(DateTime)) |> 
   group_by(StartDepth_m, DateTime, Taxon) |> 
-  summarise(Density_IndPerL = mean(Density_IndPerL))
+  summarise(Biomass_ugL = mean(Biomass_ugL, na.rm=T))
 
 #combine all zoop data
 all_zoops <- bind_rows(zoops_final_pre, zoops_final_post) |> 
@@ -541,20 +544,24 @@ all_zoops <- bind_rows(zoops_final_pre, zoops_final_post) |>
 
 #reformat forr glm aed
 all_zoops_final <- all_zoops |> group_by(Taxon) |> 
-  pivot_wider(names_from = Taxon, values_from = Density_IndPerL,
-               names_glue = "{Taxon}_density_NopL") |> 
-  rename(ZOO_cladocerans = Cladocera_density_NopL,
-         ZOO_copepods = Copepoda_density_NopL,
-         ZOO_rotifers = Rotifera_density_NopL)
+  pivot_wider(names_from = Taxon, values_from = Biomass_ugL,
+               names_glue = "{Taxon}_Biomass_ugL") |> 
+  rename(ZOO_cladoceran = Cladocera_Biomass_ugL,
+         ZOO_copepod = Copepoda_Biomass_ugL,
+         ZOO_rotifer = Rotifera_Biomass_ugL) |> 
+  mutate(ZOO_rotifer = ifelse(DateTime < "2019-01-01", NA, ZOO_rotifer)) |>  #bc JPD did not calculate rotifer biomass
+  mutate(ZOO_cladoceran = ZOO_cladoceran * 1000 * (1 / 12.011) * (1 / 1000),
+         ZOO_copepod = ZOO_copepod * 1000 * (1 / 12.011) * (1 / 1000),
+         ZOO_rotifer = ZOO_rotifer * 1000 * (1 / 12.011) * (1 / 1000)) #convert from ug/L to mmol/m3 C 
 
 #write.csv(all_zoops_final, "field_data/field_zoops.csv", row.names=F)
 
 
-ggplot(all_zoops_final, aes(DateTime,ZOO_cladocerans)) + 
+ggplot(all_zoops_final, aes(DateTime,ZOO_cladoceran)) + 
   geom_point() + theme_bw() 
-ggplot(all_zoops_final, aes(DateTime,ZOO_copepods)) + 
+ggplot(all_zoops_final, aes(DateTime,ZOO_copepod)) + 
   geom_point() + theme_bw() 
-ggplot(all_zoops_final, aes(DateTime,ZOO_rotifers)) + 
+ggplot(all_zoops_final, aes(DateTime,ZOO_rotifer)) + 
   geom_point() + theme_bw() 
 
 #add doy and year column
@@ -562,7 +569,6 @@ all_zoops_final$doy <- yday(all_zoops_final$DateTime)
 all_zoops_final$year <- year(all_zoops_final$DateTime)
 
 #look at doy on x and year by color
-ggplot(all_zoops_final, aes(doy, ZOO_cladocerans, color=as.factor(year))) + 
-  geom_point() + theme_bw() + facet_wrap(~Taxon, scales="free_y", nrow=3) +
-  geom_line()
+ggplot(all_zoops_final, aes(doy, ZOO_cladoceran, color=as.factor(year))) + 
+  geom_point() + theme_bw() + geom_line()
   

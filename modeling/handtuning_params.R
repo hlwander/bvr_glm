@@ -15,9 +15,12 @@ nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file
 
 
 #######################################################
-var= 'temp'
+#var= 'OGM_doc'
+var= 'PHY_tchla'
+#field_gases.csv
+#field_chem_2DOCpools.csv
 
-obs<-read.csv('field_data/CleanedObstemp.csv', header=TRUE) |>  #read in observed chemistry data
+obs<-read.csv('field_data/CleanedObsChla.csv', header=TRUE) |>  #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST")))  |> 
   select(DateTime, Depth, var) |> 
   filter(DateTime < as.POSIXct("2020-12-31"))  |> 
@@ -62,7 +65,9 @@ RMSE = function(m, o){
   sqrt(mean((m - o)^2))
 }
 
-field_file<-file.path(sim_folder,'field_data/CleanedObstemp.csv')
+field_file<-file.path(sim_folder,'field_data/CleanedObsChla.csv')
+#field_file<-file.path(sim_folder,'field_data/field_gases.csv')
+
 
 temps <- resample_to_field(nc_file, field_file, precision="days", method='interp',
                            var_name=var)
@@ -81,22 +86,22 @@ RMSE(temps[temps$Depth==c(6),4],
 RMSE(temps[temps$Depth==c(9),4],
      temps[temps$Depth==c(9),3])
 
-RMSE(temps$Modeled_temp, temps$Observed_temp)
+RMSE(temps$Modeled_PHY_tchla, temps$Observed_PHY_tchla)
 
 #r2
-summary(lm(temps$Modeled_temp[temps$Depth==c(0.1)] ~ 
-             temps$Observed_temp[temps$Depth==c(0.1)]))$r.squared
+summary(lm(temps$Modeled_PHY_tchla[temps$Depth==c(0.1)] ~ 
+             temps$Observed_PHY_tchla[temps$Depth==c(0.1)]))$r.squared
 
-summary(lm(temps$Modeled_temp[temps$Depth==c(3)] ~ 
-             temps$Observed_temp[temps$Depth==c(3)]))$r.squared
+summary(lm(temps$Modeled_PHY_tchla[temps$Depth==c(3)] ~ 
+             temps$Observed_PHY_tchla[temps$Depth==c(3)]))$r.squared
 
-summary(lm(temps$Modeled_temp[temps$Depth==c(6)] ~ 
-             temps$Observed_temp[temps$Depth==c(6)]))$r.squared
+summary(lm(temps$Modeled_PHY_tchla[temps$Depth==c(6)] ~ 
+             temps$Observed_PHY_tchla[temps$Depth==c(6)]))$r.squared
 
-summary(lm(temps$Modeled_temp[temps$Depth==c(9)] ~ 
-             temps$Observed_temp[temps$Depth==c(9)]))$r.squared
+summary(lm(temps$Modeled_PHY_tchla[temps$Depth==c(9)] ~ 
+             temps$Observed_PHY_tchla[temps$Depth==c(9)]))$r.squared
 
-summary(lm(temps$Modeled_temp ~ temps$Observed_temp))$r.squared
+summary(lm(temps$Modeled_PHY_tchla ~ temps$Observed_PHY_tchla))$r.squared
 #------------------------------------------------------------------------------#
 #fit Michaelis-Menten function to data
 #library(renz)

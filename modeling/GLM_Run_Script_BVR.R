@@ -63,10 +63,10 @@ precip<-get_var(nc_file, "precipitation", reference="surface")
 colnames(volume)[1]<-"time"
 colnames(precip)[1]<-"time"
 colnames(evap)[1]<-"time"
-plot(volume$DateTime, volume$lake_volume)
-plot(sa$DateTime, sa$surface_area)
+plot(volume$time, volume$lake_volume)
+#plot(sa$DateTime, sa$surface_area)
 points(wlevel$Date, wlevel$vol_m3, type="l",col="red")
-plot(evap$time, evap$evaporation)
+#plot(evap$time, evap$evaporation)
 plot(precip$time, precip$precipitation)
 
 outflow<-read.csv("inputs/BVR_spillway_outflow_2015_2022_metInflow.csv", header=T)
@@ -709,7 +709,7 @@ chla <- get_var(file=nc_file,var_name = 'PHY_tchla',z_out=0.1,reference = 'surfa
 lines(chla$DateTime, chla$PHY_tchla_0.1, col="red")
 
 phytos <- get_var(file=nc_file,var_name = 'PHY_tphy',z_out=0.1,reference = 'surface') 
-plot(phytos$DateTime, phytos$PHY_tphy_0.1, col="cyan", type="l", ylab="Phyto C mmol/m3", ylim=c(0,100))
+plot(phytos$DateTime, phytos$PHY_tphy_0.1, col="darkgreen", type="l", ylab="Phyto C mmol/m3", ylim=c(0,100))
 
 #######################################################
 #### ZOOPS! #######
@@ -725,20 +725,51 @@ plot(mort$DateTime, mort$ZOO_mort_1)
 
 
 var="ZOO_cladoceran"
-var="ZOO_copepods"
-var="ZOO_rotifers"
 
 obs<-read.csv('field_data/field_zoops.csv', header=TRUE) |>  
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) |> 
   dplyr::select(DateTime, var) %>%
-  na.omit()
+  na.omit() |>  filter(DateTime < as.POSIXct("2020-12-31"))
 
-zoops <- get_var(file=nc_file,var_name = var,z_out=0.1,reference = 'surface') 
-plot(zoops$DateTime, zoops$ZOO_cladocerans_0.1, type='l')
-points(obs$DateTime, obs$ZOO_cladocerans, col="red")
+zoops <- get_var(file=nc_file,var_name = var,z_out=0.1,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31"))
+plot(zoops$DateTime, zoops$ZOO_cladoceran_0.1, type='l')
+points(obs$DateTime, obs$ZOO_cladoceran, col="red")
 
-#get modeled concentrations for focal depths
-depths<- sort(as.numeric(unique(obs$Depth)))
+
+var="ZOO_copepod"
+
+obs<-read.csv('field_data/field_zoops.csv', header=TRUE) |>  
+  dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) |> 
+  dplyr::select(DateTime, var) %>%
+  na.omit() |>  filter(DateTime < as.POSIXct("2020-12-31"))
+
+zoops <- get_var(file=nc_file,var_name = var,z_out=0.1,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31"))
+plot(zoops$DateTime, zoops$ZOO_copepod_0.1, type='l')
+points(obs$DateTime, obs$ZOO_copepod, col="red")
+
+var="ZOO_rotifer"
+
+obs<-read.csv('field_data/field_zoops.csv', header=TRUE) |>  
+  dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) |> 
+  dplyr::select(DateTime, var) %>%
+  na.omit() |>  filter(DateTime < as.POSIXct("2020-12-31"))
+
+zoops <- get_var(file=nc_file,var_name = var,z_out=0.1,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31"))
+plot(zoops$DateTime, zoops$ZOO_rotifer_0.1, type='l')
+points(obs$DateTime, obs$ZOO_rotifer, col="red")
+
+#zoop community
+clad <- get_var(file=nc_file,var_name = 'ZOO_cladoceran',z_out=0.1,reference = 'surface') 
+plot(clad$DateTime, clad$ZOO_cladoceran_0.1, col="darkblue", type="l", ylab="Zoop C mmol/m3", ylim=c(0,100))
+cope <- get_var(file=nc_file,var_name = 'ZOO_copepod',z_out=0.1,reference = 'surface') 
+lines(cope$DateTime, cope$ZOO_copepod_0.1, col="darkgreen")
+rot <- get_var(file=nc_file,var_name = 'ZOO_rotifer',z_out=0.1,reference = 'surface') 
+lines(rot$DateTime, rot$ZOO_rotifer_0.1, col="darkorange")
+legend("topright", legend=c("cladocerans", "copepods", "rotifers"), fill= c("darkblue", "darkgreen","darkorange"), cex=0.8)
+
 
 #mod<- get_var(nc_file, var, reference="surface") %>%
 #  pivot_longer(cols=starts_with(paste0(var,"_")), names_to="Depth", names_prefix=paste0(var,"_"), values_to = var) %>%
@@ -757,31 +788,6 @@ for(i in 1:length(depths)){
     points(tempdf$DateTime, eval(parse(text=paste0("tempdf$",var,".x"))), type="l",col='black')
   }
 }
-
-
-
-
-
-#calculate RMSE for DOC labile - delete??
-
-doc <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
-                         var_name=var)
-doc <-doc[complete.cases(doc),]
-
-m_doc <- doc$Modeled_OGM_doc[doc$Depth>=0.1 & doc$Depth<=0.1] #0.1
-o_doc <-  doc$Observed_OGM_doc[doc$Depth>=0.1 & doc$Depth<=0.1]
-RMSE(m_doc,o_doc)
-
-m_doc <- doc$Modeled_OGM_doc[doc$Depth>=9 & doc$Depth<=9] #9m
-o_doc <-  doc$Observed_OGM_doc[doc$Depth>=9 & doc$Depth<=9] 
-RMSE(m_doc,o_doc)
-
-m_doc <- doc$Modeled_OGM_doc[doc$Depth>=0 & doc$Depth<=11] #all depths
-o_doc <-  doc$Observed_OGM_doc[doc$Depth>=0 & doc$Depth<=11] 
-RMSE(m_doc,o_doc)
-
-summary(lm(doc$Modeled_OGM_doc ~ doc$Observed_OGM_doc))$r.squared
-
 
 
 
