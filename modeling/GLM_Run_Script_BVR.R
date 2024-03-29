@@ -40,7 +40,7 @@ water_level<-get_surface_height(nc_file, ice.rm = TRUE, snow.rm = TRUE) |>
   filter(DateTime < as.POSIXct("2020-12-31"))
 
 # Read in and plot water level observations
-wlevel <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022_interp.csv") |> select(-...1)
+wlevel <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022_interp.csv")
   
 wlevel$Date <- as.POSIXct(strptime(wlevel$Date, "%Y-%m-%d", tz="EST"))
 wlevel <- wlevel %>% filter(Date>as.POSIXct("2015-07-08") & Date<as.POSIXct("2020-12-31"))
@@ -654,6 +654,7 @@ field_file <- file.path(sim_folder,'/field_data/CleanedObsChla.csv')
 obs<-read.csv('field_data/CleanedObsChla.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   dplyr::select(DateTime, Depth, var) %>%
+  filter(DateTime < as.POSIXct("2020-12-31"))  |> 
   na.omit()
 
 #get modeled concentrations for focal depths
@@ -663,6 +664,7 @@ mod<- get_var(nc_file, var, reference="surface", z_out=depths) %>%
   pivot_longer(cols=starts_with(paste0(var,"_")), names_to="Depth", names_prefix=paste0(var,"_"), values_to = var) %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   mutate(Depth=as.numeric(Depth)) %>%
+  filter(DateTime < as.POSIXct("2020-12-31"))  |> 
   na.omit()
 
 #lets do depth by depth comparisons of the sims
@@ -683,12 +685,20 @@ chl <- resample_to_field(nc_file, field_file, precision="hours", method='interp'
                          var_name=var)
 chl <-chl[complete.cases(chl),]
 
-m_chl <- chl$Modeled_PHY_tchla[chl$Depth>=0.1 & chl$Depth<=0.1] #0.1
-o_chl <-  chl$Observed_PHY_tchla[chl$Depth>=0.1 & chl$Depth<=0.1]
+m_chl <- chl$Modeled_PHY_tchla[chl$Depth==0.1 & chl$Depth==0.1] # 0.1m
+o_chl <-  chl$Observed_PHY_tchla[chl$Depth==0.1 & chl$Depth==0.1]
 RMSE(m_chl,o_chl)
 
-m_chl <- chl$Modeled_PHY_tchla[chl$Depth>=9 & chl$Depth<=9] #9m
-o_chl <-  chl$Observed_PHY_tchla[chl$Depth>=9 & chl$Depth<=9] 
+m_chl <- chl$Modeled_PHY_tchla[chl$Depth==3 & chl$Depth==3] # 3m
+o_chl <-  chl$Observed_PHY_tchla[chl$Depth==3 & chl$Depth==3]
+RMSE(m_chl,o_chl)
+
+m_chl <- chl$Modeled_PHY_tchla[chl$Depth==6 & chl$Depth==6] # 6m
+o_chl <-  chl$Observed_PHY_tchla[chl$Depth==6 & chl$Depth==6]
+RMSE(m_chl,o_chl)
+
+m_chl <- chl$Modeled_PHY_tchla[chl$Depth==9 & chl$Depth==9] # 9m
+o_chl <-  chl$Observed_PHY_tchla[chl$Depth==9 & chl$Depth==9]
 RMSE(m_chl,o_chl)
 
 m_chl <- chl$Modeled_PHY_tchla[chl$Depth>=0 & chl$Depth<=11] #all depths
@@ -763,12 +773,12 @@ points(obs$DateTime, obs$ZOO_rotifer, col="red")
 
 #zoop community
 clad <- get_var(file=nc_file,var_name = 'ZOO_cladoceran',z_out=0.1,reference = 'surface') 
-plot(clad$DateTime, clad$ZOO_cladoceran_0.1, col="darkblue", type="l", ylab="Zoop C mmol/m3", ylim=c(0,100))
+plot(clad$DateTime, clad$ZOO_cladoceran_0.1, col="darkblue", type="l", ylab="Zoop C mmol/m3", ylim=c(0,90))
 cope <- get_var(file=nc_file,var_name = 'ZOO_copepod',z_out=0.1,reference = 'surface') 
 lines(cope$DateTime, cope$ZOO_copepod_0.1, col="darkgreen")
 rot <- get_var(file=nc_file,var_name = 'ZOO_rotifer',z_out=0.1,reference = 'surface') 
 lines(rot$DateTime, rot$ZOO_rotifer_0.1, col="darkorange")
-legend("topright", legend=c("cladocerans", "copepods", "rotifers"), fill= c("darkblue", "darkgreen","darkorange"), cex=0.8)
+legend("topleft", legend=c("cladocerans", "copepods", "rotifers"), fill= c("darkblue", "darkgreen","darkorange"), cex=0.8)
 
 
 #mod<- get_var(nc_file, var, reference="surface") %>%

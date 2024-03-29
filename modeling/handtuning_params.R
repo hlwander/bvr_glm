@@ -15,8 +15,8 @@ nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file
 
 
 #######################################################
-#var= 'OGM_doc'
 var= 'PHY_tchla'
+#var= 'OGM_docr'
 #field_gases.csv
 #field_chem_2DOCpools.csv
 
@@ -86,22 +86,22 @@ RMSE(temps[temps$Depth==c(6),4],
 RMSE(temps[temps$Depth==c(9),4],
      temps[temps$Depth==c(9),3])
 
-RMSE(temps$Modeled_PHY_tchla, temps$Observed_PHY_tchla)
+RMSE(temps$Modeled_OGM_doc, temps$Observed_OGM_doc)
 
 #r2
-summary(lm(temps$Modeled_PHY_tchla[temps$Depth==c(0.1)] ~ 
-             temps$Observed_PHY_tchla[temps$Depth==c(0.1)]))$r.squared
+summary(lm(temps$Modeled_OGM_doc[temps$Depth==c(0.1)] ~ 
+             temps$Observed_OGM_doc[temps$Depth==c(0.1)]))$r.squared
 
-summary(lm(temps$Modeled_PHY_tchla[temps$Depth==c(3)] ~ 
-             temps$Observed_PHY_tchla[temps$Depth==c(3)]))$r.squared
+summary(lm(temps$Modeled_OGM_doc[temps$Depth==c(3)] ~ 
+             temps$Observed_OGM_doc[temps$Depth==c(3)]))$r.squared
 
-summary(lm(temps$Modeled_PHY_tchla[temps$Depth==c(6)] ~ 
-             temps$Observed_PHY_tchla[temps$Depth==c(6)]))$r.squared
+summary(lm(temps$Modeled_OGM_doc[temps$Depth==c(6)] ~ 
+             temps$Observed_OGM_doc[temps$Depth==c(6)]))$r.squared
 
-summary(lm(temps$Modeled_PHY_tchla[temps$Depth==c(9)] ~ 
-             temps$Observed_PHY_tchla[temps$Depth==c(9)]))$r.squared
+summary(lm(temps$Modeled_OGM_doc[temps$Depth==c(9)] ~ 
+             temps$Observed_OGM_doc[temps$Depth==c(9)]))$r.squared
 
-summary(lm(temps$Modeled_PHY_tchla ~ temps$Observed_PHY_tchla))$r.squared
+summary(lm(temps$Modeled_OGM_doc ~ temps$Observed_OGM_doc))$r.squared
 #------------------------------------------------------------------------------#
 #fit Michaelis-Menten function to data
 #library(renz)

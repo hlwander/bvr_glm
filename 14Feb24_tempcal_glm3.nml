@@ -130,5 +130,5 @@
    sed_temp_depth = 0.05, 0.5, 0.5, 0.5
    sed_temp_mean = 9, 12, 15, 19
    sed_temp_amplitude = 1.2, 2, 10, 10
-   sed_temp_peak_doy =  290, 300, 220, 220
+   sed_temp_peak_doy =  300, 305, 220, 210
 /

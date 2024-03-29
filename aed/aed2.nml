@@ -7,14 +7,14 @@
 &aed_sed_const2d
    n_zones = 4
    active_zones = 1, 2, 3, 4
-   Fsed_oxy = -100, -90, -20, -50
-   Fsed_ch4 = 60, 15, 20, 50
-   Fsed_dic = 0.001, 0.001, 0.001, 5
+   Fsed_oxy = -100, -70, -30, -40
+   Fsed_ch4 = 50, 10, 10, 10 
+   Fsed_dic = 10, 5, 5, 5
    Fsed_rsi = 0.1, 0.1, 40, 80
-   Fsed_amm = 10, 1, 1, 1 !3.7127727598308, 1.21597061324819, 1.2, 1.2
-   Fsed_nit = -0.01,-0.001,-0.001,-0.0001
-   Fsed_frp = 0.05, 0.008, 0.02, 0.001
-   Fsed_doc = 0.1, 0.1, 8, 5
+   Fsed_amm = 12, 1, 1, 1 
+   Fsed_nit = -0.001,-0.001,-0.001,-0.001
+   Fsed_frp = 0.07, 0.08, 0.05, 0.001
+   Fsed_doc = 0.01, 0.1, 8, 5
 /
 &aed_tracer
    retention_time = .true.
@@ -44,9 +44,9 @@
 /
 &aed_carbon
    dic_initial = 60
-   !Fsed_dic = 0.5 ! 3 !0.03982841
-   Ksed_dic = 40 !98.8 !35.08749
-   theta_sed_dic = 1.08 !1.15
+   !Fsed_dic = 1 ! 3 !0.03982841
+   Ksed_dic = 1 !40 !98.8 !35.08749
+   theta_sed_dic = 1.1 !1.15
    pH_initial = 6.2
    atm_co2 = 0.00041
    co2_model = 1
@@ -54,11 +54,11 @@
    ionic = 0.1
    co2_piston_model = 1
    ch4_initial = 5
-   Rch4ox = 0.1 !0.2 !0.9469993 
-   Kch4ox =  5 !0.2 !0.7298476
-   vTch4ox = 1.2! 1.08 !0.91
-   Ksed_ch4 = 1.5 !1.547945
-   theta_sed_ch4 = 1.18 !1.08
+   Rch4ox = 0.2 !0.9469993 
+   Kch4ox =  5 !0.1 !5 !0.2 !0.7298476
+   vTch4ox = 1.2 !1.2! 1.08 !0.91
+   Ksed_ch4 = 3.4 !1.5 !1.547945
+   theta_sed_ch4 = 1.14 !1.08
    methane_reactant_variable = 'OXY_oxy'
    atm_ch4 = 1.76e-06
    ch4_piston_model = 2
@@ -82,12 +82,12 @@
    Fsed_rsi_variable = 'SDF_Fsed_rsi'
 /
 &aed_nitrogen
-   amm_initial = 2.6
+   amm_initial = 2
    nit_initial = 0.05
    n2o_initial = 0.1
-   Rnitrif = 0.007!0.08628998
-   Knitrif = 22 !34.73152
-   theta_nitrif = 1.079923
+   Rnitrif = 0.007 !0.08628998
+   Knitrif = 30 !80 !22 !34.73152
+   theta_nitrif = 1.08 !1.079923
    nitrif_reactant_variable = 'OXY_oxy'
    nitrif_ph_variable = ''
    simNitrfpH = .false.
@@ -101,19 +101,19 @@
    n2o_piston_model = 4
    Rnh4no2 = 0.001
    kanammox = 0.001 !2
-   Kanmx_nit = 0.1 !0.2
-   Kanmx_amm = 0.005 !2.064857
-   Rdenit = 0.1 !2
-   Kdenit = 1 !20
-   theta_denit = 1.078595
-   Rdnra = 0.001 !0.01954085
+   Kanmx_nit = 2 !0.001 !0.1 !0.2
+   Kanmx_amm = 2.064857
+   Rdenit = 2 !0.07 !0.1 !2
+   Kdenit = 30 !1 !20
+   theta_denit = 1.08 !1.078595
+   Rdnra = 0.02 !1 !0.01954085
    Kdnra_oxy = 2.120867
-   Ksed_amm = 1 ! 9.882212
-   Ksed_nit = 71 !105.5863
+   Ksed_amm = 1 !10 !1 ! 9.882212
+   Ksed_nit = 1 !71 !105.5863
    Fsed_n2o = 0
    Ksed_n2o = 100
    theta_sed_amm = 1.087046
-   theta_sed_nit = 1.08 !1.15
+   theta_sed_nit = 1.08 
    !Fsed_nit = -0.05
    Fsed_amm_variable = 'SDF_Fsed_amm'
    Fsed_nit_variable = 'SDF_Fsed_nit'
@@ -121,8 +121,8 @@
 /
 &aed_phosphorus
    frp_initial = 0.05
-   Ksed_frp = 4 !3.686197
-   theta_sed_frp = 1.13 !kinda high...
+   Ksed_frp = 15 !3.686197
+   theta_sed_frp = 1.09! 1.13 
    phosphorus_reactant_variable = 'OXY_oxy'
    Fsed_frp_variable = 'SDF_Fsed_frp'
    simPO4Adsorption = .false.
