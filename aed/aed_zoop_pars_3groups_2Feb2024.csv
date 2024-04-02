@@ -1,30 +1,30 @@
- 'zoop_name','cladoceran','copepod','rotifer'
- 'zoop_initial', 10, 10, 10
- 'min_zoo', 0.5, 0.5, 0.5
- 'Rgrz_zoo', 1.3, 1.6, 1.1
- 'fassim_zoo', 0.9, 0.9, 0.9
- 'Kgrz_zoo', 1, 3, 1
+ 'zoop_name','rotifer','cladoceran','copepod'
+ 'zoop_initial', 10, 70, 70
+ 'min_zoo', 2, 2, 2
+ 'Rgrz_zoo', 1.1, 1.5, 1.6
+ 'fassim_zoo', 0.9, 0.9, 1
+ 'Kgrz_zoo', 1, 2, 2
  'theta_grz_zoo', 1.08, 1.08, 1.08
- 'Rresp_zoo', 0.09, 0.08, 0.08
- 'Rmort_zoo', 0.02, 0.01, 0.01
- 'ffecal_zoo', 0.1, 0.1, 0.1
+ 'Rresp_zoo', 0.1, 0.1, 0.1
+ 'Rmort_zoo', 0.01, 0.01, 0.05
+ 'ffecal_zoo', 0.2, 0.2, 0.2
  'fexcr_zoo', 0.7, 0.7, 0.7
  'ffecal_sed', 0.15, 0.15, 0.15
  'theta_resp_zoo', 1, 1, 1
- 'Topt_zoo', 22, 22, 22
- 'Tmax_zoo', 38, 34, 32
+ 'Topt_zoo', 20, 20, 20
+ 'Tmax_zoo', 33, 29, 31
  'saltfunc_zoo', 1, 1, 1
  'Smin_zoo', 0, 0, 0
  'Smax_zoo', 35, 35, 35
  'Sint_zoo', 10, 10, 10
  'INC_zoo', 0.2, 0.2, 0.2
  'IPC_zoo', 0.01, 0.01, 0.01
- 'DOmin_zoo', 5, 5, 5
- 'Cmin_grz_zoo', 0.05, 0.05, 0.05
+ 'DOmin_zoo', 10, 10, 10
+ 'Cmin_grz_zoo', 10, 10, 10
  'num_prey', 3, 3, 3
- 'prey(1)%zoop_prey', 'PHY_green', 'PHY_green', 'PHY_green'
- 'prey(1)%Pzoo_prey', 0.4, 0.4, 0.3
- 'prey(2)%zoop_prey', 'PHY_diatom', 'PHY_diatom', 'PHY_diatom'
- 'prey(2)%Pzoo_prey', 0.2, 0.2, 0.2
- 'prey(3)%zoop_prey', 'OGM_poc', 'OGM_poc', 'OGM_poc'
- 'prey(3)%Pzoo_prey', 0.1, 0.5, 0.6
+ 'prey(1)%zoop_prey', 'PHY_green', 'PHY_green', 'ZOO_rotifer'
+ 'prey(1)%Pzoo_prey', 0.1, 0.5, 0.5
+ 'prey(2)%zoop_prey', 'OGM_poc', 'PHY_diatom', 'ZOO_cladoceran'
+ 'prey(2)%Pzoo_prey', 0.8, 0.3, 0.4
+ 'prey(3)%zoop_prey', 'PHY_diatom', 'OGM_poc', 'OGM_poc'
+ 'prey(3)%Pzoo_prey', 0.1, 0.2, 0.1

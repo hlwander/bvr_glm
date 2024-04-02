@@ -60,14 +60,11 @@ filter(DateTime < as.POSIXct("2020-12-31")) #in m3
 sa <-get_var(nc_file, "surface_area", reference="surface") 
 evap<-get_var(nc_file, "evaporation", reference="surface")
 precip<-get_var(nc_file, "precipitation", reference="surface")
-colnames(volume)[1]<-"time"
-colnames(precip)[1]<-"time"
-colnames(evap)[1]<-"time"
-plot(volume$time, volume$lake_volume)
-#plot(sa$DateTime, sa$surface_area)
-points(wlevel$Date, wlevel$vol_m3, type="l",col="red")
-#plot(evap$time, evap$evaporation)
-plot(precip$time, precip$precipitation)
+plot(volume$DateTime, volume$lake_volume, type="l")
+points(wlevel$Date, wlevel$vol_m3, type="p",col="red")
+plot(sa$DateTime, sa$surface_area)
+plot(evap$DateTime, evap$evaporation)
+plot(precip$DateTime, precip$precipitation)
 
 outflow<-read.csv("inputs/BVR_spillway_outflow_2015_2022_metInflow.csv", header=T)
 inflow_weir<-read.csv("inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.65X_silica_0.2X_nitrate_0.4X_ammonium_1.9X_docr_1.7Xdoc.csv", header=T)
@@ -708,29 +705,38 @@ RMSE(m_chl,o_chl)
 summary(lm(chl$Modeled_PHY_tchla ~ chl$Observed_PHY_tchla))$r.squared
 
 #community
-cyano <- get_var(file=nc_file,var_name = 'PHY_cyano',z_out=0.1,reference = 'surface') 
-plot(cyano$DateTime, cyano$PHY_cyano_0.1, col="cyan", type="l", ylab="Phyto C mmol/m3", ylim=c(0,100))
-green <- get_var(file=nc_file,var_name = 'PHY_green',z_out=0.1,reference = 'surface') 
+cyano <- get_var(file=nc_file,var_name = 'PHY_cyano',z_out=0.1,
+                 reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
+plot(cyano$DateTime, cyano$PHY_cyano_0.1, col="cyan", 
+     type="l", ylab="Phyto C mmol/m3", ylim=c(0,250))
+green <- get_var(file=nc_file,var_name = 'PHY_green',z_out=0.1,
+                 reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
 lines(green$DateTime, green$PHY_green_0.1, col="green")
-diatoms <- get_var(file=nc_file,var_name = 'PHY_diatom',z_out=0.1,reference = 'surface') 
+diatoms <- get_var(file=nc_file,var_name = 'PHY_diatom',z_out=0.1,
+                   reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
 lines(diatoms$DateTime, diatoms$PHY_diatom_0.1, col="brown")
-legend("topleft", legend=c("Cyano", "Greens", "Diatoms"), fill= c("cyan", "green","brown"), cex=0.8)
-chla <- get_var(file=nc_file,var_name = 'PHY_tchla',z_out=0.1,reference = 'surface') 
+legend("topleft", legend=c("Cyano", "Greens", "Diatoms"), 
+       fill= c("cyan", "green","brown"), cex=0.8)
+chla <- get_var(file=nc_file,var_name = 'PHY_tchla',z_out=0.1,
+                reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
 lines(chla$DateTime, chla$PHY_tchla_0.1, col="red")
 
 phytos <- get_var(file=nc_file,var_name = 'PHY_tphy',z_out=0.1,reference = 'surface') 
-plot(phytos$DateTime, phytos$PHY_tphy_0.1, col="darkgreen", type="l", ylab="Phyto C mmol/m3", ylim=c(0,100))
+plot(phytos$DateTime, phytos$PHY_tphy_0.1, col="darkgreen", type="l", ylab="Phyto C mmol/m3", ylim=c(10,300))
 
 #######################################################
 #### ZOOPS! #######
 
-grz <- get_var(file=nc_file,var_name = 'ZOO_grz',z_out=1,reference = 'surface')
+grz <- get_var(file=nc_file,var_name = 'ZOO_grz',z_out=1,
+                reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
 plot(grz$DateTime, grz$ZOO_grz_1)
 
-resp <- get_var(file=nc_file,var_name = 'ZOO_resp',z_out=1,reference = 'surface')
+resp <- get_var(file=nc_file,var_name = 'ZOO_resp',z_out=1,
+                reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
 plot(resp$DateTime, resp$ZOO_resp_1)
 
-mort <- get_var(file=nc_file,var_name = 'ZOO_mort',z_out=1,reference = 'surface')
+mort <- get_var(file=nc_file,var_name = 'ZOO_mort',z_out=1,
+                reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
 plot(mort$DateTime, mort$ZOO_mort_1)
 
 
@@ -772,13 +778,18 @@ plot(zoops$DateTime, zoops$ZOO_rotifer_0.1, type='l')
 points(obs$DateTime, obs$ZOO_rotifer, col="red")
 
 #zoop community
-clad <- get_var(file=nc_file,var_name = 'ZOO_cladoceran',z_out=0.1,reference = 'surface') 
-plot(clad$DateTime, clad$ZOO_cladoceran_0.1, col="darkblue", type="l", ylab="Zoop C mmol/m3", ylim=c(0,90))
-cope <- get_var(file=nc_file,var_name = 'ZOO_copepod',z_out=0.1,reference = 'surface') 
+clad <- get_var(file=nc_file,var_name = 'ZOO_cladoceran',z_out=0.1,
+                reference = 'surface') |>  filter(DateTime < as.POSIXct("2020-12-31"))
+plot(clad$DateTime, clad$ZOO_cladoceran_0.1, col="darkblue",
+     type="l", ylab="Zoop C mmol/m3", ylim=c(0,90))
+cope <- get_var(file=nc_file,var_name = 'ZOO_copepod',z_out=0.1,
+                reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
 lines(cope$DateTime, cope$ZOO_copepod_0.1, col="darkgreen")
-rot <- get_var(file=nc_file,var_name = 'ZOO_rotifer',z_out=0.1,reference = 'surface') 
+rot <- get_var(file=nc_file,var_name = 'ZOO_rotifer',z_out=0.1,
+               reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
 lines(rot$DateTime, rot$ZOO_rotifer_0.1, col="darkorange")
-legend("topleft", legend=c("cladocerans", "copepods", "rotifers"), fill= c("darkblue", "darkgreen","darkorange"), cex=0.8)
+legend("topleft", legend=c("cladocerans", "copepods", "rotifers"), 
+       fill= c("darkblue", "darkgreen","darkorange"), cex=0.8)
 
 
 #mod<- get_var(nc_file, var, reference="surface") %>%
