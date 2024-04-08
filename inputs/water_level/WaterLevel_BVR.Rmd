@@ -1,6 +1,17 @@
+---
+title: "Interporlated Daily Water Level and Volume for BVR"
+author: "Heather Wander"
+created: "2023-05-14"
+output: html_document
+date:  "`r Sys.Date()`"
+---
+
+This script reads in the water level observations from the pressure transducer, the observed water level and then makes an interportlated daily water level observations. Then it reads in the 
+bathymetry data to calculate the volume based on water level. 
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-pacman::p_load(RCurl, tidyverse, lubridate, gsheet)
+pacman::p_load(RCurl, tidyverse, lubridate)
 
 ```
 
@@ -53,16 +64,16 @@ sensor_depth$WaterLevel[is.nan(sensor_depth$WaterLevel)] <- sensor_depth$WaterLe
 # Get Water level observations to compare to calculated waterlevel to get an offset
 
 bvr_wl_obs <- read_csv("https://raw.githubusercontent.com/CareyLabVT/Reservoirs/master/Data/DataNotYetUploadedToEDI/Raw_waterlevel/BVR/BVR_WaterLevel_2009_2023.csv") |> 
-  filter(Reservoir=="BVR") |> 
+ # filter(Reservoir=="BVR") |> 
   drop_na(WaterLevel_m) |> 
-  select(DateTime, WaterLevel_m)
+  select(DateTime, WaterLevel_m, Source)
 
 #add in WVWA water level obs to supplement VT obs
-wvwa_bvr_wl <- read_csv("https://raw.githubusercontent.com/CareyLabVT/BVR-GLM/fb418db53a1d85618b5403d28d7e0472beb65038/Data_Output/09Nov20_BVR_WaterLevel.csv")
+# wvwa_bvr_wl <- read_csv("https://raw.githubusercontent.com/CareyLabVT/BVR-GLM/fb418db53a1d85618b5403d28d7e0472beb65038/Data_Output/09Nov20_BVR_WaterLevel.csv")
 
-wvwa_bvr_wl$Date <-   parse_date_time(wvwa_bvr_wl$Date, orders = c("%Y-%m-%d")) 
+# wvwa_bvr_wl$Date <-   parse_date_time(wvwa_bvr_wl$Date, orders = c("%Y-%m-%d")) 
   
-  bvr_wl_obs2<-bvr_wl_obs |> 
+#  bvr_wl_obs2<-bvr_wl_obs |> 
     mutate(DateTime = as.character(DateTime)) |> 
     separate(DateTime, c("Date", "Time"), " ") |> 
     mutate(Time=ifelse(Time=="00:00:00", "12:00:00", Time)) |> #not necessary anymore 
@@ -75,7 +86,7 @@ wvwa_bvr_wl$Date <-   parse_date_time(wvwa_bvr_wl$Date, orders = c("%Y-%m-%d"))
 
 depth<- sensor%>%
   select(DateTime, Depth_m_13)%>%
-  merge(., bvr_wl_obs2, by.x="DateTime", by.y="DateTime")
+  merge(., bvr_wl_obs, by.x="DateTime", by.y="DateTime")
 
 plot(depth$WaterLevel_m, depth$Depth_m_13)
 
@@ -89,24 +100,31 @@ depth$check=-0.247+ (1.043*depth$Depth_m_13)
 
 ```{r filter obs}
 
-vt_obs<- bvr_wl_obs2%>%
-  select(DateTime,WaterLevel_m)%>%
+vt_obs<- bvr_wl_obs%>%
+  select(DateTime,WaterLevel_m, Source)%>%
   filter(DateTime>ymd_hms("2015-07-07 00:00:00") & DateTime<ymd_hms("2020-06-17 00:00:00"))%>%
   mutate(Date=as.Date(DateTime))%>%
-  select(Date, WaterLevel_m)
+  select(Date, WaterLevel_m, Source)
 
 #merge wvwa and vt observations
-wvwa_wl <- wvwa_bvr_wl %>%
-  filter(Date>as.Date("2015-07-07") & Date<as.Date("2020-06-17")) #need obs before sensors were deployed
+# wvwa_wl <- wvwa_bvr_wl %>%
+#   filter(Date>as.Date("2015-07-07") & Date<as.Date("2020-06-17")) #need obs before sensors were deployed
 
-#change water level column name to match for merge below
-names(wvwa_wl)[names(wvwa_wl) == 'BVR_WaterLevel_m'] <- 'WaterLevel_m'
+# #change water level column name to match for merge below
+# names(wvwa_wl)[names(wvwa_wl) == 'BVR_WaterLevel_m'] <- 'WaterLevel_m'
 
 #drop a few vt obs because they are the same as wvwa obs for this same day
-vt_obs <- vt_obs[vt_obs$Date %in% vt_obs$Date[which(!vt_obs$Date %in% as.Date(wvwa_wl$Date))],]
+# Keep the VT observations over the WVWA observations
+wl_final <- vt_obs |>
+  group_by(Date) |>
+  filter(Source == "VT" | !("VT" %in% Source)) |>
+  ungroup() |>
+  select(Date, WaterLevel_m)
+
+#vt_obs <- vt_obs[vt_obs$Date %in% vt_obs$Date[which(!vt_obs$Date %in% as.Date(wvwa_wl$Date))],]
                    
 #only keeping one vt water level observation because the others match wvwa obs
-wl_final <- rbind(vt_obs, wvwa_wl)
+#wl_final <- rbind(vt_obs, wvwa_wl)
 
 ```
 
