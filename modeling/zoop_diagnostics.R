@@ -20,18 +20,18 @@ nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file
 
 cyano <- get_var(file=nc_file,var_name = "PHY_cyano",
                  z_out=0.1,reference = 'surface') |> 
-  #filter(DateTime < as.POSIXct("2020-12-31"))
-  filter(DateTime < as.POSIXct("2017-07-08"))
+  filter(DateTime < as.POSIXct("2020-12-31"))
+  #filter(DateTime < as.POSIXct("2017-07-08"))
 
 green <- get_var(file=nc_file,var_name = "PHY_green",
                  z_out=0.1,reference = 'surface') |> 
-  #filter(DateTime < as.POSIXct("2020-12-31"))
-  filter(DateTime < as.POSIXct("2017-07-08"))
+  filter(DateTime < as.POSIXct("2020-12-31"))
+  #filter(DateTime < as.POSIXct("2017-07-08"))
 
 diatom <- get_var(file=nc_file,var_name = "PHY_diatom",
                   z_out=0.1,reference = 'surface') |> 
-  #filter(DateTime < as.POSIXct("2020-12-31"))
-  filter(DateTime < as.POSIXct("2017-07-08"))
+  filter(DateTime < as.POSIXct("2020-12-31"))
+  #filter(DateTime < as.POSIXct("2017-07-08"))
 
 #combine taxon dfs
 phytos_long <- bind_cols(cyano, green[!colnames(green) %in% "DateTime"], 
@@ -58,8 +58,8 @@ ggplot(phytos_long, aes(x = DateTime, y = value)) +
   ylab("Biomass (mmol/m3 C)")+
   #labs(fill = "Taxon", color = "Taxon")+
   scale_x_datetime(expand = c(0,0),labels = 
-                     #date_format("%Y",tz="EST5EDT")) +
-                     date_format("%b",tz="EST5EDT")) +
+                     date_format("%Y",tz="EST5EDT")) +
+                     #date_format("%b",tz="EST5EDT")) +
   scale_y_continuous(expand = c(0,0))+
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
@@ -76,22 +76,22 @@ ggplot(phytos_long, aes(x = DateTime, y = value)) +
         axis.title.y = element_text(size = 9),
         plot.margin = unit(c(0, 1, 0, 0), "cm"),
         panel.spacing = unit(0.5, "lines"))
-#ggsave("figures/BVR_stacked_phyto_composition_2015-2017.jpg", width=5, height=4) 
+#ggsave("figures/BVR_stacked_phyto_composition.jpg", width=5, height=4) 
 
 clad <- get_var(file=nc_file,var_name = "ZOO_cladoceran",
                 z_out=0.1,reference = 'surface') |> 
-  #filter(DateTime < as.POSIXct("2020-12-31"))
-  filter(DateTime < as.POSIXct("2017-07-08"))
+  filter(DateTime < as.POSIXct("2020-12-31"))
+  #filter(DateTime < as.POSIXct("2017-07-08"))
 
 cope <- get_var(file=nc_file,var_name = "ZOO_copepod",
                 z_out=0.1,reference = 'surface') |> 
-  #filter(DateTime < as.POSIXct("2020-12-31"))
-  filter(DateTime < as.POSIXct("2017-07-08"))
+  filter(DateTime < as.POSIXct("2020-12-31"))
+  #filter(DateTime < as.POSIXct("2017-07-08"))
 
 rot <- get_var(file=nc_file,var_name = "ZOO_rotifer",
                z_out=0.1,reference = 'surface') |> 
-  #filter(DateTime < as.POSIXct("2020-12-31"))
-  filter(DateTime < as.POSIXct("2017-07-08"))
+  filter(DateTime < as.POSIXct("2020-12-31"))
+  #filter(DateTime < as.POSIXct("2017-07-08"))
 
 #combine taxon dfs
 zoops_long <- bind_cols(clad, cope[!colnames(cope) %in% "DateTime"], 
@@ -114,8 +114,8 @@ ggplot(zoops_long, aes(x = DateTime, y = value)) +
   ylab("Biomass (mmol/m3 C)")+
   #labs(fill = "Taxon", color = "Taxon")+
   scale_x_datetime(expand = c(0,0),labels = 
-                     #date_format("%Y",tz="EST5EDT")) +
-                     date_format("%b",tz="EST5EDT")) +
+                     date_format("%Y",tz="EST5EDT")) +
+                     #date_format("%b",tz="EST5EDT")) +
   scale_y_continuous(expand = c(0,0))+
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
@@ -132,26 +132,26 @@ ggplot(zoops_long, aes(x = DateTime, y = value)) +
         axis.title.y = element_text(size = 9),
         plot.margin = unit(c(0, 1, 0, 0), "cm"),
         panel.spacing = unit(0.5, "lines"))
-#ggsave("figures/BVR_stacked_zoop_composition_2015-2017.jpg", width=5, height=4) 
+#ggsave("figures/BVR_stacked_zoop_composition.jpg", width=5, height=4) 
 
 #--------------------------------------------------------------------------#
 #stacked plot for zoop diagnostics
 
 grz <- get_var(file=nc_file,var_name = 'ZOO_grz',z_out=1,
                reference = 'surface') |> 
-  #filter(DateTime < as.POSIXct("2020-12-31"))
-  filter(DateTime < as.POSIXct("2017-07-08"))
+  filter(DateTime < as.POSIXct("2020-12-31"))
+  #filter(DateTime < as.POSIXct("2017-07-08"))
 
 resp <- get_var(file=nc_file,var_name = 'ZOO_resp',z_out=1,
                 reference = 'surface') |> 
-  #filter(DateTime < as.POSIXct("2020-12-31"))
-  filter(DateTime < as.POSIXct("2017-07-08")) |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> 
+  #filter(DateTime < as.POSIXct("2017-07-08")) 
   mutate(ZOO_resp_1 = ZOO_resp_1 * -1)
 
 mort <- get_var(file=nc_file,var_name = 'ZOO_mort',z_out=1,
                 reference = 'surface') |> 
-  #filter(DateTime < as.POSIXct("2020-12-31"))
-  filter(DateTime < as.POSIXct("2017-07-08")) |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |>
+  #filter(DateTime < as.POSIXct("2017-07-08"))  
   mutate(ZOO_mort_1 = ZOO_mort_1 * -1)
 
 #combine diagnostics into 1 df
@@ -174,8 +174,8 @@ ggplot(diag_long, aes(x = DateTime, y = value)) +
   ylab("diagnostics (mmolC/m3/day")+
   #labs(fill = "Taxon", color = "Taxon")+
   scale_x_datetime(expand = c(0,0),labels = 
-                     #date_format("%Y",tz="EST5EDT")) +
-                     date_format("%b",tz="EST5EDT")) +
+                     date_format("%Y",tz="EST5EDT")) +
+                     #date_format("%b",tz="EST5EDT")) +
   scale_y_continuous(expand = c(0,0))+
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
@@ -192,7 +192,7 @@ ggplot(diag_long, aes(x = DateTime, y = value)) +
         axis.title.y = element_text(size = 9),
         plot.margin = unit(c(0, 1, 0, 0), "cm"),
         panel.spacing = unit(0.5, "lines"))
-#ggsave("figures/BVR_stacked_zoop_diag_2015-2017.jpg", width=5, height=4) 
+#ggsave("figures/BVR_stacked_zoop_diag.jpg", width=5, height=4) 
 
 
 #--------------------------------------------------------------------------#

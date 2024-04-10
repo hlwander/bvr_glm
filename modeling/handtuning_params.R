@@ -16,7 +16,7 @@ nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file
 
 #######################################################
 var= 'PHY_tchla'
-#var= 'OGM_docr'
+#var= 'OGM_doc'
 #field_gases.csv
 #field_chem_2DOCpools.csv
 
@@ -66,7 +66,7 @@ RMSE = function(m, o){
 }
 
 field_file<-file.path(sim_folder,'field_data/CleanedObsChla.csv')
-#field_file<-file.path(sim_folder,'field_data/field_gases.csv')
+#field_file<-file.path(sim_folder,'field_data/field_chem_2DOCpools.csv')
 
 
 temps <- resample_to_field(nc_file, field_file, precision="days", method='interp',

@@ -708,7 +708,7 @@ summary(lm(chl$Modeled_PHY_tchla ~ chl$Observed_PHY_tchla))$r.squared
 cyano <- get_var(file=nc_file,var_name = 'PHY_cyano',z_out=0.1,
                  reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
 plot(cyano$DateTime, cyano$PHY_cyano_0.1, col="cyan", 
-     type="l", ylab="Phyto C mmol/m3", ylim=c(0,250))
+     type="l", ylab="Phyto C mmol/m3", ylim=c(0,100))
 green <- get_var(file=nc_file,var_name = 'PHY_green',z_out=0.1,
                  reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
 lines(green$DateTime, green$PHY_green_0.1, col="green")
@@ -722,7 +722,7 @@ chla <- get_var(file=nc_file,var_name = 'PHY_tchla',z_out=0.1,
 lines(chla$DateTime, chla$PHY_tchla_0.1, col="red")
 
 phytos <- get_var(file=nc_file,var_name = 'PHY_tphy',z_out=0.1,reference = 'surface') 
-plot(phytos$DateTime, phytos$PHY_tphy_0.1, col="darkgreen", type="l", ylab="Phyto C mmol/m3", ylim=c(10,300))
+plot(phytos$DateTime, phytos$PHY_tphy_0.1, col="darkgreen", type="l", ylab="Phyto C mmol/m3", ylim=c(1,200))
 
 #######################################################
 #### ZOOPS! #######
@@ -781,7 +781,7 @@ points(obs$DateTime, obs$ZOO_rotifer, col="red")
 clad <- get_var(file=nc_file,var_name = 'ZOO_cladoceran',z_out=0.1,
                 reference = 'surface') |>  filter(DateTime < as.POSIXct("2020-12-31"))
 plot(clad$DateTime, clad$ZOO_cladoceran_0.1, col="darkblue",
-     type="l", ylab="Zoop C mmol/m3", ylim=c(0,90))
+     type="l", ylab="Zoop C mmol/m3", ylim=c(0,100))
 cope <- get_var(file=nc_file,var_name = 'ZOO_copepod',z_out=0.1,
                 reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
 lines(cope$DateTime, cope$ZOO_copepod_0.1, col="darkgreen")

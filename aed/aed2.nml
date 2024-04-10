@@ -148,7 +148,7 @@
    cpom_initial = 0
    Rdom_minerl = 0.1
    Rpom_hydrol = 1e-04
-   Rpoc_hydrol = 0.001
+   Rpoc_hydrol = 0.5!0.001
    Rpon_hydrol = 0.001
    Rpop_hydrol = 1e-04
    theta_hydrol = 1.07
