@@ -79,7 +79,7 @@ inflow_weir$time<-as.POSIXct(strptime(inflow_weir$time, "%Y-%m-%d", tz="EST"))
 plot(as.Date(inflow_weir$time), inflow_weir$OGM_docr, type="l")
 
 # Calculate WRT from modeled volume and measured outflow
-volume$time<-as.POSIXct(strptime(volume$time, "%Y-%m-%d", tz="EST"))
+volume$time<-as.POSIXct(strptime(volume$DateTime, "%Y-%m-%d", tz="EST"))
 wrt<-merge(volume, outflow, by='time')
 wrt$wrt <- ((wrt$lake_volume)/(wrt$FLOW))*(1/60)*(1/60)*(1/24) #residence time in days
 plot(wrt$time,wrt$wrt)
@@ -648,7 +648,7 @@ summary(lm(doc$Modeled_OGM_doc ~ doc$Observed_OGM_doc))$r.squared
 var="PHY_tchla"
 field_file <- file.path(sim_folder,'/field_data/CleanedObsChla.csv') 
 
-obs<-read.csv('field_data/CleanedObsChla.csv', header=TRUE) %>% #read in observed chemistry data
+obs<-read.csv('field_data/CleanedObsChla.csv', header=TRUE) %>%
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   dplyr::select(DateTime, Depth, var) %>%
   filter(DateTime < as.POSIXct("2020-12-31"))  |> 
@@ -682,8 +682,8 @@ chl <- resample_to_field(nc_file, field_file, precision="hours", method='interp'
                          var_name=var)
 chl <-chl[complete.cases(chl),]
 
-m_chl <- chl$Modeled_PHY_tchla[chl$Depth==0.1 & chl$Depth==0.1] # 0.1m
-o_chl <-  chl$Observed_PHY_tchla[chl$Depth==0.1 & chl$Depth==0.1]
+m_chl <- chl$Modeled_PHY_tchla[chl$Depth==1 & chl$Depth==1] # 1m
+o_chl <-  chl$Observed_PHY_tchla[chl$Depth==1 & chl$Depth==1]
 RMSE(m_chl,o_chl)
 
 m_chl <- chl$Modeled_PHY_tchla[chl$Depth==3 & chl$Depth==3] # 3m
@@ -717,9 +717,9 @@ diatoms <- get_var(file=nc_file,var_name = 'PHY_diatom',z_out=0.1,
 lines(diatoms$DateTime, diatoms$PHY_diatom_0.1, col="brown")
 legend("topleft", legend=c("Cyano", "Greens", "Diatoms"), 
        fill= c("cyan", "green","brown"), cex=0.8)
-chla <- get_var(file=nc_file,var_name = 'PHY_tchla',z_out=0.1,
-                reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
-lines(chla$DateTime, chla$PHY_tchla_0.1, col="red")
+#chla <- get_var(file=nc_file,var_name = 'PHY_tchla',z_out=0.1,
+#                reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
+#lines(chla$DateTime, chla$PHY_tchla_0.1, col="red")
 
 phytos <- get_var(file=nc_file,var_name = 'PHY_tphy',z_out=0.1,reference = 'surface') 
 plot(phytos$DateTime, phytos$PHY_tphy_0.1, col="darkgreen", type="l", ylab="Phyto C mmol/m3", ylim=c(1,200))

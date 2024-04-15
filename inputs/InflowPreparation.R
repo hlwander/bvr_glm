@@ -285,7 +285,7 @@ write.csv(total_inflow, "./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_wi
 
 # Load in water level + volume data for BVR
 # Calculated in WaterLevel_BVR.Rmd (inputs/water_level)
-vol <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022_interp.csv") %>% select(-(...1))
+vol <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022_interp.csv")
 vol$Date <- as.POSIXct(strptime(vol$Date, "%Y-%m-%d", tz = "EST"))
 
 vol1 <- vol %>% filter(Date>=as.Date('2015-07-07')&Date<=as.Date('2022-05-03')) %>% select(Date,vol_m3)
