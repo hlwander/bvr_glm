@@ -781,7 +781,7 @@ points(obs$DateTime, obs$ZOO_rotifer, col="red")
 clad <- get_var(file=nc_file,var_name = 'ZOO_cladoceran',z_out=0.1,
                 reference = 'surface') |>  filter(DateTime < as.POSIXct("2020-12-31"))
 plot(clad$DateTime, clad$ZOO_cladoceran_0.1, col="darkblue",
-     type="l", ylab="Zoop C mmol/m3", ylim=c(0,100))
+     type="l", ylab="Zoop C mmol/m3", ylim=c(10,120))
 cope <- get_var(file=nc_file,var_name = 'ZOO_copepod',z_out=0.1,
                 reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
 lines(cope$DateTime, cope$ZOO_copepod_0.1, col="darkgreen")
