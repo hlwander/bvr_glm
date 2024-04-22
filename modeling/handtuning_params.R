@@ -214,4 +214,15 @@ inf <- read_csv("./inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_me
 plot(obs$OGM_doc[obs$Depth==0.1], 
      inf$FLOW[as.Date(inf$time) %in% as.Date(obs$DateTime[obs$Depth==0.1])]) 
 
+#----------------------------------------------------------------#
+# looking into POC pool to make sure zoops have enough food
+var= 'OGM_poc'
+
+plot(mod$DateTime[mod$Depth==0.1], mod$OGM_poc[mod$Depth==0.1])
+
+plot(mod$DateTime[mod$Depth==3], mod$OGM_poc[mod$Depth==3])
+
+plot(mod$DateTime[mod$Depth==6], mod$OGM_poc[mod$Depth==6])
+
+plot(mod$DateTime[mod$Depth==9], mod$OGM_poc[mod$Depth==9])
 

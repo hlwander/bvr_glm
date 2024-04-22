@@ -682,8 +682,8 @@ chl <- resample_to_field(nc_file, field_file, precision="hours", method='interp'
                          var_name=var)
 chl <-chl[complete.cases(chl),]
 
-m_chl <- chl$Modeled_PHY_tchla[chl$Depth==1 & chl$Depth==1] # 1m
-o_chl <-  chl$Observed_PHY_tchla[chl$Depth==1 & chl$Depth==1]
+m_chl <- chl$Modeled_PHY_tchla[chl$Depth==0.1 & chl$Depth==0.1] # 1m
+o_chl <-  chl$Observed_PHY_tchla[chl$Depth==0.1 & chl$Depth==0.1]
 RMSE(m_chl,o_chl)
 
 m_chl <- chl$Modeled_PHY_tchla[chl$Depth==3 & chl$Depth==3] # 3m
@@ -781,7 +781,7 @@ points(obs$DateTime, obs$ZOO_rotifer, col="red")
 clad <- get_var(file=nc_file,var_name = 'ZOO_cladoceran',z_out=0.1,
                 reference = 'surface') |>  filter(DateTime < as.POSIXct("2020-12-31"))
 plot(clad$DateTime, clad$ZOO_cladoceran_0.1, col="darkblue",
-     type="l", ylab="Zoop C mmol/m3", ylim=c(10,120))
+     type="l", ylab="Zoop C mmol/m3", ylim=c(5,90))
 cope <- get_var(file=nc_file,var_name = 'ZOO_copepod',z_out=0.1,
                 reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
 lines(cope$DateTime, cope$ZOO_copepod_0.1, col="darkgreen")
