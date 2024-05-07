@@ -97,14 +97,16 @@ iceblue<-get_var(nc_file,"blue_ice_thickness")
 plot(ice$DateTime,rowSums(cbind(ice$white_ice_thickness,iceblue$blue_ice_thickness)))
 
 #read in cleaned CTD temp file with long-term obs at focal depths
-obstemp<-read_csv('field_data/CleanedObsTemp.csv') %>%
-  mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST")))
+obstemp<-read_csv('field_data/CleanedObsTemp.csv') |> 
+  mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST")))|> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #get modeled temperature readings for focal depths
 depths<- c(0.1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) 
-modtemp <- get_temp(nc_file, reference="surface", z_out=depths) %>%
+modtemp <- get_temp(nc_file, reference="surface", z_out=depths) |> 
   pivot_longer(cols=starts_with("temp_"), names_to="Depth", names_prefix="temp_", values_to = "temp") %>%
-  mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) 
+  mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #lets do depth by depth comparisons of the obs vs mod temps for each focal depth
 watertemp<-merge(modtemp, obstemp, by=c("DateTime","Depth")) %>%
@@ -113,7 +115,7 @@ for(i in 1:length(unique(watertemp$Depth))){
   tempdf<-subset(watertemp, watertemp$Depth==depths[i])
   plot(tempdf$DateTime, tempdf$obstemp, col='red',
        ylab='temperature', xlab='time',
-       main = paste0("Obs=Red,Mod=Black,Depth=",depths[i]),ylim=c(0,30))
+       main = paste0("Obs=Red,Mod=Black,Depth=",depths[i]))
        points(tempdf$DateTime, tempdf$obstemp, type = "p", col='red', pch=19)
        points(tempdf$DateTime, tempdf$modtemp, type="l",col='black')
 }
@@ -122,7 +124,7 @@ for(i in 1:length(unique(watertemp$Depth))){
 field_file<-file.path(sim_folder,'field_data/CleanedObsTemp.csv')
 therm_depths <- compare_to_field(nc_file, field_file, metric="thermo.depth", precision="days",method='interp',as_value=TRUE, na.rm=T)
 compare_to_field(nc_file, field_file, metric="thermo.depth", precision="days", method='interp',as_value=F, na.rm=TRUE) #prints RMSE
-plot(therm_depths$DateTime,therm_depths$mod, type="l", ylim=c(1,13),main = paste0("ThermoclineDepth: Obs=Red, Mod=Black"),
+plot(therm_depths$DateTime,therm_depths$mod, type="l",main = paste0("ThermoclineDepth: Obs=Red, Mod=Black"),
      ylab="Thermocline depth, in m")
 points(therm_depths$DateTime, therm_depths$obs,col="red", pch=19)
 points(therm_depths$DateTime, therm_depths$obs, type="l",col="red")
@@ -138,16 +140,22 @@ RMSE = function(m, o){
 # Use this function to calculate RMSE for water level
 RMSE(water_level$surface_height,wlevel$WaterLevel_m)
 
-temps <- resample_to_field(nc_file, field_file, precision="mins", method='interp')
+temps <- resample_to_field(nc_file, field_file, precision="mins", method='interp') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 temps<-temps[complete.cases(temps),]
 
-m_temp <- temps$Modeled_temp[temps$Depth==c(0.1)] #1m depth (epi) RMSE
+m_temp <- temps$Modeled_temp[temps$Depth==c(0.1)] # 0.1m depth (epi) RMSE
 o_temp <- temps$Observed_temp[temps$Depth==c(0.1)] 
 RMSE(m_temp,o_temp)
 summary(lm(m_temp ~ o_temp))$r.squared
 
-m_temp <- temps$Modeled_temp[temps$Depth==c(5)] #1m depth (meta) RMSE
-o_temp <- temps$Observed_temp[temps$Depth==c(5)] 
+m_temp <- temps$Modeled_temp[temps$Depth==c(3)] #3m depth (meta) RMSE
+o_temp <- temps$Observed_temp[temps$Depth==c(3)] 
+RMSE(m_temp,o_temp)
+summary(lm(m_temp ~ o_temp))$r.squared
+
+m_temp <- temps$Modeled_temp[temps$Depth==c(6)] #6m depth (meta) RMSE
+o_temp <- temps$Observed_temp[temps$Depth==c(6)] 
 RMSE(m_temp,o_temp)
 summary(lm(m_temp ~ o_temp))$r.squared
 
@@ -169,7 +177,8 @@ summary(lm(temps$Modeled_temp ~ temps$Observed_temp))$r.squared
 #read in cleaned CTD temp file with long-term obs at focal depths
 var="OXY_oxy"
 obs_oxy<-read.csv('field_data/CleanedObsOxy.csv') %>%
-  mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST")))
+  mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST")))|> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 field_file <- file.path(sim_folder,'/field_data/CleanedObsOxy.csv') 
 depths<- c(0.1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) 
 #plot_var_compare(nc_file,field_file,var_name = var, precision="days",col_lim = c(0,1000)) #compare obs vs modeled
@@ -177,7 +186,8 @@ depths<- c(0.1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
 #get modeled oxygen concentrations for focal depths
 mod_oxy <- get_var(nc_file, "OXY_oxy", reference='surface', z_out=depths) %>%
   pivot_longer(cols=starts_with("OXY_oxy_"), names_to="Depth", names_prefix="OXY_oxy_", values_to = "OXY_oxy") %>%
-  mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) 
+  mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #lets do depth by depth comparisons of modeled vs. observed oxygen
 oxy_compare <- merge(mod_oxy, obs_oxy, by=c("DateTime","Depth")) %>%
@@ -198,11 +208,22 @@ RMSE = function(m, o){
 
 #calculate RMSE for oxygen
 oxygen <- resample_to_field(nc_file, field_file, precision="days", method='interp', 
-                            var_name="OXY_oxy")
+                            var_name="OXY_oxy")|> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 oxygen <-oxygen[complete.cases(oxygen),] #remove missing data
 
 m_oxygen <- oxygen$Modeled_OXY_oxy[oxygen$Depth>=0.1 & oxygen$Depth<=0.1] #1m depth
 o_oxygen <- oxygen$Observed_OXY_oxy[oxygen$Depth>=0.1 & oxygen$Depth<=0.1] 
+RMSE(m_oxygen,o_oxygen)
+summary(lm(m_oxygen ~ o_oxygen))$r.squared
+
+m_oxygen <- oxygen$Modeled_OXY_oxy[oxygen$Depth>=3 & oxygen$Depth<=3] #3m depth
+o_oxygen <- oxygen$Observed_OXY_oxy[oxygen$Depth>=3 & oxygen$Depth<=3] 
+RMSE(m_oxygen,o_oxygen)
+summary(lm(m_oxygen ~ o_oxygen))$r.squared
+
+m_oxygen <- oxygen$Modeled_OXY_oxy[oxygen$Depth>=6 & oxygen$Depth<=6] #6m depth
+o_oxygen <- oxygen$Observed_OXY_oxy[oxygen$Depth>=6 & oxygen$Depth<=6] 
 RMSE(m_oxygen,o_oxygen)
 summary(lm(m_oxygen ~ o_oxygen))$r.squared
 
@@ -232,7 +253,8 @@ obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in o
   select(DateTime, Depth, var) %>%
   group_by(DateTime, Depth) %>%
   summarise(CAR_dic = mean(CAR_dic)) %>%
-  na.omit() 
+  na.omit() |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 obs<-as.data.frame(obs)
 #write.csv(obs, "field_data/field_DIC.csv", row.names =F)
 
@@ -242,7 +264,8 @@ mod<- get_var(nc_file, var, reference="surface", z_out=depths) %>%
   pivot_longer(cols=starts_with(paste0(var,"_")), names_to="Depth", names_prefix=paste0(var,"_"), values_to = var) %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   mutate(Depth = as.numeric(Depth)) %>%
-  na.omit()
+  na.omit()|> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #lets do depth by depth comparisons of the sims
 compare<-merge(mod, obs, by=c("DateTime","Depth"))
@@ -260,11 +283,22 @@ for(i in 1:length(depths)){
 
 #calculate RMSE 
 DIC <- resample_to_field(nc_file, field_file, precision="mins", method='interp', 
-                         var_name=var)
+                         var_name=var)|> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 DIC <-DIC[complete.cases(DIC),]
 
-m_DIC <- DIC$Modeled_CAR_dic[DIC$Depth>=0.1 & DIC$Depth<=0.1] #0.1
+m_DIC <- DIC$Modeled_CAR_dic[DIC$Depth>=0.1 & DIC$Depth<=0.1] #0.1m
 o_DIC <- DIC$Observed_CAR_dic[DIC$Depth>=0.1 & DIC$Depth<=0.1] 
+RMSE(m_DIC,o_DIC)
+summary(lm(m_DIC ~ o_DIC))$r.squared
+
+m_DIC <- DIC$Modeled_CAR_dic[DIC$Depth>=3 & DIC$Depth<=3] #3m
+o_DIC <- DIC$Observed_CAR_dic[DIC$Depth>=3 & DIC$Depth<=3] 
+RMSE(m_DIC,o_DIC)
+summary(lm(m_DIC ~ o_DIC))$r.squared
+
+m_DIC <- DIC$Modeled_CAR_dic[DIC$Depth>=6 & DIC$Depth<=6] #6m
+o_DIC <- DIC$Observed_CAR_dic[DIC$Depth>=6 & DIC$Depth<=6] 
 RMSE(m_DIC,o_DIC)
 summary(lm(m_DIC ~ o_DIC))$r.squared
 
@@ -747,11 +781,66 @@ obs<-read.csv('field_data/field_zoops.csv', header=TRUE) |>
   dplyr::select(DateTime, var) %>%
   na.omit() |>  filter(DateTime < as.POSIXct("2020-12-31"))
 
-zoops <- get_var(file=nc_file,var_name = var,z_out=0.1,reference = 'surface') |> 
+zoops_0.1 <- get_var(file=nc_file,var_name = var,z_out=0.1,reference = 'surface') |> 
   filter(DateTime < as.POSIXct("2020-12-31"))
-plot(zoops$DateTime, zoops$ZOO_cladoceran_0.1, type='l')
-points(obs$DateTime, obs$ZOO_cladoceran, col="red")
+zoops_0.5 <- get_var(file=nc_file,var_name = var,z_out=0.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_1 <- get_var(file=nc_file,var_name = var,z_out=1,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_1.5 <- get_var(file=nc_file,var_name = var,z_out=1.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_2 <- get_var(file=nc_file,var_name = var,z_out=2,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_2.5 <- get_var(file=nc_file,var_name = var,z_out=2.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_3 <- get_var(file=nc_file,var_name = var,z_out=3,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_3.5 <- get_var(file=nc_file,var_name = var,z_out=3.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_4 <- get_var(file=nc_file,var_name = var,z_out=4,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_4.5 <- get_var(file=nc_file,var_name = var,z_out=4.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_5 <- get_var(file=nc_file,var_name = var,z_out=5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_5.5 <- get_var(file=nc_file,var_name = var,z_out=5.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_6 <- get_var(file=nc_file,var_name = var,z_out=6,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_6.5 <- get_var(file=nc_file,var_name = var,z_out=6.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_7 <- get_var(file=nc_file,var_name = var,z_out=7,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_7.5 <- get_var(file=nc_file,var_name = var,z_out=7.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_8 <- get_var(file=nc_file,var_name = var,z_out=8,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_8.5 <- get_var(file=nc_file,var_name = var,z_out=8.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_9 <- get_var(file=nc_file,var_name = var,z_out=9,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_9.5 <- get_var(file=nc_file,var_name = var,z_out=9.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_10 <- get_var(file=nc_file,var_name = var,z_out=10,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_10.5 <- get_var(file=nc_file,var_name = var,z_out=10.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_11 <- get_var(file=nc_file,var_name = var,z_out=11,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
 
+clads_full_wc <- bind_cols(zoops_0.1,zoops_0.5,zoops_1,zoops_1.5,
+                           zoops_2,zoops_2.5,zoops_3,zoops_3.5,
+                           zoops_4,zoops_4.5,zoops_5,zoops_5.5,
+                           zoops_6,zoops_6.5,zoops_7,zoops_7.5,
+                           zoops_8,zoops_8.5,zoops_9,zoops_9.5,
+                           zoops_10,zoops_10.5,zoops_11)
+
+#sum all depths
+clads_full_wc <- clads_full_wc |> 
+  mutate(ZOO_clad = rowSums(across(where(is.numeric)),na.rm=T))
+
+plot(clads_full_wc$DateTime, clads_full_wc$ZOO_clad, type='l')
+points(obs$DateTime, obs$ZOO_cladoceran, col="red")
 
 var="ZOO_copepod"
 
@@ -760,9 +849,65 @@ obs<-read.csv('field_data/field_zoops.csv', header=TRUE) |>
   dplyr::select(DateTime, var) %>%
   na.omit() |>  filter(DateTime < as.POSIXct("2020-12-31"))
 
-zoops <- get_var(file=nc_file,var_name = var,z_out=0.1,reference = 'surface') |> 
+zoops_0.1 <- get_var(file=nc_file,var_name = var,z_out=0.1,reference = 'surface') |> 
   filter(DateTime < as.POSIXct("2020-12-31"))
-plot(zoops$DateTime, zoops$ZOO_copepod_0.1, type='l')
+zoops_0.5 <- get_var(file=nc_file,var_name = var,z_out=0.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_1 <- get_var(file=nc_file,var_name = var,z_out=1,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_1.5 <- get_var(file=nc_file,var_name = var,z_out=1.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_2 <- get_var(file=nc_file,var_name = var,z_out=2,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_2.5 <- get_var(file=nc_file,var_name = var,z_out=2.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_3 <- get_var(file=nc_file,var_name = var,z_out=3,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_3.5 <- get_var(file=nc_file,var_name = var,z_out=3.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_4 <- get_var(file=nc_file,var_name = var,z_out=4,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_4.5 <- get_var(file=nc_file,var_name = var,z_out=4.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_5 <- get_var(file=nc_file,var_name = var,z_out=5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_5.5 <- get_var(file=nc_file,var_name = var,z_out=5.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_6 <- get_var(file=nc_file,var_name = var,z_out=6,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_6.5 <- get_var(file=nc_file,var_name = var,z_out=6.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_7 <- get_var(file=nc_file,var_name = var,z_out=7,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_7.5 <- get_var(file=nc_file,var_name = var,z_out=7.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_8 <- get_var(file=nc_file,var_name = var,z_out=8,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_8.5 <- get_var(file=nc_file,var_name = var,z_out=8.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_9 <- get_var(file=nc_file,var_name = var,z_out=9,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_9.5 <- get_var(file=nc_file,var_name = var,z_out=9.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_10 <- get_var(file=nc_file,var_name = var,z_out=10,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_10.5 <- get_var(file=nc_file,var_name = var,z_out=10.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_11 <- get_var(file=nc_file,var_name = var,z_out=11,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+
+cope_full_wc <- bind_cols(zoops_0.1,zoops_0.5,zoops_1,zoops_1.5,
+                           zoops_2,zoops_2.5,zoops_3,zoops_3.5,
+                           zoops_4,zoops_4.5,zoops_5,zoops_5.5,
+                           zoops_6,zoops_6.5,zoops_7,zoops_7.5,
+                           zoops_8,zoops_8.5,zoops_9,zoops_9.5,
+                           zoops_10,zoops_10.5,zoops_11)
+
+#sum all depths
+cope_full_wc <- cope_full_wc |> 
+  mutate(ZOO_cope = rowSums(across(where(is.numeric)),na.rm=T))
+
+plot(cope_full_wc$DateTime, cope_full_wc$ZOO_cope, type='l')
 points(obs$DateTime, obs$ZOO_copepod, col="red")
 
 var="ZOO_rotifer"
@@ -772,16 +917,72 @@ obs<-read.csv('field_data/field_zoops.csv', header=TRUE) |>
   dplyr::select(DateTime, var) %>%
   na.omit() |>  filter(DateTime < as.POSIXct("2020-12-31"))
 
-zoops <- get_var(file=nc_file,var_name = var,z_out=0.1,reference = 'surface') |> 
+zoops_0.1 <- get_var(file=nc_file,var_name = var,z_out=0.1,reference = 'surface') |> 
   filter(DateTime < as.POSIXct("2020-12-31"))
-plot(zoops$DateTime, zoops$ZOO_rotifer_0.1, type='l')
+zoops_0.5 <- get_var(file=nc_file,var_name = var,z_out=0.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_1 <- get_var(file=nc_file,var_name = var,z_out=1,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_1.5 <- get_var(file=nc_file,var_name = var,z_out=1.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_2 <- get_var(file=nc_file,var_name = var,z_out=2,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_2.5 <- get_var(file=nc_file,var_name = var,z_out=2.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_3 <- get_var(file=nc_file,var_name = var,z_out=3,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_3.5 <- get_var(file=nc_file,var_name = var,z_out=3.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_4 <- get_var(file=nc_file,var_name = var,z_out=4,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_4.5 <- get_var(file=nc_file,var_name = var,z_out=4.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_5 <- get_var(file=nc_file,var_name = var,z_out=5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_5.5 <- get_var(file=nc_file,var_name = var,z_out=5.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_6 <- get_var(file=nc_file,var_name = var,z_out=6,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_6.5 <- get_var(file=nc_file,var_name = var,z_out=6.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_7 <- get_var(file=nc_file,var_name = var,z_out=7,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_7.5 <- get_var(file=nc_file,var_name = var,z_out=7.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_8 <- get_var(file=nc_file,var_name = var,z_out=8,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_8.5 <- get_var(file=nc_file,var_name = var,z_out=8.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_9 <- get_var(file=nc_file,var_name = var,z_out=9,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_9.5 <- get_var(file=nc_file,var_name = var,z_out=9.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_10 <- get_var(file=nc_file,var_name = var,z_out=10,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_10.5 <- get_var(file=nc_file,var_name = var,z_out=10.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+zoops_11 <- get_var(file=nc_file,var_name = var,z_out=11,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+
+rot_full_wc <- bind_cols(zoops_0.1,zoops_0.5,zoops_1,zoops_1.5,
+                           zoops_2,zoops_2.5,zoops_3,zoops_3.5,
+                           zoops_4,zoops_4.5,zoops_5,zoops_5.5,
+                           zoops_6,zoops_6.5,zoops_7,zoops_7.5,
+                           zoops_8,zoops_8.5,zoops_9,zoops_9.5,
+                           zoops_10,zoops_10.5,zoops_11)
+
+#sum all depths
+rot_full_wc <- rot_full_wc |> 
+  mutate(ZOO_rot = rowSums(across(where(is.numeric)),na.rm=T))
+
+plot(rot_full_wc$DateTime, rot_full_wc$ZOO_rot, type='l')
 points(obs$DateTime, obs$ZOO_rotifer, col="red")
 
-#zoop community
+#zoop community at surface
 clad <- get_var(file=nc_file,var_name = 'ZOO_cladoceran',z_out=0.1,
                 reference = 'surface') |>  filter(DateTime < as.POSIXct("2020-12-31"))
 plot(clad$DateTime, clad$ZOO_cladoceran_0.1, col="darkblue",
-     type="l", ylab="Zoop C mmol/m3", ylim=c(5,90))
+     type="l", ylab="Zoop C mmol/m3", ylim=c(0,10))
 cope <- get_var(file=nc_file,var_name = 'ZOO_copepod',z_out=0.1,
                 reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
 lines(cope$DateTime, cope$ZOO_copepod_0.1, col="darkgreen")

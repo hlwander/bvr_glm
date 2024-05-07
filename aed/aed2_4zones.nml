@@ -7,9 +7,9 @@
 &aed_sed_const2d
    n_zones = 4
    active_zones = 1, 2, 3, 4
-   Fsed_oxy = -100, -70, -30, -40
+   Fsed_oxy = -90, -50, -50, -90
+   Fsed_dic = 11, 12, 10, 14
    Fsed_ch4 = 50, 10, 10, 10 
-   Fsed_dic = 10, 5, 5, 5
    Fsed_rsi = 0.1, 0.1, 40, 80
    Fsed_amm = 12, 1, 1, 1 
    Fsed_nit = -0.001,-0.001,-0.001,-0.001
@@ -35,8 +35,8 @@
 /
 &aed_oxygen
    oxy_initial = 225
-   Fsed_oxy = -20
-   Ksed_oxy = 25
+   !Fsed_oxy = -10
+   Ksed_oxy = 20 !25
    theta_sed_oxy = 1.08
    Fsed_oxy_variable = 'SDF_Fsed_oxy'
    oxy_min = 0
@@ -44,9 +44,9 @@
 /
 &aed_carbon
    dic_initial = 60
-   !Fsed_dic = 1 ! 3 !0.03982841
-   Ksed_dic = 1 !40 !98.8 !35.08749
-   theta_sed_dic = 1.1 !1.15
+   !Fsed_dic = 3 !0.03982841
+   Ksed_dic = 0.1! 98.8 
+   theta_sed_dic = 1.07 !1.08 !1.1 !1.15
    pH_initial = 6.2
    atm_co2 = 0.00041
    co2_model = 1
@@ -243,6 +243,6 @@
    pp_target_variable = 'OGM_pop'
    dc_target_variable = 'OGM_doc'
    pc_target_variable = 'OGM_poc'
-   dbase = 'aed/aed_zoop_pars_3groups_2Feb2024.csv'
+   dbase = 'aed/aed_zoop_pars_3groups_28Apr2024.csv'
    simZoopFeedback = .true.
 /

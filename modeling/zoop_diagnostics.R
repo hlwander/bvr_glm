@@ -19,26 +19,26 @@ nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file
 #phyto and zoop stacked line plot
 
 cyano <- get_var(file=nc_file,var_name = "PHY_cyano",
-                 z_out=0.1,reference = 'surface') |> 
+                 z_out=9,reference = 'surface') |> 
   filter(DateTime < as.POSIXct("2020-12-31"))
   #filter(DateTime < as.POSIXct("2017-07-08"))
 
 green <- get_var(file=nc_file,var_name = "PHY_green",
-                 z_out=0.1,reference = 'surface') |> 
+                 z_out=9,reference = 'surface') |> 
   filter(DateTime < as.POSIXct("2020-12-31"))
   #filter(DateTime < as.POSIXct("2017-07-08"))
 
 diatom <- get_var(file=nc_file,var_name = "PHY_diatom",
-                  z_out=0.1,reference = 'surface') |> 
+                  z_out=9,reference = 'surface') |> 
   filter(DateTime < as.POSIXct("2020-12-31"))
   #filter(DateTime < as.POSIXct("2017-07-08"))
 
 #combine taxon dfs
 phytos_long <- bind_cols(cyano, green[!colnames(green) %in% "DateTime"], 
                    diatom[!colnames(diatom) %in% "DateTime"]) |> 
-  rename(cyano = PHY_cyano_0.1,
-         green = PHY_green_0.1,
-         diatom = PHY_diatom_0.1) |> 
+  rename(cyano = PHY_cyano_9,
+         green = PHY_green_9,
+         diatom = PHY_diatom_9) |> 
   pivot_longer(cols = cyano:diatom, 
                names_to = "variable")
 
@@ -50,7 +50,7 @@ phytos_long$variable <- factor(phytos_long$variable,
 ggplot(phytos_long, aes(x = DateTime, y = value)) + 
   geom_area(aes(color = variable, fill = variable),
             position = "stack", stat="identity",
-            linewidth=3) +
+            linewidth=1) +
   scale_color_manual(values = NatParksPalettes::
                        natparks.pals("RockyMtn", 7,  direction = -1))+
   scale_fill_manual(values = NatParksPalettes::
@@ -76,29 +76,29 @@ ggplot(phytos_long, aes(x = DateTime, y = value)) +
         axis.title.y = element_text(size = 9),
         plot.margin = unit(c(0, 1, 0, 0), "cm"),
         panel.spacing = unit(0.5, "lines"))
-#ggsave("figures/BVR_stacked_phyto_composition.jpg", width=5, height=4) 
+#ggsave("figures/BVR_stacked_phyto_composition_9m.jpg", width=5, height=4) 
 
 clad <- get_var(file=nc_file,var_name = "ZOO_cladoceran",
-                z_out=0.1,reference = 'surface') |> 
+                z_out=9,reference = 'surface') |> 
   filter(DateTime < as.POSIXct("2020-12-31"))
   #filter(DateTime < as.POSIXct("2017-07-08"))
 
 cope <- get_var(file=nc_file,var_name = "ZOO_copepod",
-                z_out=0.1,reference = 'surface') |> 
+                z_out=9,reference = 'surface') |> 
   filter(DateTime < as.POSIXct("2020-12-31"))
   #filter(DateTime < as.POSIXct("2017-07-08"))
 
 rot <- get_var(file=nc_file,var_name = "ZOO_rotifer",
-               z_out=0.1,reference = 'surface') |> 
+               z_out=9,reference = 'surface') |> 
   filter(DateTime < as.POSIXct("2020-12-31"))
   #filter(DateTime < as.POSIXct("2017-07-08"))
 
 #combine taxon dfs
 zoops_long <- bind_cols(clad, cope[!colnames(cope) %in% "DateTime"], 
                         rot[!colnames(rot) %in% "DateTime"]) |> 
-  rename(cladoceran = ZOO_cladoceran_0.1,
-         copepod = ZOO_copepod_0.1,
-         rotifer = ZOO_rotifer_0.1) |> 
+  rename(cladoceran = ZOO_cladoceran_9,
+         copepod = ZOO_copepod_9,
+         rotifer = ZOO_rotifer_9) |> 
   pivot_longer(cols = cladoceran:rotifer, 
                names_to = "variable")
 
@@ -106,7 +106,7 @@ zoops_long <- bind_cols(clad, cope[!colnames(cope) %in% "DateTime"],
 ggplot(zoops_long, aes(x = DateTime, y = value)) + 
   geom_area(aes(color = variable, fill = variable),
             position = "stack", stat="identity",
-            linewidth=3) +
+            linewidth=1) +
   scale_color_manual(values = NatParksPalettes::
                        natparks.pals("KingsCanyon", 3,  direction = -1))+
   scale_fill_manual(values = NatParksPalettes::
@@ -132,7 +132,7 @@ ggplot(zoops_long, aes(x = DateTime, y = value)) +
         axis.title.y = element_text(size = 9),
         plot.margin = unit(c(0, 1, 0, 0), "cm"),
         panel.spacing = unit(0.5, "lines"))
-#ggsave("figures/BVR_stacked_zoop_composition.jpg", width=5, height=4) 
+#ggsave("figures/BVR_stacked_zoop_composition_9m.jpg", width=5, height=4) 
 
 #--------------------------------------------------------------------------#
 #stacked plot for zoop diagnostics
@@ -166,7 +166,7 @@ diag_long <- bind_cols(grz, resp[!colnames(resp) %in% "DateTime"],
 ggplot(diag_long, aes(x = DateTime, y = value)) + 
   geom_area(aes(color = variable, fill = variable),
             position = "stack", stat="identity",
-            linewidth=3) +
+            linewidth=1) +
   scale_color_manual(values = NatParksPalettes::
                        natparks.pals("Volcanoes", 5,  direction = -1))+
   scale_fill_manual(values = NatParksPalettes::
@@ -248,3 +248,153 @@ curve(f_mort(x, Rmort = Rmort_zoo, theta = theta_grz_zoo),from=4,
 
 
 #mortality = data%zoops(zoop_i)%Rmort_zoo * f_T * f_DO
+
+#----------------------------------------------------------------#
+#really complex AED temp function modified from MEL
+g1 <- list(T_std = 10, #rotifer
+           T_opt = 15,
+           T_max = 35,
+           Ts = 10,
+           To = 15,
+           Tm = 35,
+           v = 1.03,
+           theta = 1.03)
+g2 <- list(T_std = 10, #cladoceran
+           T_opt = 23,
+           T_max = 35,
+           Ts = 10,
+           To = 23,
+           Tm = 35,
+           v = 1.04,
+           theta = 1.04)
+g3 <- list(T_std = 20, #copepod
+           T_opt = 20,
+           T_max = 35,
+           Ts = 20,
+           To = 20,
+           Tm = 35,
+           v = 1.04,
+           theta = 1.04)
+
+get_T_parms <- function(group_parms){
+  
+  # unpack parms
+  T_std = group_parms$T_std
+  T_opt = group_parms$T_opt
+  T_max = group_parms$T_max
+  
+  Ts = group_parms$Ts
+  To = group_parms$To
+  Tm = group_parms$Tm
+  
+  v = group_parms$v
+  theta = group_parms$theta
+  
+  t20 = 20
+  tol   = 0.05
+  inn = 1
+  a0 = v^(Ts-t20)
+  a1 = v^(To-t20)
+  a2 = v^(Tm-t20)
+  
+  # Perform the iteration to find the constants.
+  # First approximation of k.
+  k = 6.0
+  i = 0
+  G = tol + 1.0
+  curvef = TRUE
+  # Do the iterations until -tol < G < tol
+  
+  repeat{
+    
+    i=i+1
+    
+    if(i == 100){ #increases the tolerance if more than 100 iterations performed
+      i=0            
+      tol=tol+0.01
+    }
+    
+    if(curvef == TRUE){ # Use the condition f(T)=v**(T-20) at T=Tsta
+      G = k * v^(k * To) * a2 - a1 * (v^(k * Tm) - v^(k * Ts))
+      devG = v^(k * To) * a2 * (inn + k * To * log(v)) - a1 * log(v) * (Tm * v^(k * Tm) - Ts * v^(k * Ts))
+    } else { # Use the condition f(T)=1 at T=Tsta
+      G = k * v^(k * To) * (a0 - a2 - inn) - a1 * (v^(k * Ts) - v^(k * Tm))
+      devG = (a0 - a2 - inn) * v^(k * To) * (inn + k * To * log(v)) - a1 * log(v) * (Ts * v^(k * Ts) - Tm * v^(k * Tm))
+    }
+    
+    # Find the next iteration of k
+    k = k - G / devG
+    
+    if((G <= -tol) | (G >= tol)){
+      break
+    }
+  }
+  
+  # Get the remaining model constants
+  if(k != 0.0){
+    a=-log(a1/(k*v^(k*To)))/(k*log(v))
+    if(curvef == TRUE){
+      b=v^(k*(Ts-a))
+    } else {
+      b=inn+v^(k*(Ts-a))-a0
+    }
+  } else {
+    a=0.0
+    b=0.0
+  }
+  
+  # Set the model constants to the calculated values
+  kTn = k
+  aTn = a
+  bTn = b
+  
+  return(list(kTn = kTn, aTn = aTn, bTn = bTn))
+  
+}
+
+g1_Tparms <- get_T_parms(group_parms = g1)
+g2_Tparms <- get_T_parms(group_parms = g2)
+g3_Tparms <- get_T_parms(group_parms = g3)
+
+tp = 20
+
+f6 <- function(temp, theta, tp, kTn, aTn, bTn, T_std, T_opt, T_max){
+  y = NULL
+  for(i in 1:length(temp)){
+    y[i] = 1
+    if(temp[i] > T_max){
+      y[i] = 0
+    } else if(temp[i] < T_std){
+      y[i] = theta^(temp[i]-tp)
+    } else {
+      y[i] = theta^(temp[i]-tp) - theta^(kTn*(temp[i] - aTn)) + bTn
+    }
+  }
+  return(y)
+  
+}
+
+#jpeg("./figures/AED_temp_eq_3groups.jpeg", res = 300, width = 5, height = 3.5, units = "in")
+par(cex.lab = 1.5, mgp = c(2.7,1,0))
+curve(f6(x, theta = g1$theta, tp = tp, 
+         kTn = g1_Tparms$kTn, aTn = g1_Tparms$aTn, 
+         bTn = g1_Tparms$bTn, T_std = g1$T_std, 
+         T_opt = g1$T_opt, T_max = g1$T_max),
+      from=0, to=30, n = 300, ylab='fT',
+      xlab = "Water temperature (ºC)", yaxt = "n",
+      ylim=c(-0.5,1.2))
+axis(2, las = 2)
+curve(f6(x, theta = g2$theta, tp = tp, 
+         kTn = g2_Tparms$kTn, aTn = g2_Tparms$aTn, 
+         bTn = g2_Tparms$bTn, T_std = g2$T_std, 
+         T_opt = g2$T_opt, T_max = g2$T_max),
+      from=0, to=30, n = 300, add = TRUE, lty = 2)
+curve(f6(x, theta = g2$theta, tp = tp, 
+         kTn = g3_Tparms$kTn, aTn = g3_Tparms$aTn, 
+         bTn = g3_Tparms$bTn, T_std = g3$T_std, 
+         T_opt = g3$T_opt, T_max = g3$T_max),
+      from=0, to=30, n = 300, add = TRUE, lty = 3)
+legend("bottomleft", lty = c(1,2, 3), 
+       legend = c("rot","clad","cope"),bty = "n")
+#dev.off()
+

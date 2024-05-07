@@ -1,7 +1,7 @@
 #hand-tuning script
 
 file.copy('14Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed/22Jan24_po4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
+file.copy('aed/aed2_4zones.nml', 'aed/aed2.nml', overwrite = TRUE)
 
 #run the model!
 system2(paste0(sim_folder,"/glm.app/Contents/MacOS/glm"), 
