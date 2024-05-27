@@ -321,7 +321,8 @@ field_file <- file.path(sim_folder,'/field_data/field_gases.csv')
 obs<-read.csv('field_data/field_gases.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
-  na.omit()
+  na.omit()|> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #get modeled concentrations for focal depths
 depths<- sort(as.numeric(unique(obs$Depth)))
@@ -330,7 +331,8 @@ mod<- get_var(nc_file, var, reference="surface", z_out=depths) %>%
   pivot_longer(cols=starts_with(paste0(var,"_")), names_to="Depth", names_prefix=paste0(var,"_"), values_to = var) %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   mutate(Depth=as.numeric(Depth)) %>%
-  na.omit()
+  na.omit()|> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #lets do depth by depth comparisons of the sims
 compare<-merge(mod, obs, by=c("DateTime","Depth"))
@@ -347,15 +349,26 @@ for(i in 1:length(depths)){
 
 #calculate RMSE
 CH4 <- resample_to_field(nc_file, field_file, precision="mins", method='interp', 
-                         var_name=var)
+                         var_name=var) |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 CH4 <-CH4[complete.cases(CH4),]
 
-m_CH4 <- CH4$Modeled_CAR_ch4[CH4$Depth>=0.1 & CH4$Depth<=0.1] #0.1
+m_CH4 <- CH4$Modeled_CAR_ch4[CH4$Depth>=0.1 & CH4$Depth<=0.1] 
 o_CH4 <- CH4$Observed_CAR_ch4[CH4$Depth>=0.1 & CH4$Depth<=0.1]
 RMSE(m_CH4,o_CH4)
 summary(lm(m_CH4 ~ o_CH4))$r.squared
 
-m_CH4 <- CH4$Modeled_CAR_ch4[CH4$Depth>=9 & CH4$Depth<=9] #9m
+m_CH4 <- CH4$Modeled_CAR_ch4[CH4$Depth>=3 & CH4$Depth<=3] 
+o_CH4 <- CH4$Observed_CAR_ch4[CH4$Depth>=3 & CH4$Depth<=3]
+RMSE(m_CH4,o_CH4)
+summary(lm(m_CH4 ~ o_CH4))$r.squared
+
+m_CH4 <- CH4$Modeled_CAR_ch4[CH4$Depth>=6 & CH4$Depth<=6] 
+o_CH4 <- CH4$Observed_CAR_ch4[CH4$Depth>=6 & CH4$Depth<=6]
+RMSE(m_CH4,o_CH4)
+summary(lm(m_CH4 ~ o_CH4))$r.squared
+
+m_CH4 <- CH4$Modeled_CAR_ch4[CH4$Depth>=9 & CH4$Depth<=9] 
 o_CH4 <- CH4$Observed_CAR_ch4[CH4$Depth>=9 & CH4$Depth<=9]
 RMSE(m_CH4,o_CH4)
 summary(lm(m_CH4 ~ o_CH4))$r.squared
@@ -375,7 +388,8 @@ field_file <- file.path(sim_folder,'/field_data/field_silica.csv')
 obs<-read.csv('field_data/field_silica.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
-  na.omit()
+  na.omit()|> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #get modeled concentrations for focal depths
 depths<- sort(as.numeric(unique(obs$Depth)))
@@ -384,7 +398,8 @@ mod<- get_var(nc_file, var, reference="surface", z_out=depths) %>%
   pivot_longer(cols=starts_with(paste0(var,"_")), names_to="Depth", names_prefix=paste0(var,"_"), values_to = var) %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   mutate(Depth=as.numeric(Depth)) %>%
-  na.omit()
+  na.omit()|> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #lets do depth by depth comparisons of the sims
 compare<-merge(mod, obs, by=c("DateTime","Depth"))
@@ -405,9 +420,9 @@ plot(obs$DateTime[obs$Depth==4],obs$SIL_rsi[obs$Depth==4]) #mean 94.5
 plot(obs$DateTime[obs$Depth==8],obs$SIL_rsi[obs$Depth==8]) #mean 66.0
 
 
-plot(mod$DateTime[mod$Depth==0],mod$SIL_rsi[mod$Depth==0] ) #mean 87.8
-plot(mod$DateTime[mod$Depth==4],mod$SIL_rsi[mod$Depth==4] ) #mean 85.4
-plot(mod$DateTime[mod$Depth==8],mod$SIL_rsi[mod$Depth==8] ) #mean 99.9
+plot(mod$DateTime[mod$Depth==0],mod$SIL_rsi[mod$Depth==0]) #mean 88.0
+plot(mod$DateTime[mod$Depth==4],mod$SIL_rsi[mod$Depth==4]) #mean 89.4
+plot(mod$DateTime[mod$Depth==8],mod$SIL_rsi[mod$Depth==8]) #mean 75.1
 
 #######################################################
 #### ammonium #######
@@ -418,7 +433,8 @@ field_file <- file.path(sim_folder,'/field_data/field_chem_2DOCpools.csv')
 obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
-  na.omit()
+  na.omit()|> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #get modeled concentrations for focal depths
 depths<- sort(as.numeric(unique(obs$Depth)))
@@ -427,7 +443,8 @@ mod<- get_var(nc_file, var, reference="surface", z_out=depths) %>%
   pivot_longer(cols=starts_with(paste0(var,"_")), names_to="Depth", names_prefix=paste0(var,"_"), values_to = var) %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   mutate(Depth=as.numeric(Depth)) %>%
-  na.omit()
+  na.omit()|> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #lets do depth by depth comparisons of the sims
 compare<-merge(mod, obs, by=c("DateTime","Depth"))
@@ -444,15 +461,26 @@ for(i in 1:length(depths)){
 
 #calculate RMSE
 NH4 <- resample_to_field(nc_file, field_file, precision="mins", method='interp', 
-                         var_name=var)
+                         var_name=var)|> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 NH4 <-NH4[complete.cases(NH4),]
 
-m_NH4 <- NH4$Modeled_NIT_amm[NH4$Depth>=0.1 & NH4$Depth<=0.1] #0.1
+m_NH4 <- NH4$Modeled_NIT_amm[NH4$Depth>=0.1 & NH4$Depth<=0.1] 
 o_NH4 <-  NH4$Observed_NIT_amm[NH4$Depth>=0.1 & NH4$Depth<=0.1]
 RMSE(m_NH4,o_NH4)
 summary(lm(m_NH4 ~ o_NH4))$r.squared
 
-m_NH4 <- NH4$Modeled_NIT_amm[NH4$Depth>=9 & NH4$Depth<=9] #9m
+m_NH4 <- NH4$Modeled_NIT_amm[NH4$Depth>=3 & NH4$Depth<=3] 
+o_NH4 <-  NH4$Observed_NIT_amm[NH4$Depth>=3 & NH4$Depth<=3] 
+RMSE(m_NH4,o_NH4)
+summary(lm(m_NH4 ~ o_NH4))$r.squared
+
+m_NH4 <- NH4$Modeled_NIT_amm[NH4$Depth>=6 & NH4$Depth<=6] 
+o_NH4 <-  NH4$Observed_NIT_amm[NH4$Depth>=6 & NH4$Depth<=6] 
+RMSE(m_NH4,o_NH4)
+summary(lm(m_NH4 ~ o_NH4))$r.squared
+
+m_NH4 <- NH4$Modeled_NIT_amm[NH4$Depth>=9 & NH4$Depth<=9] 
 o_NH4 <-  NH4$Observed_NIT_amm[NH4$Depth>=9 & NH4$Depth<=9] 
 RMSE(m_NH4,o_NH4)
 summary(lm(m_NH4 ~ o_NH4))$r.squared
@@ -472,7 +500,8 @@ field_file <- file.path(sim_folder,'/field_data/field_chem_2DOCpools.csv')
 obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
-  na.omit()
+  na.omit()|> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #get modeled concentrations for focal depths
 depths<- sort(as.numeric(unique(obs$Depth)))
@@ -481,7 +510,8 @@ mod<- get_var(nc_file, var, reference="surface", z_out=depths) %>%
   pivot_longer(cols=starts_with(paste0(var,"_")), names_to="Depth", names_prefix=paste0(var,"_"), values_to = var) %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   mutate(Depth=as.numeric(Depth)) %>%
-  na.omit()
+  na.omit()|> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #lets do depth by depth comparisons of the sims
 compare<-merge(mod, obs, by=c("DateTime","Depth"))
@@ -498,15 +528,26 @@ for(i in 1:length(depths)){
 
 #calculate RMSE
 NO3 <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
-                             var_name=var)
+                             var_name=var)|> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 NO3 <-NO3[complete.cases(NO3),]
 
-m_NO3 <- NO3$Modeled_NIT_nit[NO3$Depth>=0.1 & NO3$Depth<=0.1] #0.1
+m_NO3 <- NO3$Modeled_NIT_nit[NO3$Depth>=0.1 & NO3$Depth<=0.1] 
 o_NO3 <-  NO3$Observed_NIT_nit[NO3$Depth>=0.1 & NO3$Depth<=0.1]
 RMSE(m_NO3,o_NO3)
 summary(lm(m_NO3 ~ o_NO3))$r.squared
 
-m_NO3 <- NO3$Modeled_NIT_nit[NO3$Depth>=9 & NO3$Depth<=9] #9m
+m_NO3 <- NO3$Modeled_NIT_nit[NO3$Depth>=3 & NO3$Depth<=3] 
+o_NO3 <-  NO3$Observed_NIT_nit[NO3$Depth>=3 & NO3$Depth<=3] 
+RMSE(m_NO3,o_NO3)
+summary(lm(m_NO3 ~ o_NO3))$r.squared
+
+m_NO3 <- NO3$Modeled_NIT_nit[NO3$Depth>=6 & NO3$Depth<=6] 
+o_NO3 <-  NO3$Observed_NIT_nit[NO3$Depth>=6 & NO3$Depth<=6] 
+RMSE(m_NO3,o_NO3)
+summary(lm(m_NO3 ~ o_NO3))$r.squared
+
+m_NO3 <- NO3$Modeled_NIT_nit[NO3$Depth>=9 & NO3$Depth<=9] 
 o_NO3 <-  NO3$Observed_NIT_nit[NO3$Depth>=9 & NO3$Depth<=9] 
 RMSE(m_NO3,o_NO3)
 summary(lm(m_NO3 ~ o_NO3))$r.squared
@@ -526,7 +567,8 @@ field_file <- file.path(sim_folder,'/field_data/field_chem_2DOCpools.csv')
 obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
-  na.omit()
+  na.omit() |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #get modeled concentrations for focal depths
 depths<- sort(as.numeric(unique(obs$Depth)))
@@ -535,7 +577,8 @@ mod<- get_var(nc_file, var, reference="surface", z_out=depths) %>%
   pivot_longer(cols=starts_with(paste0(var,"_")), names_to="Depth", names_prefix=paste0(var,"_"), values_to = var) %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   mutate(Depth=as.numeric(Depth)) %>%
-  na.omit()
+  na.omit() |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #lets do depth by depth comparisons of the sims
 compare<-merge(mod, obs, by=c("DateTime","Depth"))
@@ -552,15 +595,26 @@ for(i in 1:length(depths)){
 
 #calculate RMSE 
 PO4 <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
-                         var_name=var)
+                         var_name=var) |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 PO4 <-PO4[complete.cases(PO4),]
 
-m_PO4 <- PO4$Modeled_PHS_frp[PO4$Depth>=0.1 & PO4$Depth<=0.1] #0.1
+m_PO4 <- PO4$Modeled_PHS_frp[PO4$Depth>=0.1 & PO4$Depth<=0.1] 
 o_PO4 <-  PO4$Observed_PHS_frp[PO4$Depth>=0.1 & PO4$Depth<=0.1]
 RMSE(m_PO4,o_PO4)
 summary(lm(m_PO4 ~ o_PO4))$r.squared
 
-m_PO4 <- PO4$Modeled_PHS_frp[PO4$Depth>=9 & PO4$Depth<=9] #9m
+m_PO4 <- PO4$Modeled_PHS_frp[PO4$Depth>=3 & PO4$Depth<=3] 
+o_PO4 <-  PO4$Observed_PHS_frp[PO4$Depth>=3 & PO4$Depth<=3] 
+RMSE(m_PO4,o_PO4)
+summary(lm(m_PO4 ~ o_PO4))$r.squared
+
+m_PO4 <- PO4$Modeled_PHS_frp[PO4$Depth>=6 & PO4$Depth<=6] 
+o_PO4 <-  PO4$Observed_PHS_frp[PO4$Depth>=6 & PO4$Depth<=6] 
+RMSE(m_PO4,o_PO4)
+summary(lm(m_PO4 ~ o_PO4))$r.squared
+
+m_PO4 <- PO4$Modeled_PHS_frp[PO4$Depth>=9 & PO4$Depth<=9] 
 o_PO4 <-  PO4$Observed_PHS_frp[PO4$Depth>=9 & PO4$Depth<=9] 
 RMSE(m_PO4,o_PO4)
 summary(lm(m_PO4 ~ o_PO4))$r.squared
@@ -581,7 +635,8 @@ field_file <- file.path(sim_folder,'/field_data/field_chem_2DOCpools.csv')
 obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
-  na.omit()
+  na.omit() |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #get modeled concentrations for focal depths
 depths<- sort(as.numeric(unique(obs$Depth)))
@@ -590,7 +645,8 @@ mod<- get_var(nc_file, var, reference="surface", z_out=depths) %>%
   pivot_longer(cols=starts_with(paste0(var,"_")), names_to="Depth", names_prefix=paste0(var,"_"), values_to = var) %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   mutate(Depth=as.numeric(Depth)) %>%
-  na.omit()
+  na.omit() |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #lets do depth by depth comparisons of the sims
 compare<-merge(mod, obs, by=c("DateTime","Depth"))
@@ -607,16 +663,29 @@ for(i in 1:length(depths)){
 
 #calculate RMSE
 docr <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
-                         var_name=var)
+                         var_name=var) |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 docr <-docr[complete.cases(docr),]
 
-m_docr <- docr$Modeled_OGM_docr[docr$Depth>=0.1 & docr$Depth<=0.1] #0.1
+m_docr <- docr$Modeled_OGM_docr[docr$Depth>=0.1 & docr$Depth<=0.1] 
 o_docr <-  docr$Observed_OGM_docr[docr$Depth>=0.1 & docr$Depth<=0.1]
 RMSE(m_docr,o_docr)
+summary(lm(m_docr ~ o_docr))$r.squared
 
-m_docr <- docr$Modeled_OGM_docr[docr$Depth>=9 & docr$Depth<=9] #9m
+m_docr <- docr$Modeled_OGM_docr[docr$Depth>=3 & docr$Depth<=3] 
+o_docr <-  docr$Observed_OGM_docr[docr$Depth>=3 & docr$Depth<=3] 
+RMSE(m_docr,o_docr)
+summary(lm(m_docr ~ o_docr))$r.squared
+
+m_docr <- docr$Modeled_OGM_docr[docr$Depth>=6 & docr$Depth<=6] 
+o_docr <-  docr$Observed_OGM_docr[docr$Depth>=6 & docr$Depth<=6] 
+RMSE(m_docr,o_docr)
+summary(lm(m_docr ~ o_docr))$r.squared
+
+m_docr <- docr$Modeled_OGM_docr[docr$Depth>=9 & docr$Depth<=9] 
 o_docr <-  docr$Observed_OGM_docr[docr$Depth>=9 & docr$Depth<=9] 
 RMSE(m_docr,o_docr)
+summary(lm(m_docr ~ o_docr))$r.squared
 
 m_docr <- docr$Modeled_OGM_docr[docr$Depth>=0 & docr$Depth<=11] #all depths
 o_docr <-  docr$Observed_OGM_docr[docr$Depth>=0 & docr$Depth<=11] 
@@ -633,7 +702,8 @@ var="OGM_doc"
 obs<-read.csv('field_data/field_chem_2DOCpools.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   select(DateTime, Depth, var) %>%
-  na.omit()
+  na.omit() |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #get modeled concentrations for focal depths
 depths<- sort(as.numeric(unique(obs$Depth)))
@@ -642,7 +712,8 @@ mod<- get_var(nc_file, var, reference="surface", z_out=depths) %>%
   pivot_longer(cols=starts_with(paste0(var,"_")), names_to="Depth", names_prefix=paste0(var,"_"), values_to = var) %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
   mutate(Depth=as.numeric(Depth)) %>%
-  na.omit()
+  na.omit() |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 
 #lets do depth by depth comparisons of the sims
 compare<-merge(mod, obs, by=c("DateTime","Depth"))
@@ -659,16 +730,29 @@ for(i in 1:length(depths)){
 
 #calculate RMSE for DOC labile
 doc <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
-                          var_name=var)
+                          var_name=var) |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 doc <-doc[complete.cases(doc),]
 
-m_doc <- doc$Modeled_OGM_doc[doc$Depth>=0.1 & doc$Depth<=0.1] #0.1
+m_doc <- doc$Modeled_OGM_doc[doc$Depth>=0.1 & doc$Depth<=0.1] 
 o_doc <-  doc$Observed_OGM_doc[doc$Depth>=0.1 & doc$Depth<=0.1]
 RMSE(m_doc,o_doc)
+summary(lm(m_doc ~ o_doc))$r.squared
 
-m_doc <- doc$Modeled_OGM_doc[doc$Depth>=9 & doc$Depth<=9] #9m
+m_doc <- doc$Modeled_OGM_doc[doc$Depth>=3 & doc$Depth<=3] 
+o_doc <-  doc$Observed_OGM_doc[doc$Depth>=3 & doc$Depth<=3] 
+RMSE(m_doc,o_doc)
+summary(lm(m_doc ~ o_doc))$r.squared
+
+m_doc <- doc$Modeled_OGM_doc[doc$Depth>=6 & doc$Depth<=6] 
+o_doc <-  doc$Observed_OGM_doc[doc$Depth>=6 & doc$Depth<=6] 
+RMSE(m_doc,o_doc)
+summary(lm(m_doc ~ o_doc))$r.squared
+
+m_doc <- doc$Modeled_OGM_doc[doc$Depth>=9 & doc$Depth<=9] 
 o_doc <-  doc$Observed_OGM_doc[doc$Depth>=9 & doc$Depth<=9] 
 RMSE(m_doc,o_doc)
+summary(lm(m_doc ~ o_doc))$r.squared
 
 m_doc <- doc$Modeled_OGM_doc[doc$Depth>=0 & doc$Depth<=11] #all depths
 o_doc <-  doc$Observed_OGM_doc[doc$Depth>=0 & doc$Depth<=11] 
@@ -713,24 +797,29 @@ for(i in 1:length(depths)){
 
 #calculate RMSE
 chl <- resample_to_field(nc_file, field_file, precision="hours", method='interp', 
-                         var_name=var)
+                         var_name=var) |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) 
 chl <-chl[complete.cases(chl),]
 
-m_chl <- chl$Modeled_PHY_tchla[chl$Depth==0.1 & chl$Depth==0.1] # 1m
+m_chl <- chl$Modeled_PHY_tchla[chl$Depth==0.1 & chl$Depth==0.1] 
 o_chl <-  chl$Observed_PHY_tchla[chl$Depth==0.1 & chl$Depth==0.1]
 RMSE(m_chl,o_chl)
+summary(lm(m_chl ~ o_chl))$r.squared
 
-m_chl <- chl$Modeled_PHY_tchla[chl$Depth==3 & chl$Depth==3] # 3m
+m_chl <- chl$Modeled_PHY_tchla[chl$Depth==3 & chl$Depth==3] 
 o_chl <-  chl$Observed_PHY_tchla[chl$Depth==3 & chl$Depth==3]
 RMSE(m_chl,o_chl)
+summary(lm(m_chl ~ o_chl))$r.squared
 
-m_chl <- chl$Modeled_PHY_tchla[chl$Depth==6 & chl$Depth==6] # 6m
+m_chl <- chl$Modeled_PHY_tchla[chl$Depth==6 & chl$Depth==6] 
 o_chl <-  chl$Observed_PHY_tchla[chl$Depth==6 & chl$Depth==6]
 RMSE(m_chl,o_chl)
+summary(lm(m_chl ~ o_chl))$r.squared
 
-m_chl <- chl$Modeled_PHY_tchla[chl$Depth==9 & chl$Depth==9] # 9m
+m_chl <- chl$Modeled_PHY_tchla[chl$Depth==9 & chl$Depth==9] 
 o_chl <-  chl$Observed_PHY_tchla[chl$Depth==9 & chl$Depth==9]
 RMSE(m_chl,o_chl)
+summary(lm(m_chl ~ o_chl))$r.squared
 
 m_chl <- chl$Modeled_PHY_tchla[chl$Depth>=0 & chl$Depth<=11] #all depths
 o_chl <-  chl$Observed_PHY_tchla[chl$Depth>=0 & chl$Depth<=11] 
@@ -982,7 +1071,7 @@ points(obs$DateTime, obs$ZOO_rotifer, col="red")
 clad <- get_var(file=nc_file,var_name = 'ZOO_cladoceran',z_out=0.1,
                 reference = 'surface') |>  filter(DateTime < as.POSIXct("2020-12-31"))
 plot(clad$DateTime, clad$ZOO_cladoceran_0.1, col="darkblue",
-     type="l", ylab="Zoop C mmol/m3", ylim=c(0,10))
+     type="l", ylab="Zoop C mmol/m3", ylim=c(0,15))
 cope <- get_var(file=nc_file,var_name = 'ZOO_copepod',z_out=0.1,
                 reference = 'surface') |> filter(DateTime < as.POSIXct("2020-12-31"))
 lines(cope$DateTime, cope$ZOO_copepod_0.1, col="darkgreen")

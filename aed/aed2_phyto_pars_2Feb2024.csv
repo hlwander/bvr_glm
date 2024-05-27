@@ -1,8 +1,8 @@
 'p_name','cyano','green','diatom'
-'p_initial', 10, 10, 10
-'p0', 0.5, 0.5, 0.5
-'Xcc', 80, 30, 60
-'R_growth', 0.6, 0.7, 1
+'p_initial', 1, 1, 1
+'p0', 0.1, 0.1, 0.1
+'Xcc', 120, 150, 130
+'R_growth', 0.7, 3, 2.3
 'fT_Method', 1, 1, 1
 'theta_growth', 1.06, 1.07, 1.02
 'T_std', 10, 10, 10

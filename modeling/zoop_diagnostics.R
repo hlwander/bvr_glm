@@ -19,26 +19,26 @@ nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file
 #phyto and zoop stacked line plot
 
 cyano <- get_var(file=nc_file,var_name = "PHY_cyano",
-                 z_out=9,reference = 'surface') |> 
+                 z_out=0.1,reference = 'surface') |> 
   filter(DateTime < as.POSIXct("2020-12-31"))
   #filter(DateTime < as.POSIXct("2017-07-08"))
 
 green <- get_var(file=nc_file,var_name = "PHY_green",
-                 z_out=9,reference = 'surface') |> 
+                 z_out=0.1,reference = 'surface') |> 
   filter(DateTime < as.POSIXct("2020-12-31"))
   #filter(DateTime < as.POSIXct("2017-07-08"))
 
 diatom <- get_var(file=nc_file,var_name = "PHY_diatom",
-                  z_out=9,reference = 'surface') |> 
+                  z_out=0.1,reference = 'surface') |> 
   filter(DateTime < as.POSIXct("2020-12-31"))
   #filter(DateTime < as.POSIXct("2017-07-08"))
 
 #combine taxon dfs
 phytos_long <- bind_cols(cyano, green[!colnames(green) %in% "DateTime"], 
                    diatom[!colnames(diatom) %in% "DateTime"]) |> 
-  rename(cyano = PHY_cyano_9,
-         green = PHY_green_9,
-         diatom = PHY_diatom_9) |> 
+  rename(cyano = PHY_cyano_0.1,
+         green = PHY_green_0.1,
+         diatom = PHY_diatom_0.1) |> 
   pivot_longer(cols = cyano:diatom, 
                names_to = "variable")
 
@@ -76,29 +76,29 @@ ggplot(phytos_long, aes(x = DateTime, y = value)) +
         axis.title.y = element_text(size = 9),
         plot.margin = unit(c(0, 1, 0, 0), "cm"),
         panel.spacing = unit(0.5, "lines"))
-#ggsave("figures/BVR_stacked_phyto_composition_9m.jpg", width=5, height=4) 
+#ggsave("figures/BVR_stacked_phyto_composition_0.1m.jpg", width=5, height=4) 
 
 clad <- get_var(file=nc_file,var_name = "ZOO_cladoceran",
-                z_out=9,reference = 'surface') |> 
+                z_out=0.1,reference = 'surface') |> 
   filter(DateTime < as.POSIXct("2020-12-31"))
   #filter(DateTime < as.POSIXct("2017-07-08"))
 
 cope <- get_var(file=nc_file,var_name = "ZOO_copepod",
-                z_out=9,reference = 'surface') |> 
+                z_out=0.1,reference = 'surface') |> 
   filter(DateTime < as.POSIXct("2020-12-31"))
   #filter(DateTime < as.POSIXct("2017-07-08"))
 
 rot <- get_var(file=nc_file,var_name = "ZOO_rotifer",
-               z_out=9,reference = 'surface') |> 
+               z_out=0.1,reference = 'surface') |> 
   filter(DateTime < as.POSIXct("2020-12-31"))
   #filter(DateTime < as.POSIXct("2017-07-08"))
 
 #combine taxon dfs
 zoops_long <- bind_cols(clad, cope[!colnames(cope) %in% "DateTime"], 
                         rot[!colnames(rot) %in% "DateTime"]) |> 
-  rename(cladoceran = ZOO_cladoceran_9,
-         copepod = ZOO_copepod_9,
-         rotifer = ZOO_rotifer_9) |> 
+  rename(cladoceran = ZOO_cladoceran_0.1,
+         copepod = ZOO_copepod_0.1,
+         rotifer = ZOO_rotifer_0.1) |> 
   pivot_longer(cols = cladoceran:rotifer, 
                names_to = "variable")
 
@@ -132,7 +132,7 @@ ggplot(zoops_long, aes(x = DateTime, y = value)) +
         axis.title.y = element_text(size = 9),
         plot.margin = unit(c(0, 1, 0, 0), "cm"),
         panel.spacing = unit(0.5, "lines"))
-#ggsave("figures/BVR_stacked_zoop_composition_9m.jpg", width=5, height=4) 
+#ggsave("figures/BVR_stacked_zoop_composition_0.1m.jpg", width=5, height=4) 
 
 #--------------------------------------------------------------------------#
 #stacked plot for zoop diagnostics
@@ -200,8 +200,8 @@ ggplot(diag_long, aes(x = DateTime, y = value)) +
 f_resp <- function(x, Rresp, theta_resp){
   y = Rresp_zoo*theta_resp_zoo^(x-20)
 }
-Rresp_zoo = 0.08 
-theta_resp_zoo = 1.08
+Rresp_zoo = 0.3 
+theta_resp_zoo = 1.04
 
 #jpeg("./plot_output/resp_eq.jpeg", res = 300, width = 5, height = 3.5, units = "in")
 par(cex.lab = 1.5, mgp = c(2.7,1,0))
@@ -214,9 +214,9 @@ f_grz <- function(x, Rgrz, theta_grz, Kgrz, C){
   y = Rgrz_zoo*theta_grz_zoo^(x-20) * (C /Kgrz_zoo +  C)
 }
 
-Rgrz_zoo = 1.6
-theta_grz_zoo = 1.08
-Kgrz_zoo = 7
+Rgrz_zoo = 0.8
+theta_grz_zoo = 1.02
+Kgrz_zoo = 2
 C = 100 #this varies a lot
 
 #jpeg("./plot_output/resp_eq.jpeg", res = 300, width = 5, height = 3.5, units = "in")
@@ -235,10 +235,10 @@ f_mort <- function(x, Rmort, theta){
 } # the DO part is technically only used when DO < DOmin_zoo, so not sure how to do that here
 #or what to set oxy to given that it changes over the course of the year
 
-Rmort_zoo = 0.1 
-theta_grz_zoo = 1.08
-DOmin_zoo = 5
-oxy = 5
+Rmort_zoo = 0.09 
+theta_grz_zoo = 1.02
+DOmin_zoo = 3
+oxy = 3
 
 #jpeg("./plot_output/resp_eq.jpeg", res = 300, width = 5, height = 3.5, units = "in")
 par(cex.lab = 1.5, mgp = c(2.7,1,0))
@@ -251,23 +251,7 @@ curve(f_mort(x, Rmort = Rmort_zoo, theta = theta_grz_zoo),from=4,
 
 #----------------------------------------------------------------#
 #really complex AED temp function modified from MEL
-g1 <- list(T_std = 10, #rotifer
-           T_opt = 15,
-           T_max = 35,
-           Ts = 10,
-           To = 15,
-           Tm = 35,
-           v = 1.03,
-           theta = 1.03)
-g2 <- list(T_std = 10, #cladoceran
-           T_opt = 23,
-           T_max = 35,
-           Ts = 10,
-           To = 23,
-           Tm = 35,
-           v = 1.04,
-           theta = 1.04)
-g3 <- list(T_std = 20, #copepod
+g1 <- list(T_std = 20, #rotifer
            T_opt = 20,
            T_max = 35,
            Ts = 20,
@@ -275,6 +259,22 @@ g3 <- list(T_std = 20, #copepod
            Tm = 35,
            v = 1.04,
            theta = 1.04)
+g2 <- list(T_std = 10, #cladoceran
+           T_opt = 18,
+           T_max = 35,
+           Ts = 10,
+           To = 18,
+           Tm = 35,
+           v = 1.04,
+           theta = 1.04)
+g3 <- list(T_std = 10, #copepod
+           T_opt = 15,
+           T_max = 35,
+           Ts = 10,
+           To = 15,
+           Tm = 35,
+           v = 1.03,
+           theta = 1.03)
 
 get_T_parms <- function(group_parms){
   

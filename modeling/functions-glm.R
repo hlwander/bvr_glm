@@ -157,6 +157,36 @@ save_ncdf <- function(name, time, z, wtr, oxy){
 
 # tadhg's function to get modeled variable into dataframe (date, depth, var)
 mod2obs <- function(mod_nc, obs, reference = 'surface', var){
+  if(ends_with_csv(nml_file)){
+    deps = c(0.1, seq(0.5,11, 0.5))
+    #create empty df
+    mod <- data.frame(matrix(ncol=1+length(deps)))
+    mod <- glmtools::get_var(file = out, var, reference = reference, z_out = deps[1])
+    
+    for(d in 2:length(deps)){
+    mod[, paste0(var,"_",deps[d])] <- glmtools::get_var(file = out, var, reference = reference, z_out = deps[d])[[2]]
+    }
+    mod <- mod |> 
+      mutate(var = rowSums(across(where(is.numeric)),na.rm=T)) |> 
+      select(DateTime, var) |> 
+      filter(hour(DateTime) %in% c("12")) |> 
+      setNames(c("DateTime", var)) 
+    
+    mod <- match.tstep1(obs, mod) #From gotm_functions.R        #EDIT THIS
+    mod <- reshape2::melt(mod, id.vars = 1) |> 
+      select(-variable)
+    colnames(mod) <- c('DateTime', var)
+    mod <- mod[order(mod$DateTime),]
+    
+    #obs <- obs |> select(-Depth)
+    
+    if(nrow(mod) != nrow(obs)){
+      mod <- merge(obs, mod, by = c("DateTime"), all.x = T)
+      mod <- mod[order(mod$DateTime),]
+      mod <- mod[,c(1,3)]
+      colnames(mod) <- c('DateTime', var)
+  }
+    }else{
   deps = unique(obs[,2])
   #tim = unique(obs[,1])
   mod <- glmtools::get_var(file = out,var,reference = reference, z_out = deps)
@@ -172,8 +202,10 @@ mod2obs <- function(mod_nc, obs, reference = 'surface', var){
     mod <- mod[,c(1,2,4)]
     colnames(mod) <- c('DateTime', 'Depth', var)
   }
+  
+    }
   return(mod)
-}
+  }
 
 run_glm <- function(os){
   if (os == "Windows"){
@@ -573,29 +605,250 @@ glmFUNsa <- function(p){
   }
   
   p <- wrapper_scales(p, lb, ub)
-  eg_nml <- read_nml(nml_file = nml_file)
+  
+  if(ends_with_csv(nml_file)) {
+    eg_nml <- read.csv(paste0("aed/", nml_file)) |> 
+                        rename(zoop_name = X.zoop_name.,
+                               ZOO_rotifer = X.rotifer.,
+                               ZOO_cladoceran = X.cladoceran.,
+                               ZOO_copepod = X.copepod.) |> 
+                        mutate(zoop_name = removeQuotes(zoop_name),
+                               ZOO_rotifer = removeQuotes(ZOO_rotifer),
+                               ZOO_cladoceran = removeQuotes(ZOO_cladoceran),
+                               ZOO_copepod = removeQuotes(ZOO_copepod)) 
+      
+    
+  } else {
+    eg_nml <- read_nml(nml_file = nml_file)
+  }
   
   for(i in 1:length(pars[!duplicated(pars)])){
     if (any(pars[!duplicated(pars)][i] == pars[duplicated(pars)])){
-      eg_nml <- set_nml(eg_nml, pars[!duplicated(pars)][i], 
-                        p[which(pars[!duplicated(pars)][i] == pars)])
+      eg_nml <- set_nml_csv(eg_nml, pars[!duplicated(pars)][i], 
+                            p[which(pars[!duplicated(pars)][i] == pars)])
     } else {
-      eg_nml <- set_nml(eg_nml,pars[!duplicated(pars)][i],p[!duplicated(pars)][i])
+      eg_nml <- set_nml_csv(eg_nml,pars[!duplicated(pars)][i],p[!duplicated(pars)][i])
     }
-  }
+  } 
   
   write_path <- nml_file
   write_nml(eg_nml, file = write_path)
   
   run_glm(os) #changed from Unix 
-
-  suppressWarnings(mod <- mod2obs(mod_nc = out, obs = obs, reference = 'surface', var)) #Supressed warnings
-    
+  
+    suppressWarnings(mod <- mod2obs(mod_nc = out, obs = obs, reference = 'surface', var)) #Supressed warnings  
+  
+  if(ends_with_csv(nml_file)){
+    fit = sum((mod[,2] - obs[,2])^2,na.rm = T)
+  } else {
   fit = sum((mod[,3] - obs[,3])^2,na.rm = T)
-
+  }
   print(paste('SAE', round(fit,1)))
   return(fit)
-  } 
+} 
+
+
+
+set_nml_csv <- function(glm_nml, arg_name, arg_val, arg_list = NULL) {
+  if (missing(arg_name) & missing(arg_val)) {
+    return(setnmlList(glm_nml, arg_list))
+  }
+  if (!is.character(arg_name)) {
+    stop("arg_name should be a character")
+  }
+  if (!is.null(arg_list) & arg_name %in% names(arg_list)) {
+    warning(c("duplicate names given to arg_name and arg_list.", 
+              " arg_name and arg_val values will overwrite duplicate arg_list values."))
+    glm_nml <- setnmlList(glm_nml, arg_list)
+  }
+  currVal <- get_nml_csv_value(glm_nml, arg_name, warn = FALSE)
+  typeError <- paste0("input ", arg_name, " must be of same data type as current value")
+  
+  if (is.logical(currVal) & !is.logical(arg_val)) {
+    stop(c(typeError, " (logical)"))
+  }
+  else if (is.character(currVal) & !is.character(arg_val)) {
+    stop(c(typeError, " (character)"))
+  }
+  else if (is.numeric(currVal) & !is.numeric(arg_val)) {
+    stop(c(typeError, " (numeric)"))
+  }
+  
+  blck <- get_block(glm_nml, arg_name)
+  arg_name <- get_arg_name(arg_name)
+  
+  if (length(arg_val) > 1 & is.character(arg_val)) {
+    arg_val <- paste0(arg_val, collapse = ",")
+  }
+  
+  # Check if the argument value is a file path and ends with ".csv"
+  if (substr(var,1,3) %in% "ZOO") {
+    # If yes, read the CSV file and assign its contents
+    glm_nml <- read.csv(paste0("aed/",nml_file)) |> 
+      rename(zoop_name = X.zoop_name., 
+             ZOO_rotifer = X.rotifer.,
+             ZOO_cladoceran = X.cladoceran.,
+             ZOO_copepod = X.copepod.) |> 
+      mutate(zoop_name = removeQuotes(zoop_name),
+             ZOO_rotifer = removeQuotes(ZOO_rotifer),
+             ZOO_cladoceran = removeQuotes(ZOO_cladoceran),
+             ZOO_copepod = removeQuotes(ZOO_copepod)) 
+    
+    glm_nml[[var]][[blck]] <- as.character(arg_val)
+    return(glm_nml)
+  } else {
+    # Otherwise, just assign the argument value directly
+    glm_nml[[blck]][[arg_name]] <- arg_val
+    return(glm_nml)
+  }
+}
+
+setnmlList <- function (glm_nml, arg_list) 
+{
+  if (!is.list(arg_list)) {
+    stop("arg_list must be a list")
+  }
+  if (any(nchar(names(arg_list)) == 0) | length(names(arg_list)) == 
+      0) {
+    stop("arg_list must be a named list")
+  }
+  arg_names <- names(arg_list)
+  for (i in seq_len(length(arg_names))) {
+    glm_nml <- set_nml_csv(glm_nml, arg_name = arg_names[i], 
+                           arg_val = arg_list[[i]])
+  }
+  return(glm_nml)
+}
+
+get_nml_csv_value <- function (glm_nml, arg_name, nml_file = "template", ...) 
+{
+ #if (!all(is.na(glm_nml)) & nml_file != "template") {
+ #  stop("Must specify either an nml object via 'glm_nml' or \n         an nml file path via 'nml_file'")
+ #}
+  
+  blck <- get_block(glm_nml, arg_name)
+  arg_name <- get_arg_name(arg_name)
+  
+  if(substr(var,1,3) %in% "ZOO") {
+    if (all(is.na(glm_nml))) {
+      glm_nml <- read.csv(paste0("aed/",nml_file)) |> 
+                           rename(zoop_name = X.zoop_name., 
+                                  ZOO_rotifer = X.rotifer.,
+                                  ZOO_cladoceran = X.cladoceran.,
+                                  ZOO_copepod = X.copepod.) |> 
+                           mutate(zoop_name = removeQuotes(zoop_name),
+                                  ZOO_rotifer = removeQuotes(ZOO_rotifer),
+                                  ZOO_cladoceran = removeQuotes(ZOO_cladoceran),
+                                  ZOO_copepod = removeQuotes(ZOO_copepod)) 
+    }
+    
+    return(as.numeric(glm_nml[[var]][[blck]]))
+    
+  } else {
+    if (all(is.na(glm_nml))) {
+      glm_nml <- read_nml(nml_file)
+    }
+    
+    return(glm_nml[[blck]][[arg_name]]) #EDIT - needs to be uncommented for all other vars besides zoops
+    
+  }
+}
+
+get_block <- function (glm_nml, arg_name, warn = TRUE) 
+{
+  arg_split = strsplit(arg_name, "::")[[1]]
+  if (length(arg_split) > 1) {
+    blck = arg_split[1]
+    arg_name = get_arg_name(arg_name)
+  }
+  else {
+    blck <- findBlck(glm_nml, arg_name)
+  }
+  if (length(blck) > 1) {
+    if (warn) 
+      warning(arg_name, " found in ", paste(names(glm_nml[blck]), 
+                                            collapse = " & "), ", returning the first. Try ", 
+              names(glm_nml[blck])[1], "::", arg_name, " for explicit match")
+    blck = blck[1]
+  }
+  return(blck)
+}
+
+findBlck <- function (nml, argName) 
+{
+  if (!is.character(argName)) {
+    stop(c("parameter name must be a string"))
+  }
+  fau <- " "
+  fault.string <- rep(fau, 1000)
+  blckI <- c()
+  
+  if(ends_with_csv(nml_file)) {
+    glm_nml <- read.csv(paste0("aed/",nml_file)) |> 
+      rename(zoop_name = X.zoop_name., 
+             ZOO_rotifer = X.rotifer.,
+             ZOO_cladoceran = X.cladoceran.,
+             ZOO_copepod = X.copepod.) |> 
+      mutate(zoop_name = removeQuotes(zoop_name),
+             ZOO_rotifer = removeQuotes(ZOO_rotifer),
+             ZOO_cladoceran = removeQuotes(ZOO_cladoceran),
+             ZOO_copepod = removeQuotes(ZOO_copepod)) 
+    
+    blockNames <- glm_nml$zoop_name 
+    
+    for (b in seq_len(length(blockNames))) {
+      if (any(argName %in% glm_nml$zoop_name[[b]])) {
+        blckI <- c(blckI, b)
+      }
+      else {
+        one.i <- which(fault.string == fau)[1]
+        fault.string[one.i:(one.i + length(glm_nml$zoop_name[[b]]) - 
+                              1)] = glm_nml$zoop_name[[b]]
+      }
+    }
+  } else {
+    blockNames <- names(nml)
+    for (b in seq_len(length(blockNames))) {
+      if (any(argName %in% names(nml[[b]]))) {
+        blckI <- c(blckI, b)
+      }
+      else {
+        one.i <- which(fault.string == fau)[1]
+        fault.string[one.i:(one.i + length(names(nml[[b]])) - 
+                              1)] = names(nml[[b]])
+      }
+    }
+    
+  }
+  
+  fault.string <- fault.string[!fault.string == fau]
+  if (is.null(blckI)) {
+    stop(c("parameter name ", argName, " not found in nml. Possible names:", 
+           paste(fault.string, collapse = ", ")))
+  }
+  return(blckI)
+}
+
+
+get_arg_name <- function (arg_name) 
+{
+  arg_split = strsplit(arg_name, "::")[[1]]
+  if (length(arg_split) > 1) {
+    blck = arg_split[1]
+    arg_name = arg_split[2]
+  }
+  return(arg_name)
+}
+
+
+# Function to check if file path ends with ".csv"
+ends_with_csv <- function(file_path) {
+  tolower(substr(file_path, nchar(file_path) - 3, nchar(file_path))) == ".csv"
+}
+
+removeQuotes <- function(x) {
+  trimws(gsub("'", '', x))
+}
 
 
 wrapper_scales <- function(x, lb, ub){
@@ -741,7 +994,7 @@ glmFUNrmse <- function(p){
 }
 
 run_sensitivity <- function(var, max_r, x0, lb, ub, pars, obs, nml_file){
-
+  
   calib <- read.csv(paste0('sensitivity/sample_sensitivity_config_',var,'.csv'), stringsAsFactors = F)
   
   all_ee <- matrix(0, nrow=max_r, ncol=length(x0))
@@ -764,9 +1017,9 @@ run_sensitivity <- function(var, max_r, x0, lb, ub, pars, obs, nml_file){
   
   morris_res <- data.frame('pars'=c(pars), 'mean' = apply(abs(all_ee),2,mean), 'std' = apply(all_ee,2,sd))
   colnames(all_ee) <- pars
-
+  
   write.csv(all_ee, paste0('results/SA_ee_results_',var,'.csv'), quote = F, row.names = F)
-
+  
   morris_norm <- data.frame('pars'=c(pars), 'mean' = apply(abs(ee_norm),2,mean), 'std' = apply(ee_norm,2,sd))
   p6 <- ggplot(morris_norm, aes(pars,mean))+ #EDIT THIS- Originally I had it as (morris_res, aes(pars,mean))
     geom_bar(stat="identity", fill = 'blue')+
@@ -802,44 +1055,9 @@ run_sensitivity <- function(var, max_r, x0, lb, ub, pars, obs, nml_file){
   ggsave(file=paste0('results/SA_plot_',var,'-clust.png'), p7, dpi = 300,width = 150,height = 150, units = 'mm') #saves g
   
   cal_pars = calib
-  #cal_pars = calib[c(which(morris_res_clust$cluster == row(k_means$centers)[k_means$centers==max(k_means$centers)])),]
   
-  #Separate parameters to be calibrated and default parameters
   cal_pars = calib[c(which(morris_norm$mean >= 0.1)),]
- # def_pars = calib[-c(which(morris_norm$mean >= 0.1)),]
   
-  
-### Troubleshooting note: this is where it gets stuck! 
-# Warning message: In match(pars[duplicated(pars)], cal_pars$par, pars[duplicated(pars)]) :NAs introduced by coercion  
-# Seems to be picking up three sed_mean_temps but not enough cal_temp_amplitude
-   
-# if (any(cal_pars$par %in% pars[duplicated(pars)])) { #to deal with duplicated parameters
-#   tt <- match(pars[duplicated(pars)],cal_pars$par,pars[duplicated(pars)])
-#   suppressWarnings(tt <- match(pars[duplicated(pars)],cal_pars$par,pars[duplicated(pars)]))
-#  tt <- tt[!is.na(tt)]
-# for (i in 1:length(tt)){
-#    id <- cal_pars[tt,]$par
-#   cal_pars <- cal_pars[-tt[i],]
-#    tt2 <-  which(id == calib$par)
-#    cal_pars<-rbind(cal_pars, calib[tt2,])
-#  }
-#}
-
-# eg_nml <- read_nml(nml_file = nml_file)
-# for(i in 1:length(pars[!duplicated(pars)])){
-#    if (any(pars[!duplicated(pars)][i] == pars[duplicated(pars)])){
-#       eg_nml <- set_nml(eg_nml, pars[!duplicated(pars)][i],
-#                         p[which(pars[!duplicated(pars)][i] == pars)])
-#     } else {
-#       eg_nml <- set_nml(eg_nml,pars[!duplicated(pars)][i],p[!duplicated(pars)][i])
-#     }
-#   }
- 
- #set_nml, but ignoring the duplicated pars because this generates errors
- #for(i in 1:nrow(cal_pars)){
-  # eg_nml <- set_nml(eg_nml,pars[i],p[i])
-# } 
-    
   write.csv(cal_pars, paste0('calibration_file_',var,'.csv'), row.names = F, quote = F)
   
   return()

@@ -67,8 +67,8 @@ gases$DateTime <-as.POSIXct(strptime(gases$DateTime, "%Y-%m-%d", tz="EST"))
 # 1) water temperature, following ISIMIP approach
 #first, copy & paste your glm3.nml and aed2.nml within their respective directories
 # and rename as glm4.nml and aed4.nml; these 4.nml versions are going to be rewritten
-file.copy('2Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed/22Jan24_po4cal_aed2.nml', 'aed/aed2.nml', overwrite = TRUE)
+file.copy('14Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed/aed2_4zones.nml', 'aed/aed2.nml', overwrite = TRUE)
 var = 'temp'
 calib <- matrix(c('par', 'lb', 'ub', 'x0', #THIS LIST WILL BE EDITED BUT START WITH ALL VARS
                   'wind_factor', 0.5, 1.25, 1,
@@ -810,6 +810,33 @@ nml_file = 'aed2/aed2_20200701_2DOCpools.nml'
 run_calibvalid(var, cal_pars, var_unit = 'mmol/m3', var_seq = seq(0,1,10), pars, ub, lb, init.val, obs, method, 
                calib.metric, os, target_fit, target_iter, nml_file, flag = c())
 
+#-------------------------------------------------------------------------#
+# ZOOP SENSITIVITY ANALYSIS, following ISIMIP approach
+file.copy('14Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('aed/aed2_4zones.nml', 'aed/aed2.nml', overwrite = TRUE)
+var = 'ZOO_rotifer'
+calib <- matrix(c('par', 'lb', 'ub', 'x0', 
+                  'Rgrz_zoo', 0.2, 1, 0.6,
+                  'theta_grz_zoo', 1.01, 1.09, 1.02,
+                  'Rresp_zoo', 0.05, 0.3, 0.3,
+                  'Rmort_zoo', 0.01, 0.05, 0.01
+                  #'theta_resp_zoo', 1.01, 1.1, 1.04,
+                  #'Cmin_grz_zoo', 1, 5, 2
+), nrow = 5,ncol = 4, byrow = TRUE) #EDIT THE NROW TO REFLECT # OF ROWS IN ANALYSIS
+write.table(calib, file = paste0('sensitivity/sample_sensitivity_config_',var,'.csv'), row.names = FALSE, 
+            col.names = FALSE, sep = ',',
+            quote = FALSE)
+max_r = 3
+calib <- read.csv(paste0('sensitivity/sample_sensitivity_config_',var,'.csv'), stringsAsFactors = F)
+x0 <- calib$x0
+lb <- calib$lb
+ub <- calib$ub
+pars <- calib$par
+obs <- read.csv('field_data/field_zoops.csv') |> 
+  select(DateTime, var)
+nml_file = 'aed_zoop_pars_3groups_28Apr2024.csv'
+os = 'Compiled'
+run_sensitivity(var, max_r, x0, lb, ub, pars, obs, nml_file)
 
 
 

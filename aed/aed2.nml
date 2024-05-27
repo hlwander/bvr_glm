@@ -8,13 +8,13 @@
    n_zones = 4
    active_zones = 1, 2, 3, 4
    Fsed_oxy = -90, -50, -50, -90
-   Fsed_dic = 11, 12, 10, 14
-   Fsed_ch4 = 50, 10, 10, 10 
-   Fsed_rsi = 0.1, 0.1, 40, 80
-   Fsed_amm = 12, 1, 1, 1 
+   Fsed_dic = 0.1, 0.1, 0.1, 0.1
+   Fsed_ch4 = 60, 1, 1, 1 
+   Fsed_rsi = 4, 4, 40, 80
+   Fsed_amm = 10, 1, 1, 1 
    Fsed_nit = -0.001,-0.001,-0.001,-0.001
-   Fsed_frp = 0.07, 0.08, 0.05, 0.001
-   Fsed_doc = 0.01, 0.1, 8, 5
+   Fsed_frp = 0.04, 0.05, 0.05, 0.001
+   Fsed_doc = 0.1, 0.1, 1, 0.5
 /
 &aed_tracer
    retention_time = .true.
@@ -45,8 +45,8 @@
 &aed_carbon
    dic_initial = 60
    !Fsed_dic = 3 !0.03982841
-   Ksed_dic = 0.1! 98.8 
-   theta_sed_dic = 1.07 !1.08 !1.1 !1.15
+   Ksed_dic = 1 !98.9
+   theta_sed_dic = 1.08 !1.15
    pH_initial = 6.2
    atm_co2 = 0.00041
    co2_model = 1
@@ -54,11 +54,11 @@
    ionic = 0.1
    co2_piston_model = 1
    ch4_initial = 5
-   Rch4ox = 0.2 !0.9469993 
-   Kch4ox =  5 !0.1 !5 !0.2 !0.7298476
-   vTch4ox = 1.2 !1.2! 1.08 !0.91
-   Ksed_ch4 = 3.4 !1.5 !1.547945
-   theta_sed_ch4 = 1.14 !1.08
+   Rch4ox = 0.9 !0.9469993 
+   Kch4ox = 0.7 !0.7298476
+   vTch4ox = 1.06 !0.91
+   Ksed_ch4 = 3.4 !1.547945
+   theta_sed_ch4 = 1.11
    methane_reactant_variable = 'OXY_oxy'
    atm_ch4 = 1.76e-06
    ch4_piston_model = 2
@@ -74,10 +74,10 @@
    ch4_bub_disf2 = 0.07
 /
 &aed_silica
-   rsi_initial = 90
+   rsi_initial = 60
    !Fsed_rsi = 3 !1.01 !16
    Ksed_rsi = 70
-   theta_sed_rsi = 1.03 !1.11
+   theta_sed_rsi = 1.08 !1.11
    silica_reactant_variable = 'OXY_oxy'
    Fsed_rsi_variable = 'SDF_Fsed_rsi'
 /
@@ -86,7 +86,7 @@
    nit_initial = 0.05
    n2o_initial = 0.1
    Rnitrif = 0.007 !0.08628998
-   Knitrif = 30 !80 !22 !34.73152
+   Knitrif = 50 !45 !30 !34.73152
    theta_nitrif = 1.08 !1.079923
    nitrif_reactant_variable = 'OXY_oxy'
    nitrif_ph_variable = ''
@@ -102,17 +102,17 @@
    Rnh4no2 = 0.001
    kanammox = 0.001 !2
    Kanmx_nit = 2 !0.001 !0.1 !0.2
-   Kanmx_amm = 2.064857
+   Kanmx_amm = 0.001 !2.064857
    Rdenit = 2 !0.07 !0.1 !2
-   Kdenit = 30 !1 !20
+   Kdenit = 50 !1
    theta_denit = 1.08 !1.078595
-   Rdnra = 0.02 !1 !0.01954085
+   Rdnra = 1 !0.01954085
    Kdnra_oxy = 2.120867
-   Ksed_amm = 1 !10 !1 ! 9.882212
-   Ksed_nit = 1 !71 !105.5863
+   Ksed_amm = 1 !9.882212
+   Ksed_nit = 1 !105.5863
    Fsed_n2o = 0
    Ksed_n2o = 100
-   theta_sed_amm = 1.087046
+   theta_sed_amm = 1.08 !1.087046
    theta_sed_nit = 1.08 
    !Fsed_nit = -0.05
    Fsed_amm_variable = 'SDF_Fsed_amm'
@@ -148,7 +148,7 @@
    cpom_initial = 0
    Rdom_minerl = 0.1
    Rpom_hydrol = 1e-04
-   Rpoc_hydrol = 0.5!0.001
+   Rpoc_hydrol = 0.001
    Rpon_hydrol = 0.001
    Rpop_hydrol = 1e-04
    theta_hydrol = 1.07
@@ -165,7 +165,7 @@
    f_an = 0.2063885
    K_nit = 10
    simRPools = .true.
-   Rdomr_minerl = 0.009 !0.01
+   Rdomr_minerl = 0.01
    Rcpom_bdown = 0.001
    X_cpom_n = 0.005
    X_cpom_p = 0.001
@@ -192,7 +192,7 @@
    Fsed_don = 0
    Fsed_dop = 0
    Ksed_dom = 93.12891
-   theta_sed_dom = 1.057064
+   theta_sed_dom = 1.07 !1.057064
    diag_level = 10
 /
 &aed_phytoplankton
@@ -243,6 +243,6 @@
    pp_target_variable = 'OGM_pop'
    dc_target_variable = 'OGM_doc'
    pc_target_variable = 'OGM_poc'
-   dbase = 'aed/aed_zoop_pars_3groups_28Apr2024.csv'
+   dbase = 'aed/aed_zoop_pars.csv'
    simZoopFeedback = .true.
 /
