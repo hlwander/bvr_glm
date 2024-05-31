@@ -398,3 +398,57 @@ legend("bottomleft", lty = c(1,2, 3),
        legend = c("rot","clad","cope"),bty = "n")
 #dev.off()
 
+#same for phytos
+g1 <- list(T_std = 20, #cyano
+           T_opt = 28,
+           T_max = 35,
+           Ts = 20,
+           To = 28,
+           Tm = 35,
+           v = 1.06,
+           theta = 1.09)
+g2 <- list(T_std = 10, #green
+           T_opt = 25,
+           T_max = 35,
+           Ts = 10,
+           To = 25,
+           Tm = 35,
+           v = 1.09,
+           theta = 1.09)
+g3 <- list(T_std = 10, #diatom
+           T_opt = 15,
+           T_max = 30,
+           Ts = 10,
+           To = 15,
+           Tm = 30,
+           v = 1.05,
+           theta = 1.05)
+
+g1_Tparms <- get_T_parms(group_parms = g1)
+g2_Tparms <- get_T_parms(group_parms = g2)
+g3_Tparms <- get_T_parms(group_parms = g3)
+
+#jpeg("./figures/AED_temp_eq_3phyto_groups.jpeg", res = 300, width = 5, height = 3.5, units = "in")
+par(cex.lab = 1.5, mgp = c(2.7,1,0))
+curve(f6(x, theta = g1$theta, tp = tp, 
+         kTn = g1_Tparms$kTn, aTn = g1_Tparms$aTn, 
+         bTn = g1_Tparms$bTn, T_std = g1$T_std, 
+         T_opt = g1$T_opt, T_max = g1$T_max),
+      from=0, to=30, n = 300, ylab='fT',
+      xlab = "Water temperature (ºC)", yaxt = "n",
+      ylim=c(0,2))
+axis(2, las = 2)
+curve(f6(x, theta = g2$theta, tp = tp, 
+         kTn = g2_Tparms$kTn, aTn = g2_Tparms$aTn, 
+         bTn = g2_Tparms$bTn, T_std = g2$T_std, 
+         T_opt = g2$T_opt, T_max = g2$T_max),
+      from=0, to=30, n = 300, add = TRUE, lty = 2)
+curve(f6(x, theta = g2$theta, tp = tp, 
+         kTn = g3_Tparms$kTn, aTn = g3_Tparms$aTn, 
+         bTn = g3_Tparms$bTn, T_std = g3$T_std, 
+         T_opt = g3$T_opt, T_max = g3$T_max),
+      from=0, to=30, n = 300, add = TRUE, lty = 3)
+legend("topleft", lty = c(1,2, 3), 
+       legend = c("cyano","green","diatom"),bty = "n")
+#dev.off()
+

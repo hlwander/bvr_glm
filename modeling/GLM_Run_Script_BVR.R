@@ -847,6 +847,191 @@ legend("topleft", legend=c("Cyano", "Greens", "Diatoms"),
 phytos <- get_var(file=nc_file,var_name = 'PHY_tphy',z_out=0.1,reference = 'surface') 
 plot(phytos$DateTime, phytos$PHY_tphy_0.1, col="darkgreen", type="l", ylab="Phyto C mmol/m3", ylim=c(1,200))
 
+var="PHY_cyano"
+
+phytos_0.1 <- get_var(file=nc_file,var_name = var,z_out=0.1,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31"))
+phytos_0.5 <- get_var(file=nc_file,var_name = var,z_out=0.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_1 <- get_var(file=nc_file,var_name = var,z_out=1,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_1.5 <- get_var(file=nc_file,var_name = var,z_out=1.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_2 <- get_var(file=nc_file,var_name = var,z_out=2,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_2.5 <- get_var(file=nc_file,var_name = var,z_out=2.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_3 <- get_var(file=nc_file,var_name = var,z_out=3,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_3.5 <- get_var(file=nc_file,var_name = var,z_out=3.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_4 <- get_var(file=nc_file,var_name = var,z_out=4,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_4.5 <- get_var(file=nc_file,var_name = var,z_out=4.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_5 <- get_var(file=nc_file,var_name = var,z_out=5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_5.5 <- get_var(file=nc_file,var_name = var,z_out=5.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_6 <- get_var(file=nc_file,var_name = var,z_out=6,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_6.5 <- get_var(file=nc_file,var_name = var,z_out=6.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_7 <- get_var(file=nc_file,var_name = var,z_out=7,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_7.5 <- get_var(file=nc_file,var_name = var,z_out=7.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_8 <- get_var(file=nc_file,var_name = var,z_out=8,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_8.5 <- get_var(file=nc_file,var_name = var,z_out=8.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_9 <- get_var(file=nc_file,var_name = var,z_out=9,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_9.5 <- get_var(file=nc_file,var_name = var,z_out=9.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_10 <- get_var(file=nc_file,var_name = var,z_out=10,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_10.5 <- get_var(file=nc_file,var_name = var,z_out=10.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_11 <- get_var(file=nc_file,var_name = var,z_out=11,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+
+cyano_full_wc <- bind_cols(phytos_0.1,phytos_0.5,phytos_1,phytos_1.5,
+                         phytos_2,phytos_2.5,phytos_3,phytos_3.5,
+                         phytos_4,phytos_4.5,phytos_5,phytos_5.5,
+                         phytos_6,phytos_6.5,phytos_7,phytos_7.5,
+                         phytos_8,phytos_8.5,phytos_9,phytos_9.5,
+                         phytos_10,phytos_10.5,phytos_11)
+
+#sum all depths
+cyano_full_wc <- cyano_full_wc |> 
+  mutate(PHY_cyano = rowSums(across(where(is.numeric)),na.rm=T))
+
+var="PHY_green"
+
+phytos_0.1 <- get_var(file=nc_file,var_name = var,z_out=0.1,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31"))
+phytos_0.5 <- get_var(file=nc_file,var_name = var,z_out=0.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_1 <- get_var(file=nc_file,var_name = var,z_out=1,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_1.5 <- get_var(file=nc_file,var_name = var,z_out=1.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_2 <- get_var(file=nc_file,var_name = var,z_out=2,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_2.5 <- get_var(file=nc_file,var_name = var,z_out=2.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_3 <- get_var(file=nc_file,var_name = var,z_out=3,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_3.5 <- get_var(file=nc_file,var_name = var,z_out=3.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_4 <- get_var(file=nc_file,var_name = var,z_out=4,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_4.5 <- get_var(file=nc_file,var_name = var,z_out=4.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_5 <- get_var(file=nc_file,var_name = var,z_out=5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_5.5 <- get_var(file=nc_file,var_name = var,z_out=5.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_6 <- get_var(file=nc_file,var_name = var,z_out=6,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_6.5 <- get_var(file=nc_file,var_name = var,z_out=6.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_7 <- get_var(file=nc_file,var_name = var,z_out=7,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_7.5 <- get_var(file=nc_file,var_name = var,z_out=7.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_8 <- get_var(file=nc_file,var_name = var,z_out=8,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_8.5 <- get_var(file=nc_file,var_name = var,z_out=8.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_9 <- get_var(file=nc_file,var_name = var,z_out=9,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_9.5 <- get_var(file=nc_file,var_name = var,z_out=9.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_10 <- get_var(file=nc_file,var_name = var,z_out=10,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_10.5 <- get_var(file=nc_file,var_name = var,z_out=10.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_11 <- get_var(file=nc_file,var_name = var,z_out=11,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+
+green_full_wc <- bind_cols(phytos_0.1,phytos_0.5,phytos_1,phytos_1.5,
+                           phytos_2,phytos_2.5,phytos_3,phytos_3.5,
+                           phytos_4,phytos_4.5,phytos_5,phytos_5.5,
+                           phytos_6,phytos_6.5,phytos_7,phytos_7.5,
+                           phytos_8,phytos_8.5,phytos_9,phytos_9.5,
+                           phytos_10,phytos_10.5,phytos_11)
+
+#sum all depths
+green_full_wc <- green_full_wc |> 
+  mutate(PHY_green = rowSums(across(where(is.numeric)),na.rm=T))
+
+var="PHY_diatom"
+
+phytos_0.1 <- get_var(file=nc_file,var_name = var,z_out=0.1,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31"))
+phytos_0.5 <- get_var(file=nc_file,var_name = var,z_out=0.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_1 <- get_var(file=nc_file,var_name = var,z_out=1,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_1.5 <- get_var(file=nc_file,var_name = var,z_out=1.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_2 <- get_var(file=nc_file,var_name = var,z_out=2,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_2.5 <- get_var(file=nc_file,var_name = var,z_out=2.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_3 <- get_var(file=nc_file,var_name = var,z_out=3,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_3.5 <- get_var(file=nc_file,var_name = var,z_out=3.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_4 <- get_var(file=nc_file,var_name = var,z_out=4,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_4.5 <- get_var(file=nc_file,var_name = var,z_out=4.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_5 <- get_var(file=nc_file,var_name = var,z_out=5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_5.5 <- get_var(file=nc_file,var_name = var,z_out=5.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_6 <- get_var(file=nc_file,var_name = var,z_out=6,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_6.5 <- get_var(file=nc_file,var_name = var,z_out=6.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_7 <- get_var(file=nc_file,var_name = var,z_out=7,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_7.5 <- get_var(file=nc_file,var_name = var,z_out=7.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_8 <- get_var(file=nc_file,var_name = var,z_out=8,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_8.5 <- get_var(file=nc_file,var_name = var,z_out=8.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_9 <- get_var(file=nc_file,var_name = var,z_out=9,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_9.5 <- get_var(file=nc_file,var_name = var,z_out=9.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_10 <- get_var(file=nc_file,var_name = var,z_out=10,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_10.5 <- get_var(file=nc_file,var_name = var,z_out=10.5,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+phytos_11 <- get_var(file=nc_file,var_name = var,z_out=11,reference = 'surface') |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) |> select(-DateTime)
+
+diatom_full_wc <- bind_cols(phytos_0.1,phytos_0.5,phytos_1,phytos_1.5,
+                           phytos_2,phytos_2.5,phytos_3,phytos_3.5,
+                           phytos_4,phytos_4.5,phytos_5,phytos_5.5,
+                           phytos_6,phytos_6.5,phytos_7,phytos_7.5,
+                           phytos_8,phytos_8.5,phytos_9,phytos_9.5,
+                           phytos_10,phytos_10.5,phytos_11)
+
+#sum all depths
+diatom_full_wc <- diatom_full_wc |> 
+  mutate(PHY_diatom = rowSums(across(where(is.numeric)),na.rm=T))
+
+#plot full wc phytos
+plot(cyano_full_wc$DateTime, cyano_full_wc$PHY_cyano, type='l', col="cyan", ylim=c(0,60))
+lines(green_full_wc$DateTime, green_full_wc$PHY_green, type='l', col="green")
+lines(diatom_full_wc$DateTime, diatom_full_wc$PHY_diatom, type='l', col="brown")
+
 #######################################################
 #### ZOOPS! #######
 
