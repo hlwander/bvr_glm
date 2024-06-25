@@ -251,30 +251,30 @@ curve(f_mort(x, Rmort = Rmort_zoo, theta = theta_grz_zoo),from=4,
 
 #----------------------------------------------------------------#
 #really complex AED temp function modified from MEL
-g1 <- list(T_std = 20, #rotifer
-           T_opt = 20,
+g1 <- list(T_std = 10, #rotifer
+           T_opt = 30,
+           T_max = 35,
+           Ts = 10,
+           To = 30,
+           Tm = 35,
+           v = 1.08,
+           theta = 1.08)
+g2 <- list(T_std = 20, #cladoceran
+           T_opt = 25,
            T_max = 35,
            Ts = 20,
-           To = 20,
+           To = 25,
            Tm = 35,
-           v = 1.04,
-           theta = 1.04)
-g2 <- list(T_std = 10, #cladoceran
-           T_opt = 18,
-           T_max = 35,
-           Ts = 10,
-           To = 18,
-           Tm = 35,
-           v = 1.04,
-           theta = 1.04)
+           v = 1.06,
+           theta = 1.06)
 g3 <- list(T_std = 10, #copepod
-           T_opt = 15,
+           T_opt = 25,
            T_max = 35,
            Ts = 10,
-           To = 15,
+           To = 25,
            Tm = 35,
-           v = 1.03,
-           theta = 1.03)
+           v = 1.09,
+           theta = 1.09)
 
 get_T_parms <- function(group_parms){
   
@@ -380,9 +380,9 @@ curve(f6(x, theta = g1$theta, tp = tp,
          kTn = g1_Tparms$kTn, aTn = g1_Tparms$aTn, 
          bTn = g1_Tparms$bTn, T_std = g1$T_std, 
          T_opt = g1$T_opt, T_max = g1$T_max),
-      from=0, to=30, n = 300, ylab='fT',
+      from=10, to=25, n = 300, ylab='fT',
       xlab = "Water temperature (ºC)", yaxt = "n",
-      ylim=c(-0.5,1.2))
+      ylim=c(0, 1.5))
 axis(2, las = 2)
 curve(f6(x, theta = g2$theta, tp = tp, 
          kTn = g2_Tparms$kTn, aTn = g2_Tparms$aTn, 
@@ -394,35 +394,35 @@ curve(f6(x, theta = g2$theta, tp = tp,
          bTn = g3_Tparms$bTn, T_std = g3$T_std, 
          T_opt = g3$T_opt, T_max = g3$T_max),
       from=0, to=30, n = 300, add = TRUE, lty = 3)
-legend("bottomleft", lty = c(1,2, 3), 
+legend("bottomleft", lty = c(1, 2, 3), 
        legend = c("rot","clad","cope"),bty = "n")
 #dev.off()
 
 #same for phytos
-g1 <- list(T_std = 20, #cyano
+g1 <- list(T_std = 10, #cyano
            T_opt = 28,
            T_max = 35,
-           Ts = 20,
+           Ts = 10,
            To = 28,
            Tm = 35,
-           v = 1.06,
-           theta = 1.09)
-g2 <- list(T_std = 10, #green
-           T_opt = 25,
+           v = 1.08,
+           theta = 1.08)
+g2 <- list(T_std = 30, #green
+           T_opt = 28,
            T_max = 35,
-           Ts = 10,
-           To = 25,
+           Ts = 30,
+           To = 28,
            Tm = 35,
-           v = 1.09,
-           theta = 1.09)
-g3 <- list(T_std = 10, #diatom
-           T_opt = 15,
+           v = 1.02,
+           theta = 1.02)
+g3 <- list(T_std = 5, #diatom
+           T_opt = 12,
            T_max = 30,
-           Ts = 10,
-           To = 15,
+           Ts = 5,
+           To = 12,
            Tm = 30,
-           v = 1.05,
-           theta = 1.05)
+           v = 1.02,
+           theta = 1.02)
 
 g1_Tparms <- get_T_parms(group_parms = g1)
 g2_Tparms <- get_T_parms(group_parms = g2)
