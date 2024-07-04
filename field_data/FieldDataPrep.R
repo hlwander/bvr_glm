@@ -504,41 +504,41 @@ zoops <- read.csv("field_data/zoop_summary_2014-2022.csv", header=T) |>
   select(-c(Site,EndDepth_m,CollectionMethod, Reservoir))
 
 #split data into pre 2019 and post
-#zoops_2015_2016 <- read.csv("field_data/EDI_zoop_taxa_2015.csv")
+zoops_2015_2016 <- read.csv("field_data/EDI_zoop_taxa_2015.csv")
 #cyclopoids are a bit underestimated bc JPD only counted them in rep 1, but I think it's okay for biomass bc they make up a small proportion of total copepod biomass
 
-zoops_2014_2016 <- zoops[as.Date(zoops$DateTime)<"2019-01-01",]
+#zoops_2014_2016 <- zoops[as.Date(zoops$DateTime)<"2019-01-01",]
 zoops_2019_2021 <- zoops[as.Date(zoops$DateTime)>="2019-01-01",]
 
 #calculate cladoceran, copepod, and rotifer biomass for 2014-2018 data
-#zoops_final_pre <- zoops_2015_2016 |> 
-#  mutate(DateTime = as.POSIXct(DateTime, format="%Y-%m-%d %H:%M:%S", tz="UTC")) |> 
-#  filter(hour(DateTime) %in% c(9,10,11,12,13,14)) |> #drop nighttime samples
-#  filter(Taxon %in% c("Cladocera","Copepoda","Rotifera")) |> 
-#  mutate(DateTime = as.Date(DateTime)) |> 
-#  group_by(StartDepth_m, DateTime, Taxon) |> 
-#  summarise(Biomass_ugL = mean(Biomass_ugL, na.rm=T))
+zoops_final_pre <- zoops_2015_2016 |> 
+  mutate(DateTime = as.POSIXct(DateTime, format="%Y-%m-%d %H:%M:%S", tz="UTC")) |> 
+  filter(hour(DateTime) %in% c(9,10,11,12,13,14)) |> #drop nighttime samples
+  filter(Taxon %in% c("Cladocera","Copepoda","Rotifera")) |> 
+  mutate(DateTime = as.Date(DateTime)) |> 
+  group_by(StartDepth_m, DateTime, Taxon) |> 
+  summarise(Biomass_ugL = mean(Biomass_ugL, na.rm=T))
 
 #calculate cladoceran, copepod, and rotifer biomass for 2014-2018 data
-zoops_3groups_pre <- zoops_2014_2016 |> 
-  group_by(DateTime, StartDepth_m) |> 
-  summarise(Cladocera_Biomass_ugL = sum(Biomass_ugL[
-    Taxon %in% c("Bosmina","D. catawba", "Chydorus","D. ambigua",
-                 "Diaphanosoma","Ceriodaphnia")], na.rm=T),
-    Copepoda_Biomass_ugL = sum(Biomass_ugL[
-      Taxon %in% c("Diaptomus","Nauplii", "Cyclopoids")], na.rm=T),
-    Rotifera_Biomass_ugL = sum(Biomass_ugL[
-      Taxon %in% c("Total Rotifers")], na.rm=T))
+#zoops_3groups_pre <- zoops_2014_2016 |> 
+#  group_by(DateTime, StartDepth_m) |> 
+#  summarise(Cladocera_Biomass_ugL = sum(Biomass_ugL[
+#    Taxon %in% c("Bosmina","D. catawba", "Chydorus","D. ambigua",
+#                 "Diaphanosoma","Ceriodaphnia")], na.rm=T),
+#    Copepoda_Biomass_ugL = sum(Biomass_ugL[
+#      Taxon %in% c("Diaptomus","Nauplii", "Cyclopoids")], na.rm=T),
+#    Rotifera_Biomass_ugL = sum(Biomass_ugL[
+#      Taxon %in% c("Total Rotifers")], na.rm=T))
 
-zoops_final_pre <- zoops_3groups_pre |> 
-  group_by(DateTime, StartDepth_m) |> 
-  pivot_longer(cols=Cladocera_Biomass_ugL:Rotifera_Biomass_ugL,
-               names_to = c("Taxon"),
-               values_to = "Biomass_ugL") |> 
-  filter(hour(DateTime) %in% c(9,10,11,12,13,14)) |> #drop nighttime samples
-  mutate(DateTime = as.Date(DateTime)) |> 
-  mutate(Biomass_ugL = Biomass_ugL * (1/0.031)) |>  #correct for net inefficiency
-  mutate(Taxon = str_extract(Taxon, "[^_]+")) #extract taxon before the first _
+#zoops_final_pre <- zoops_3groups_pre |> 
+#  group_by(DateTime, StartDepth_m) |> 
+#  pivot_longer(cols=Cladocera_Biomass_ugL:Rotifera_Biomass_ugL,
+#               names_to = c("Taxon"),
+#               values_to = "Biomass_ugL") |> 
+#  filter(hour(DateTime) %in% c(9,10,11,12,13,14)) |> #drop nighttime samples
+#  mutate(DateTime = as.Date(DateTime)) |> 
+#  mutate(Biomass_ugL = Biomass_ugL * (1/0.031)) |>  #correct for net inefficiency
+#  mutate(Taxon = str_extract(Taxon, "[^_]+")) #extract taxon before the first _
 
 #average reps when appropriate
 zoops_final_post <- zoops_2019_2021 |> 

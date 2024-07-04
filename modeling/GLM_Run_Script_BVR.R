@@ -1116,6 +1116,26 @@ clads_full_wc <- clads_full_wc |>
 plot(clads_full_wc$DateTime, clads_full_wc$ZOO_clad, type='l')
 points(obs$DateTime, obs$ZOO_cladoceran, col="red")
 
+mod<- clads_full_wc |>
+  select(DateTime, ZOO_clad) |> 
+  filter(hour(DateTime) %in% 12) |> 
+  mutate(DateTime = as.Date(DateTime)) |> 
+  rename(ZOO_cladoceran = ZOO_clad)
+
+#lets do depth by depth comparisons of the sims
+compare<-merge(mod, obs, by=c("DateTime"))
+
+#calculate RMSE
+clad <- compare |> 
+  rename(Modeled_ZOO_cladoceran = ZOO_cladoceran.x,
+         Observed_ZOO_cladoceran = ZOO_cladoceran.y)
+
+m_clad <- clad$Modeled_ZOO_cladoceran
+o_clad <-  clad$Observed_ZOO_cladoceran
+RMSE(m_clad,o_clad)
+summary(lm(m_clad ~ o_clad))$r.squared
+
+
 var="ZOO_copepod"
 
 obs<-read.csv('field_data/field_zoops.csv', header=TRUE) |>  
@@ -1184,6 +1204,26 @@ cope_full_wc <- cope_full_wc |>
 plot(cope_full_wc$DateTime, cope_full_wc$ZOO_cope, type='l')
 points(obs$DateTime, obs$ZOO_copepod, col="red")
 
+mod<- cope_full_wc |>
+  select(DateTime, ZOO_cope) |> 
+  filter(hour(DateTime) %in% 12) |> 
+  mutate(DateTime = as.Date(DateTime)) |> 
+  rename(ZOO_copepod = ZOO_cope)
+
+#lets do depth by depth comparisons of the sims
+compare<-merge(mod, obs, by=c("DateTime"))
+
+#calculate RMSE
+cope <- compare |> 
+  rename(Modeled_ZOO_copepod = ZOO_copepod.x,
+         Observed_ZOO_copepod = ZOO_copepod.y)
+
+m_cope <- cope$Modeled_ZOO_copepod
+o_cope <-  cope$Observed_ZOO_copepod
+RMSE(m_cope,o_cope)
+summary(lm(m_cope ~ o_cope))$r.squared
+
+
 var="ZOO_rotifer"
 
 obs<-read.csv('field_data/field_zoops.csv', header=TRUE) |>  
@@ -1251,6 +1291,26 @@ rot_full_wc <- rot_full_wc |>
 
 plot(rot_full_wc$DateTime, rot_full_wc$ZOO_rot, type='l')
 points(obs$DateTime, obs$ZOO_rotifer, col="red")
+
+mod<- rot_full_wc |>
+  select(DateTime, ZOO_rot) |> 
+  filter(hour(DateTime) %in% 12) |> 
+  mutate(DateTime = as.Date(DateTime)) |> 
+  rename(ZOO_rotifer = ZOO_rot)
+
+#lets do depth by depth comparisons of the sims
+compare<-merge(mod, obs, by=c("DateTime"))
+
+#calculate RMSE
+rot <- compare |> 
+  rename(Modeled_ZOO_rotifer = ZOO_rotifer.x,
+         Observed_ZOO_rotifer = ZOO_rotifer.y)
+
+m_rot <- rot$Modeled_ZOO_rotifer
+o_rot <-  rot$Observed_ZOO_rotifer
+RMSE(m_rot,o_rot)
+summary(lm(m_rot ~ o_rot))$r.squared
+
 
 #plot full wc zoops
 plot(clads_full_wc$DateTime, clads_full_wc$ZOO_clad, type='l', col="darkblue", ylim=c(0,150))
