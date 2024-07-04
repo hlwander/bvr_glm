@@ -251,30 +251,30 @@ curve(f_mort(x, Rmort = Rmort_zoo, theta = theta_grz_zoo),from=4,
 
 #----------------------------------------------------------------#
 #really complex AED temp function modified from MEL
-g1 <- list(T_std = 10, #rotifer
-           T_opt = 30,
+g1 <- list(T_std = 20, #rotifer
+           T_opt = 20,
            T_max = 35,
-           Ts = 10,
-           To = 30,
-           Tm = 35,
-           v = 1.08,
-           theta = 1.08)
-g2 <- list(T_std = 20, #cladoceran
-           T_opt = 25,
+           Ts = 20, #10, 20
+           To = 20, #30, 20
+           Tm = 35, 
+           v = 1.04, #1.08, 1.04
+           theta = 1.04)
+g2 <- list(T_std = 10, #cladoceran
+           T_opt = 18,
            T_max = 35,
-           Ts = 20,
-           To = 25,
+           Ts = 10, #20, 10
+           To = 18, #25, 18
            Tm = 35,
-           v = 1.06,
-           theta = 1.06)
+           v = 1.04, #1.06, 1.04
+           theta = 1.04)
 g3 <- list(T_std = 10, #copepod
-           T_opt = 25,
+           T_opt = 15,
            T_max = 35,
            Ts = 10,
-           To = 25,
-           Tm = 35,
-           v = 1.09,
-           theta = 1.09)
+           To = 15, #25, 15
+           Tm = 35, 
+           v = 1.03, #1.09, 1.03
+           theta = 1.03)
 
 get_T_parms <- function(group_parms){
   
@@ -380,9 +380,9 @@ curve(f6(x, theta = g1$theta, tp = tp,
          kTn = g1_Tparms$kTn, aTn = g1_Tparms$aTn, 
          bTn = g1_Tparms$bTn, T_std = g1$T_std, 
          T_opt = g1$T_opt, T_max = g1$T_max),
-      from=10, to=25, n = 300, ylab='fT',
+      from=10, to=30, n = 300, ylab='fT',
       xlab = "Water temperature (ºC)", yaxt = "n",
-      ylim=c(0, 1.5))
+      ylim=c(0, 2))
 axis(2, las = 2)
 curve(f6(x, theta = g2$theta, tp = tp, 
          kTn = g2_Tparms$kTn, aTn = g2_Tparms$aTn, 
@@ -400,29 +400,29 @@ legend("bottomleft", lty = c(1, 2, 3),
 
 #same for phytos
 g1 <- list(T_std = 10, #cyano
-           T_opt = 28,
+           T_opt = 30,
            T_max = 35,
            Ts = 10,
-           To = 28,
+           To = 30, #27, 28
            Tm = 35,
-           v = 1.08,
-           theta = 1.08)
-g2 <- list(T_std = 30, #green
-           T_opt = 28,
+           v = 1.09, #1.08, 1.09
+           theta = 1.09)
+g2 <- list(T_std = 10, #green
+           T_opt = 25,
            T_max = 35,
-           Ts = 30,
-           To = 28,
+           Ts = 10, #10, 30
+           To = 25,
            Tm = 35,
-           v = 1.02,
-           theta = 1.02)
-g3 <- list(T_std = 5, #diatom
-           T_opt = 12,
+           v = 1.08, #1.08, 1.02
+           theta = 1.08)
+g3 <- list(T_std = 10, #diatom
+           T_opt = 15,
            T_max = 30,
-           Ts = 5,
-           To = 12,
+           Ts = 10, #10, 5
+           To = 15,
            Tm = 30,
-           v = 1.02,
-           theta = 1.02)
+           v = 1.06, #1.08, 1.02
+           theta = 1.06)
 
 g1_Tparms <- get_T_parms(group_parms = g1)
 g2_Tparms <- get_T_parms(group_parms = g2)

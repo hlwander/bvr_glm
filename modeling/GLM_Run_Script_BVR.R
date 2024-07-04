@@ -1028,7 +1028,7 @@ diatom_full_wc <- diatom_full_wc |>
   mutate(PHY_diatom = rowSums(across(where(is.numeric)),na.rm=T))
 
 #plot full wc phytos
-plot(cyano_full_wc$DateTime, cyano_full_wc$PHY_cyano, type='l', col="cyan", ylim=c(0,60))
+plot(cyano_full_wc$DateTime, cyano_full_wc$PHY_cyano, type='l', col="cyan", ylim=c(0,100))
 lines(green_full_wc$DateTime, green_full_wc$PHY_green, type='l', col="green")
 lines(diatom_full_wc$DateTime, diatom_full_wc$PHY_diatom, type='l', col="brown")
 
@@ -1251,6 +1251,12 @@ rot_full_wc <- rot_full_wc |>
 
 plot(rot_full_wc$DateTime, rot_full_wc$ZOO_rot, type='l')
 points(obs$DateTime, obs$ZOO_rotifer, col="red")
+
+#plot full wc zoops
+plot(clads_full_wc$DateTime, clads_full_wc$ZOO_clad, type='l', col="darkblue", ylim=c(0,150))
+lines(cope_full_wc$DateTime, cope_full_wc$ZOO_cope, type='l', col="darkgreen")
+lines(rot_full_wc$DateTime, rot_full_wc$ZOO_rot, type='l', col="darkorange")
+
 
 #zoop community at surface
 clad <- get_var(file=nc_file,var_name = 'ZOO_cladoceran',z_out=0.1,
