@@ -2,7 +2,7 @@
 
 file.copy('14Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('aed/aed2_4zones.nml', 'aed/aed2.nml', overwrite = TRUE)
-file.copy('aed/aed2_phyto_pars_31May2024.csv', #aed2_phyto_pars_31May2024.csv; aed2_phyto_pars_2Feb2024.csv
+file.copy('aed/aed2_phyto_pars_12Jul2024.csv', #aed2_phyto_pars_31May2024.csv; aed2_phyto_pars_2Feb2024.csv
           'aed/aed_phyto_pars.csv', overwrite = TRUE)
 file.copy('aed/aed_zoop_pars_3groups_30May2024.csv', #aed_zoop_pars_3groups_30May2024.csv; aed_zoop_pars_3groups_28Apr2024.csv
           'aed/aed_zoop_pars.csv', overwrite = TRUE)
