@@ -192,7 +192,7 @@ ggplot(diag_long, aes(x = DateTime, y = value)) +
         axis.title.y = element_text(size = 9),
         plot.margin = unit(c(0, 1, 0, 0), "cm"),
         panel.spacing = unit(0.5, "lines"))
-#ggsave("figures/BVR_stacked_zoop_diag.jpg", width=5, height=4) 
+#ggsave("figures/BVR_stacked_zoop_diag_ps2.jpg", width=5, height=4) 
 
 
 #--------------------------------------------------------------------------#
