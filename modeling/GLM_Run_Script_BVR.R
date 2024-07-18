@@ -37,7 +37,9 @@ plot_var(nc_file, var="temp")
 
 #get water level
 water_level<-get_surface_height(nc_file, ice.rm = TRUE, snow.rm = TRUE) |> 
-  filter(DateTime < as.POSIXct("2020-12-31"))
+  filter(DateTime < as.POSIXct("2020-12-31") &
+           hour(DateTime) %in% 12)
+  
 
 # Read in and plot water level observations
 wlevel <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022_interp.csv")
@@ -420,9 +422,9 @@ plot(obs$DateTime[obs$Depth==4],obs$SIL_rsi[obs$Depth==4]) #mean 94.5
 plot(obs$DateTime[obs$Depth==8],obs$SIL_rsi[obs$Depth==8]) #mean 66.0
 
 
-plot(mod$DateTime[mod$Depth==0],mod$SIL_rsi[mod$Depth==0]) #mean 88.0
-plot(mod$DateTime[mod$Depth==4],mod$SIL_rsi[mod$Depth==4]) #mean 89.4
-plot(mod$DateTime[mod$Depth==8],mod$SIL_rsi[mod$Depth==8]) #mean 75.1
+plot(mod$DateTime[mod$Depth==0],mod$SIL_rsi[mod$Depth==0]) #mean 92.3
+plot(mod$DateTime[mod$Depth==4],mod$SIL_rsi[mod$Depth==4]) #mean 94.0
+plot(mod$DateTime[mod$Depth==8],mod$SIL_rsi[mod$Depth==8]) #mean 88.7
 
 #######################################################
 #### ammonium #######
