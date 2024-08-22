@@ -171,7 +171,7 @@ ggplot(diag_long, aes(x = DateTime, y = value)) +
                        natparks.pals("Volcanoes", 5,  direction = -1))+
   scale_fill_manual(values = NatParksPalettes::
                       natparks.pals("Volcanoes", 5, direction = -1))+
-  ylab("diagnostics (mmolC/m3/day")+
+  ylab("diagnostics (mmolC/m3/day)")+ xlab("") +
   #labs(fill = "Taxon", color = "Taxon")+
   scale_x_datetime(expand = c(0,0),labels = 
                      date_format("%Y",tz="EST5EDT")) +
@@ -192,7 +192,7 @@ ggplot(diag_long, aes(x = DateTime, y = value)) +
         axis.title.y = element_text(size = 9),
         plot.margin = unit(c(0, 1, 0, 0), "cm"),
         panel.spacing = unit(0.5, "lines"))
-#ggsave("figures/BVR_stacked_zoop_diag_ps2.jpg", width=5, height=4) 
+#ggsave("figures/BVR_stacked_zoop_diag.jpg", width=5, height=4) 
 
 
 #--------------------------------------------------------------------------#

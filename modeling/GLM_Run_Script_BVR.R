@@ -422,9 +422,9 @@ plot(obs$DateTime[obs$Depth==4],obs$SIL_rsi[obs$Depth==4]) #mean 94.5
 plot(obs$DateTime[obs$Depth==8],obs$SIL_rsi[obs$Depth==8]) #mean 66.0
 
 
-plot(mod$DateTime[mod$Depth==0],mod$SIL_rsi[mod$Depth==0]) #mean 92.3
-plot(mod$DateTime[mod$Depth==4],mod$SIL_rsi[mod$Depth==4]) #mean 94.0
-plot(mod$DateTime[mod$Depth==8],mod$SIL_rsi[mod$Depth==8]) #mean 88.7
+plot(mod$DateTime[mod$Depth==0],mod$SIL_rsi[mod$Depth==0]) #mean 90.5
+plot(mod$DateTime[mod$Depth==4],mod$SIL_rsi[mod$Depth==4]) #mean 91.3
+plot(mod$DateTime[mod$Depth==8],mod$SIL_rsi[mod$Depth==8]) #mean 87.8
 
 #######################################################
 #### ammonium #######
@@ -1030,7 +1030,7 @@ diatom_full_wc <- diatom_full_wc |>
   mutate(PHY_diatom = rowSums(across(where(is.numeric)),na.rm=T))
 
 #plot full wc phytos
-plot(cyano_full_wc$DateTime, cyano_full_wc$PHY_cyano, type='l', col="cyan", ylim=c(0,100))
+plot(cyano_full_wc$DateTime, cyano_full_wc$PHY_cyano, type='l', col="cyan", ylim=c(0,400))
 lines(green_full_wc$DateTime, green_full_wc$PHY_green, type='l', col="green")
 lines(diatom_full_wc$DateTime, diatom_full_wc$PHY_diatom, type='l', col="brown")
 

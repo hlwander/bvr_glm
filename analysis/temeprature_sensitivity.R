@@ -111,11 +111,15 @@ aed_bio_temp_function <- function(numg, theta, T_std, T_opt, T_max, name) {
   }
   
   ggplot(plot_data, aes(x = Temperature, y = GrowthRate, color = Group)) +
-    geom_line() + ylim(0,1.5) + xlim(0,30) +
-    labs(title = "Growth Rate as a Function of Temperature",
+    geom_line() + ylim(0,1.5) + xlim(0,35) +
+    labs(#title = "Growth Rate as a Function of Temperature",
          x = "Temperature (°C)",
-         y = "Growth Rate") +
-    theme_minimal()
+         y = "f(T)") + 
+    annotate("text", x=c(2,5,8), y=1.5, label = topt_lab) +
+    scale_color_manual("", values = c("#006d77","#83c5be","#e29578")) +
+    theme_bw() +
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank())
 }
 
 # 3 phyto groups:
@@ -147,3 +151,52 @@ T_max <- c(35, 35, 35)
 name <- c("Rotifer", "Cladoceran", "Copepod")
 
 aed_bio_temp_function(numg, theta, T_std, T_opt, T_max, name)
+
+
+# 3 zoop groups - another par set with clads and copes the same, but rots lower
+numg <- 3
+theta <- c(1.04, 1.06, 1.09)
+T_std <- c(20, 20, 10)
+T_opt <- c(20, 25, 25)
+T_max <- c(35, 35, 35)
+name <- c("Rotifer", "Cladoceran", "Copepod")
+
+aed_bio_temp_function(numg, theta, T_std, T_opt, T_max, name)
+
+# 3 zoop groups - default glm aed pars
+numg <- 3
+theta <- c(1.08, 1.08, 1.08)
+T_std <- c(20, 20, 20)
+T_opt <- c(22, 22, 22)
+T_max <- c(30, 30, 30)
+name <- c("Rotifer", "Cladoceran", "Copepod")
+
+aed_bio_temp_function(numg, theta, T_std, T_opt, T_max, name)
+
+#-----------------------------------------------------------------#
+# Another option is to compare two zoop par sets with differences in T_opt only
+
+# 3 zoop groups - high ish t_opt
+numg <- 3
+theta <- c(1.08, 1.06, 1.09)
+T_std <- c(10, 10, 10)
+T_opt <- c(20, 20, 18)
+T_max <- c(35, 35, 35)
+name <- c("Rotifer", "Cladoceran", "Copepod")
+topt_lab <- T_opt[c(2,3,1)]
+
+ps1 <- aed_bio_temp_function(numg, theta, T_std, T_opt, T_max, name)
+
+# 3 zoop groups - low t_opt
+numg <- 3
+theta <- c(1.08, 1.06, 1.09)
+T_std <- c(10, 10, 10)
+T_opt <- c(25, 25, 23)
+T_max <- c(35, 35, 35)
+name <- c("Rotifer", "Cladoceran", "Copepod")
+topt_lab <- T_opt[c(2,3,1)]
+
+ps2 <- aed_bio_temp_function(numg, theta, T_std, T_opt, T_max, name)
+
+ggpubr::ggarrange(ps1,ps2, common.legend = T)
+ggsave("figures/topt_option3.jpg")
