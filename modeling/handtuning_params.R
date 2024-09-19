@@ -1,12 +1,28 @@
+install.packages("glmtools", repos = c("http://owi.usgs.gov/R"),dependencies = TRUE) 
+install.packages('remotes')
+remotes::install_github('usgs-r/glmtools')
+library(remotes)
+library(glmtools)
+library(devtools)
+install_github(repo = 'GLEON/GLM3r')
+library(GLM3r)
+
+# Load packages, set sim folder, load nml file ####
+pacman::p_load(GLM3r,glmtools,tidyverse,lubridate,ncdf4)
+
+setwd("/Users/carlybauer/Desktop/bvr_glm")
+
 #hand-tuning script
 
-file.copy('14Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
+file.copy('22Aug24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
 file.copy('aed/aed2_4zones.nml', 'aed/aed2.nml', overwrite = TRUE)
 file.copy('aed/aed2_phyto_pars_12Jul2024.csv', #aed2_phyto_pars_31May2024.csv; aed2_phyto_pars_2Feb2024.csv
           'aed/aed_phyto_pars.csv', overwrite = TRUE)
-file.copy('aed/aed_zoop_pars_3groups_27jun2024_ps1.csv', #ps1, ps2
+file.copy('aed/aed_zoop_pars_3groups_20Aug2024_topt1.csv', #ps1, ps2
           'aed/aed_zoop_pars.csv', overwrite = TRUE)
-
+source('./modeling/functions-glm.R')
+sim_folder <- getwd()
+GLM3r::run_glm()
 #run the model!
 system2(paste0(sim_folder,"/glm.app/Contents/MacOS/glm"), 
         stdout = TRUE, stderr = TRUE, 
@@ -15,7 +31,7 @@ system2(paste0(sim_folder,"/glm.app/Contents/MacOS/glm"),
 
 #sometimes, you'll get an error that says "Error in file, 'Time(Date)' is not first column!
 #in this case, open the input file in Excel, set the column in Custom ("YYYY-MM-DD") format, resave, and close the file
-nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file 
+nc_file <- file.path(sim_folder, 'outputs/output.nc') #defines the output.nc file 
 
 
 #######################################################
