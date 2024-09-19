@@ -214,7 +214,7 @@
    si_uptake_target_variable = 'SIL_rsi'
    do_uptake_target_variable = 'OXY_oxy'
    c_uptake_target_variable = 'CAR_dic'
-   dbase = 'aed/aed_phyto_pars.csv'
+   dbase = 'aed/aed2_phyto_pars_24MAY24_MEL.nml'
    diag_level = 10
    min_rho = 900
    max_rho = 1200
@@ -243,6 +243,6 @@
    pp_target_variable = 'OGM_pop'
    dc_target_variable = 'OGM_doc'
    pc_target_variable = 'OGM_poc'
-   dbase = 'aed/aed_zoop_pars.csv'
+   dbase = 'aed/aed_zoop_pars.nml'
    simZoopFeedback = .true.
 /
