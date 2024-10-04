@@ -1,8 +1,0 @@
-par,lb,ub,x0
-Rch4ox,1.00E-04,5,1
-Kch4ox,1.00E-04,5,0.5
-Fsed_ch4,1,80,40
-Fsed_ch4,1,80,40
-Ksed_ch4,0.1,3,1.5
-Fsed_dic,0.001,100,4
-Ksed_dic,0.001,100,30
