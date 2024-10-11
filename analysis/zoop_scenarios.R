@@ -1,14 +1,14 @@
 # Plankton air temp scenarios
 # 22 August 2024
 
-# Instructions: run all code up until plot generation using desired scenarios
-# If multiple scenarios are desired, rerun lines 14-488 to generate each dataframe
+# Instructions: run all code up until plot generation using each scenario
+# rerun lines 14-488 to generate each scenario dataframe
 
 #create met file for 1, 2, 3, and 5C warming temp scenario
 #met <- read.csv("inputs/met.csv")
-#met_5C_warmer <- met |> 
-#  mutate(AirTemp = AirTemp + 5)
-#write.csv(met_5C_warmer,"inputs/met_plus5C.csv", row.names = F)
+#met_1C_warmer <- met |> 
+#  mutate(AirTemp = AirTemp + 1)
+#write.csv(met_1C_warmer,"inputs/met_plus1C.csv", row.names = F)
 
 #"norm", "plus1C", "plus2C", "plus3C", "plus5C"
 scenario <- "plus5C" 
@@ -508,7 +508,7 @@ ggplot() +
         panel.grid.minor = element_blank(),
         axis.line = element_line(colour = "black"),
         legend.background = element_blank(),
-        legend.position = c(0.28,0.98),
+        legend.position = c(0.32,0.98),
         text = element_text(size=10), 
         panel.border = element_rect(colour = "black", fill = NA),
         strip.text.x = element_blank(),
@@ -540,7 +540,7 @@ ggplot() +
         panel.grid.minor = element_blank(),
         axis.line = element_line(colour = "black"),
         legend.background = element_blank(),
-        legend.position = c(0.25,0.98),
+        legend.position = c(0.28,0.98),
         text = element_text(size=10), 
         panel.border = element_rect(colour = "black", fill = NA),
         strip.text.x = element_blank(),
@@ -573,7 +573,7 @@ ggplot() +
         panel.grid.minor = element_blank(),
         axis.line = element_line(colour = "black"),
         legend.background = element_blank(),
-        legend.position = c(0.25,0.98),
+        legend.position = c(0.32,0.98),
         text = element_text(size=10), 
         panel.border = element_rect(colour = "black", fill = NA),
         strip.text.x = element_blank(),
