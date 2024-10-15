@@ -1,35 +1,20 @@
 # Script for generating BVR glm aed ms figures and tables
 # 20 Aug 2024
 
-# install glmtools
-library(devtools)
-devtools::install_github("rqthomas/glmtools", force = TRUE)
-
 #install hydroGOF
 install.packages("hydroGOF")
 
 #load packages
 pacman::p_load(tidyverse,lubridate, hydroGOF, glmtools)
 
-#overwrite files so calibrated pars are used in model
-file.copy('14Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)
-file.copy('aed/aed2_4zones.nml', 'aed/aed2.nml', overwrite = TRUE)
-file.copy('aed/aed2_phyto_pars_12Jul2024.csv', 
-          'aed/aed_phyto_pars.csv', overwrite = TRUE)
-file.copy('aed/aed_zoop_pars_3groups_4Sep2024.csv',
-          'aed/aed_zoop_pars.csv', overwrite = TRUE)
-
-#run the model!
-GLM3r::run_glm()
-
-#define the output.nc file 
-nc_file <- file.path('./output/output.nc') 
-
-#----------------------------------------------------------------------#
 # create modeled vs. observed df for each variable
-
 #focal depths
 depths<- c(0.1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+scenario <- c("baseline","plus1","plus3","plus5")
+
+for(i in 1:length(scenario)){
+  
+  nc_file = paste0("sims/",scenario[i],"/output/output.nc")  
 
 # temp
 obstemp<-read_csv('field_data/CleanedObsTemp.csv') |> 
@@ -168,6 +153,9 @@ all_vars_final <- all_vars |>
                names_to = c("type", "var")) |> 
   na.omit()
 
+assign(paste0("all_vars_final_", scenario[i]), all_vars_final)
+}
+
 #-------------------------------------------------------------#
 #df for text annotations
 ann_text <- data.frame(y_val = c(30, 370, 90, 18, 7.5, 0.3, 0.23, 458, 63, 14.5),
@@ -182,9 +170,9 @@ ann_text <- data.frame(y_val = c(30, 370, 90, 18, 7.5, 0.3, 0.23, 458, 63, 14.5)
 
 #ginormous plot with all vars for 0.1m
 ggplot() +
-  geom_line(data=subset(all_vars_final, type %in% "mod" & 
+  geom_line(data=subset(all_vars_final_baseline, type %in% "mod" & 
                           period %in% "calib" & Depth %in% 0.1), aes(DateTime, value, color = "modeled")) +
-  geom_point(data=subset(all_vars_final, type %in% "obs" &
+  geom_point(data=subset(all_vars_final_baseline, type %in% "obs" &
                            period %in% "calib" & Depth %in% 0.1), aes(DateTime, value, color="observed")) + 
   facet_wrap(~factor(var,levels = c("temp", "oxy", "dic", "ch4", "nh4",
                                     "no3", "po4", "docr", "doc", "chla")), 
@@ -216,9 +204,9 @@ ggplot() +
 
 #ginormous plot with all vars for 9m
 ggplot() +
-  geom_line(data=subset(all_vars_final, type %in% "mod" & 
+  geom_line(data=subset(all_vars_final_baseline, type %in% "mod" & 
                           period %in% "calib" & Depth %in% 9), aes(DateTime, value, color = "modeled")) +
-  geom_point(data=subset(all_vars_final, type %in% "obs" &
+  geom_point(data=subset(all_vars_final_baseline, type %in% "obs" &
                            period %in% "calib" & Depth %in% 9), aes(DateTime, value, color="observed")) + 
   facet_wrap(~factor(var,levels = c("temp", "oxy", "dic", "ch4", "nh4",
                                     "no3", "po4", "docr", "doc", "chla")), 
@@ -250,9 +238,9 @@ ggplot() +
 
 # validation period 0.1m
 ggplot() +
-  geom_line(data=subset(all_vars_final, type %in% "mod" & 
+  geom_line(data=subset(all_vars_final_baseline, type %in% "mod" & 
                           period %in% "valid" & Depth %in% 0.1), aes(DateTime, value, color = "modeled")) +
-  geom_point(data=subset(all_vars_final, type %in% "obs" &
+  geom_point(data=subset(all_vars_final_baseline, type %in% "obs" &
                            period %in% "valid" & Depth %in% 0.1), aes(DateTime, value, color="observed")) + 
   facet_wrap(~factor(var,levels = c("temp", "oxy", "dic", "ch4", "nh4",
                                     "no3", "po4", "docr", "doc", "chla")), 
@@ -284,9 +272,9 @@ ggplot() +
 
 # validation period 9m
 ggplot() +
-  geom_line(data=subset(all_vars_final, type %in% "mod" & 
+  geom_line(data=subset(all_vars_final_baseline, type %in% "mod" & 
                           period %in% "valid" & Depth %in% 9), aes(DateTime, value, color = "modeled")) +
-  geom_point(data=subset(all_vars_final, type %in% "obs" &
+  geom_point(data=subset(all_vars_final_baseline, type %in% "obs" &
                            period %in% "valid" & Depth %in% 9), aes(DateTime, value, color="observed")) + 
   facet_wrap(~factor(var,levels = c("temp", "oxy", "dic", "ch4", "nh4",
                                     "no3", "po4", "docr", "doc", "chla")), 
@@ -315,6 +303,9 @@ ggplot() +
           fill = "white"),
         panel.spacing.y = unit(0, "lines"))
 #ggsave("figures/allvars_valid_mod_vs_obs_9m.jpg", width=6, height=6)
+
+#same figs with each scenario
+
 
 #-----------------------------------------------------------------------#
 # GOF table for calib vs. valid periods
