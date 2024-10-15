@@ -3,135 +3,104 @@
 # Load packages, set sim folder, load nml file ####
 pacman::p_load(tidyverse,lubridate,ncdf4,glmtools)
 
-#"norm","plus1C","plus2C","plus3C","plus5C"
-scenario <- "plus3C" 
-
-#pull pars + files associated with the correct scenario
-if(scenario %in% "plus5C"){
-  file.copy('4Sep24_tempcal_glm3_plus5C.nml', 'glm3.nml', overwrite = TRUE)
-} else if(scenario %in% "plus1C"){
-  file.copy('4Sep24_tempcal_glm3_plus1C.nml', 'glm3.nml', overwrite = TRUE)
-} else if(scenario %in% "plus2C"){
-  file.copy('4Sep24_tempcal_glm3_plus2C.nml', 'glm3.nml', overwrite = TRUE)
-} else if(scenario %in% "plus3C"){
-  file.copy('4Sep24_tempcal_glm3_plus3C.nml', 'glm3.nml', overwrite = TRUE)
-} else(
-  file.copy('14Feb24_tempcal_glm3.nml', 'glm3.nml', overwrite = TRUE)  
-)
-
-file.copy('aed/aed2_4zones.nml', 'aed/aed2.nml', overwrite = TRUE)
-file.copy('aed/aed2_phyto_pars_12Jul2024.csv', 
-          'aed/aed_phyto_pars.csv', overwrite = TRUE)
-file.copy('aed/aed_zoop_pars_3groups_4Sep2024.csv', 
-          'aed/aed_zoop_pars.csv', overwrite = TRUE)
-
-#run the model!
-GLM3r::run_glm()
-
-#define output file
-nc_file <- file.path('./output/output.nc')
-
-#plotting vars in output nc file (UPDATE - same as lake.csv)
-#nc <- ncdf4::nc_open(nc_file)
-#names(nc$var)
 
 #baseline
-ln <- get_var(nc_file, "lake_number", reference="surface")
-temp <- get_var(nc_file, "temp", reference="surface")
-surf_temp <- get_var(nc_file, "surface_temp", reference="surface")
-min_temp <- get_var(nc_file, "min_temp", reference="surface")
-max_temp <- get_var(nc_file, "max_temp", reference="surface")
-albedo <- get_var(nc_file, "albedo", reference="surface")
-snow_dens <- get_var(nc_file, "snow_density", reference="surface")
-lake_level <- get_var(nc_file, "lake_level", reference="surface")
-rain <- get_var(nc_file, "rain", reference="surface")
-evap <- get_var(nc_file, "evaporation", reference="surface")
-sa <-  get_var(nc_file, "surface_area", reference="surface")
-lake_vol <-  get_var(nc_file, "lake_volume", reference="surface")
-wind <-  get_var(nc_file, "wind", reference="surface")
-solar <-  get_var(nc_file, "solar", reference="surface")
-precip <-  get_var(nc_file, "precipitation", reference="surface")
-white_ice_thick <-  get_var(nc_file, "white_ice_thickness", reference="surface")
-blue_ice_thick <-  get_var(nc_file, "blue_ice_thickness", reference="surface")
+ln <- get_var("sims/baseline/output/output.nc", "lake_number", reference="surface")
+temp <- get_var("sims/baseline/output/output.nc", "temp", reference="surface")
+surf_temp <- get_var("sims/baseline/output/output.nc", "surface_temp", reference="surface")
+min_temp <- get_var("sims/baseline/output/output.nc", "min_temp", reference="surface")
+max_temp <- get_var("sims/baseline/output/output.nc", "max_temp", reference="surface")
+albedo <- get_var("sims/baseline/output/output.nc", "albedo", reference="surface")
+snow_dens <- get_var("sims/baseline/output/output.nc", "snow_density", reference="surface")
+lake_level <- get_var("sims/baseline/output/output.nc", "lake_level", reference="surface")
+rain <- get_var("sims/baseline/output/output.nc", "rain", reference="surface")
+evap <- get_var("sims/baseline/output/output.nc", "evaporation", reference="surface")
+sa <-  get_var("sims/baseline/output/output.nc", "surface_area", reference="surface")
+lake_vol <-  get_var("sims/baseline/output/output.nc", "lake_volume", reference="surface")
+wind <-  get_var("sims/baseline/output/output.nc", "wind", reference="surface")
+solar <-  get_var("sims/baseline/output/output.nc", "solar", reference="surface")
+precip <-  get_var("sims/baseline/output/output.nc", "precipitation", reference="surface")
+white_ice_thick <-  get_var("sims/baseline/output/output.nc", "white_ice_thickness", reference="surface")
+blue_ice_thick <-  get_var("sims/baseline/output/output.nc", "blue_ice_thickness", reference="surface")
 
 #plus 1C
-ln_plus1C <- get_var(nc_file, "lake_number", reference="surface")
-temp_plus1C <- get_var(nc_file, "temp", reference="surface")
-surf_temp_plus1C <- get_var(nc_file, "surface_temp", reference="surface")
-min_temp_plus1C <- get_var(nc_file, "min_temp", reference="surface")
-max_temp_plus1C <- get_var(nc_file, "max_temp", reference="surface")
-albedo_plus1C <- get_var(nc_file, "albedo", reference="surface")
-snow_dens_plus1C <- get_var(nc_file, "snow_density", reference="surface")
-lake_level_plus1C <- get_var(nc_file, "lake_level", reference="surface")
-rain_plus1C <- get_var(nc_file, "rain", reference="surface")
-evap_plus1C <- get_var(nc_file, "evaporation", reference="surface")
-sa_plus1C <-  get_var(nc_file, "surface_area", reference="surface")
-lake_vol_plus1C <-  get_var(nc_file, "lake_volume", reference="surface")
-wind_plus1C <-  get_var(nc_file, "wind", reference="surface")
-solar_plus1C <-  get_var(nc_file, "solar", reference="surface")
-precip_plus1C <-  get_var(nc_file, "precipitation", reference="surface")
-white_ice_thick_plus1C <-  get_var(nc_file, "white_ice_thickness", reference="surface")
-blue_ice_thick_plus1C <-  get_var(nc_file, "blue_ice_thickness", reference="surface")
+ln_plus1C <- get_var("sims/plus1/output/output.nc", "lake_number", reference="surface")
+temp_plus1C <- get_var("sims/plus1/output/output.nc", "temp", reference="surface")
+surf_temp_plus1C <- get_var("sims/plus1/output/output.nc", "surface_temp", reference="surface")
+min_temp_plus1C <- get_var("sims/plus1/output/output.nc", "min_temp", reference="surface")
+max_temp_plus1C <- get_var("sims/plus1/output/output.nc", "max_temp", reference="surface")
+albedo_plus1C <- get_var("sims/plus1/output/output.nc", "albedo", reference="surface")
+snow_dens_plus1C <- get_var("sims/plus1/output/output.nc", "snow_density", reference="surface")
+lake_level_plus1C <- get_var("sims/plus1/output/output.nc", "lake_level", reference="surface")
+rain_plus1C <- get_var("sims/plus1/output/output.nc", "rain", reference="surface")
+evap_plus1C <- get_var("sims/plus1/output/output.nc", "evaporation", reference="surface")
+sa_plus1C <-  get_var("sims/plus1/output/output.nc", "surface_area", reference="surface")
+lake_vol_plus1C <-  get_var("sims/plus1/output/output.nc", "lake_volume", reference="surface")
+wind_plus1C <-  get_var("sims/plus1/output/output.nc", "wind", reference="surface")
+solar_plus1C <-  get_var("sims/plus1/output/output.nc", "solar", reference="surface")
+precip_plus1C <-  get_var("sims/plus1/output/output.nc", "precipitation", reference="surface")
+white_ice_thick_plus1C <-  get_var("sims/plus1/output/output.nc", "white_ice_thickness", reference="surface")
+blue_ice_thick_plus1C <-  get_var("sims/plus1/output/output.nc", "blue_ice_thickness", reference="surface")
 
 #plus 2C
-ln_plus2C <- get_var(nc_file, "lake_number", reference="surface")
-temp_plus2C <- get_var(nc_file, "temp", reference="surface")
-surf_temp_plus2C <- get_var(nc_file, "surface_temp", reference="surface")
-min_temp_plus2C <- get_var(nc_file, "min_temp", reference="surface")
-max_temp_plus2C <- get_var(nc_file, "max_temp", reference="surface")
-albedo_plus2C <- get_var(nc_file, "albedo", reference="surface")
-snow_dens_plus2C <- get_var(nc_file, "snow_density", reference="surface")
-lake_level_plus2C <- get_var(nc_file, "lake_level", reference="surface")
-rain_plus2C <- get_var(nc_file, "rain", reference="surface")
-evap_plus2C <- get_var(nc_file, "evaporation", reference="surface")
-sa_plus2C <-  get_var(nc_file, "surface_area", reference="surface")
-lake_vol_plus2C <-  get_var(nc_file, "lake_volume", reference="surface")
-wind_plus2C <-  get_var(nc_file, "wind", reference="surface")
-solar_plus2C <-  get_var(nc_file, "solar", reference="surface")
-precip_plus2C <-  get_var(nc_file, "precipitation", reference="surface")
-white_ice_thick_plus2C <-  get_var(nc_file, "white_ice_thickness", reference="surface")
-blue_ice_thick_plus2C <-  get_var(nc_file, "blue_ice_thickness", reference="surface")
+ln_plus2C <- get_var("sims/plus2/output/output.nc", "lake_number", reference="surface")
+temp_plus2C <- get_var("sims/plus2/output/output.nc", "temp", reference="surface")
+surf_temp_plus2C <- get_var("sims/plus2/output/output.nc", "surface_temp", reference="surface")
+min_temp_plus2C <- get_var("sims/plus2/output/output.nc", "min_temp", reference="surface")
+max_temp_plus2C <- get_var("sims/plus2/output/output.nc", "max_temp", reference="surface")
+albedo_plus2C <- get_var("sims/plus2/output/output.nc", "albedo", reference="surface")
+snow_dens_plus2C <- get_var("sims/plus2/output/output.nc", "snow_density", reference="surface")
+lake_level_plus2C <- get_var("sims/plus2/output/output.nc", "lake_level", reference="surface")
+rain_plus2C <- get_var("sims/plus2/output/output.nc", "rain", reference="surface")
+evap_plus2C <- get_var("sims/plus2/output/output.nc", "evaporation", reference="surface")
+sa_plus2C <-  get_var("sims/plus2/output/output.nc", "surface_area", reference="surface")
+lake_vol_plus2C <-  get_var("sims/plus2/output/output.nc", "lake_volume", reference="surface")
+wind_plus2C <-  get_var("sims/plus2/output/output.nc", "wind", reference="surface")
+solar_plus2C <-  get_var("sims/plus2/output/output.nc", "solar", reference="surface")
+precip_plus2C <-  get_var("sims/plus2/output/output.nc", "precipitation", reference="surface")
+white_ice_thick_plus2C <-  get_var("sims/plus2/output/output.nc", "white_ice_thickness", reference="surface")
+blue_ice_thick_plus2C <-  get_var("sims/plus2/output/output.nc", "blue_ice_thickness", reference="surface")
 
 #plus 3C
-ln_plus3C <- get_var(nc_file, "lake_number", reference="surface")
-temp_plus3C <- get_var(nc_file, "temp", reference="surface")
-surf_temp_plus3C <- get_var(nc_file, "surface_temp", reference="surface")
-min_temp_plus3C <- get_var(nc_file, "min_temp", reference="surface")
-max_temp_plus3C <- get_var(nc_file, "max_temp", reference="surface")
-albedo_plus3C <- get_var(nc_file, "albedo", reference="surface")
-snow_dens_plus3C <- get_var(nc_file, "snow_density", reference="surface")
-lake_level_plus3C <- get_var(nc_file, "lake_level", reference="surface")
-rain_plus3C <- get_var(nc_file, "rain", reference="surface")
-evap_plus3C <- get_var(nc_file, "evaporation", reference="surface")
-sa_plus3C <-  get_var(nc_file, "surface_area", reference="surface")
-lake_vol_plus3C <-  get_var(nc_file, "lake_volume", reference="surface")
-wind_plus3C <-  get_var(nc_file, "wind", reference="surface")
-solar_plus3C <-  get_var(nc_file, "solar", reference="surface")
-precip_plus3C <-  get_var(nc_file, "precipitation", reference="surface")
-white_ice_thick_plus3C <-  get_var(nc_file, "white_ice_thickness", reference="surface")
-blue_ice_thick_plus3C <-  get_var(nc_file, "blue_ice_thickness", reference="surface")
+ln_plus3C <- get_var("sims/plus3/output/output.nc", "lake_number", reference="surface")
+temp_plus3C <- get_var("sims/plus3/output/output.nc", "temp", reference="surface")
+surf_temp_plus3C <- get_var("sims/plus3/output/output.nc", "surface_temp", reference="surface")
+min_temp_plus3C <- get_var("sims/plus3/output/output.nc", "min_temp", reference="surface")
+max_temp_plus3C <- get_var("sims/plus3/output/output.nc", "max_temp", reference="surface")
+albedo_plus3C <- get_var("sims/plus3/output/output.nc", "albedo", reference="surface")
+snow_dens_plus3C <- get_var("sims/plus3/output/output.nc", "snow_density", reference="surface")
+lake_level_plus3C <- get_var("sims/plus3/output/output.nc", "lake_level", reference="surface")
+rain_plus3C <- get_var("sims/plus3/output/output.nc", "rain", reference="surface")
+evap_plus3C <- get_var("sims/plus3/output/output.nc", "evaporation", reference="surface")
+sa_plus3C <-  get_var("sims/plus3/output/output.nc", "surface_area", reference="surface")
+lake_vol_plus3C <-  get_var("sims/plus3/output/output.nc", "lake_volume", reference="surface")
+wind_plus3C <-  get_var("sims/plus3/output/output.nc", "wind", reference="surface")
+solar_plus3C <-  get_var("sims/plus3/output/output.nc", "solar", reference="surface")
+precip_plus3C <-  get_var("sims/plus3/output/output.nc", "precipitation", reference="surface")
+white_ice_thick_plus3C <-  get_var("sims/plus3/output/output.nc", "white_ice_thickness", reference="surface")
+blue_ice_thick_plus3C <-  get_var("sims/plus3/output/output.nc", "blue_ice_thickness", reference="surface")
 
 #plus 5C
-ln_plus5C <- get_var(nc_file, "lake_number", reference="surface")
-temp_plus5C <- get_var(nc_file, "temp", reference="surface")
-surf_temp_plus5C <- get_var(nc_file, "surface_temp", reference="surface")
-min_temp_plus5C <- get_var(nc_file, "min_temp", reference="surface")
-max_temp_plus5C <- get_var(nc_file, "max_temp", reference="surface")
-albedo_plus5C <- get_var(nc_file, "albedo", reference="surface")
-snow_dens_plus5C <- get_var(nc_file, "snow_density", reference="surface")
-lake_level_plus5C <- get_var(nc_file, "lake_level", reference="surface")
-rain_plus5C <- get_var(nc_file, "rain", reference="surface")
-evap_plus5C <- get_var(nc_file, "evaporation", reference="surface")
-sa_plus5C <-  get_var(nc_file, "surface_area", reference="surface")
-lake_vol_plus5C <-  get_var(nc_file, "lake_volume", reference="surface")
-wind_plus5C <-  get_var(nc_file, "wind", reference="surface")
-solar_plus5C <-  get_var(nc_file, "solar", reference="surface")
-precip_plus5C <-  get_var(nc_file, "precipitation", reference="surface")
-white_ice_thick_plus5C <-  get_var(nc_file, "white_ice_thickness", reference="surface")
-blue_ice_thick_plus5C <-  get_var(nc_file, "blue_ice_thickness", reference="surface")
+ln_plus5C <- get_var("sims/plus5/output/output.nc", "lake_number", reference="surface")
+temp_plus5C <- get_var("sims/plus5/output/output.nc", "temp", reference="surface")
+surf_temp_plus5C <- get_var("sims/plus5/output/output.nc", "surface_temp", reference="surface")
+min_temp_plus5C <- get_var("sims/plus5/output/output.nc", "min_temp", reference="surface")
+max_temp_plus5C <- get_var("sims/plus5/output/output.nc", "max_temp", reference="surface")
+albedo_plus5C <- get_var("sims/plus5/output/output.nc", "albedo", reference="surface")
+snow_dens_plus5C <- get_var("sims/plus5/output/output.nc", "snow_density", reference="surface")
+lake_level_plus5C <- get_var("sims/plus5/output/output.nc", "lake_level", reference="surface")
+rain_plus5C <- get_var("sims/plus5/output/output.nc", "rain", reference="surface")
+evap_plus5C <- get_var("sims/plus5/output/output.nc", "evaporation", reference="surface")
+sa_plus5C <-  get_var("sims/plus5/output/output.nc", "surface_area", reference="surface")
+lake_vol_plus5C <-  get_var("sims/plus5/output/output.nc", "lake_volume", reference="surface")
+wind_plus5C <-  get_var("sims/plus5/output/output.nc", "wind", reference="surface")
+solar_plus5C <-  get_var("sims/plus5/output/output.nc", "solar", reference="surface")
+precip_plus5C <-  get_var("sims/plus5/output/output.nc", "precipitation", reference="surface")
+white_ice_thick_plus5C <-  get_var("sims/plus5/output/output.nc", "white_ice_thickness", reference="surface")
+blue_ice_thick_plus5C <-  get_var("sims/plus5/output/output.nc", "blue_ice_thickness", reference="surface")
 
 #plots
-plot(ln$DateTime, ln$lake_number, type = "l", ylim = c(0, 10000))
+plot(ln$DateTime, ln$lake_number, type = "l")
 points(ln_plus1C$DateTime, ln_plus1C$lake_number, col="#5B8E7D", type="l")
 points(ln_plus2C$DateTime, ln_plus2C$lake_number, col="#F4E285", type="l")
 points(ln_plus3C$DateTime, ln_plus3C$lake_number, col="#F4A259", type="l")
@@ -140,11 +109,11 @@ legend("topleft", legend=c("plus1C", "plus2C","plus3C","plus5C"),
        col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
        lty=1, cex=0.8, bty='n', horiz=T)
 
-plot(surf_temp$DateTime, surf_temp$avg_surf_temp, type = "l")
-points(surf_temp_plus1C$DateTime, surf_temp_plus1C$avg_surf_temp, col="#5B8E7D", type="l")
-points(surf_temp_plus2C$DateTime, surf_temp_plus2C$avg_surf_temp, col="#F4E285", type="l")
-points(surf_temp_plus3C$DateTime, surf_temp_plus3C$avg_surf_temp, col="#F4A259", type="l")
-points(surf_temp_plus5C$DateTime, surf_temp_plus5C$avg_surf_temp, col="#BC4B51", type="l")
+plot(surf_temp$DateTime, surf_temp$surface_temp, type = "l")
+points(surf_temp_plus1C$DateTime, surf_temp_plus1C$surface_temp, col="#5B8E7D", type="l")
+points(surf_temp_plus2C$DateTime, surf_temp_plus2C$surface_temp, col="#F4E285", type="l")
+points(surf_temp_plus3C$DateTime, surf_temp_plus3C$surface_temp, col="#F4A259", type="l")
+points(surf_temp_plus5C$DateTime, surf_temp_plus5C$surface_temp, col="#BC4B51", type="l")
 legend("topleft", legend=c("plus1C", "plus2C","plus3C","plus5C"),
        col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
        lty=1, cex=0.8, bty='n', horiz=T)
@@ -205,140 +174,41 @@ legend("topleft", legend=c("plus1C", "plus2C","plus3C","plus5C"),
 
 #-----------------------------------------------------------------------------#
 #plotting vars in lake.csv file
-norm_out <- read.csv("output/lake.csv") |> mutate(DateTime = as.Date(time))
-plus1C_out <- read.csv("output/lake.csv") |> mutate(DateTime = as.Date(time))
-plus2C_out <- read.csv("output/lake.csv") |> mutate(DateTime = as.Date(time))
-plus3C_out <- read.csv("output/lake.csv") |> mutate(DateTime = as.Date(time))
-plus5C_out <- read.csv("output/lake.csv") |> mutate(DateTime = as.Date(time))
+baseline <- read.csv("sims/baseline/output/lake.csv") |> mutate(DateTime = as.Date(time))
+plus1C <- read.csv("sims/plus1/output/lake.csv") |> mutate(DateTime = as.Date(time))
+plus2C <- read.csv("sims/plus2/output/lake.csv") |> mutate(DateTime = as.Date(time))
+plus3C <- read.csv("sims/plus3/output/lake.csv") |> mutate(DateTime = as.Date(time))
+plus5C <- read.csv("sims/plus5/output/lake.csv") |> mutate(DateTime = as.Date(time))
 
 #plot various vars
-jpeg('figures/lakenum_scenarios.jpg',width=5, height=4, units="in", res=500)
-plot(norm_out$DateTime, norm_out$LakeNumber, type = "l", ylim = c(0,10000))
-points(plus1C_out$DateTime, plus1C_out$LakeNumber, col="#5B8E7D", type="l")
-points(plus2C_out$DateTime, plus2C_out$LakeNumber, col="#F4E285", type="l")
-points(plus3C_out$DateTime, plus3C_out$LakeNumber, col="#F4A259", type="l")
-points(plus5C_out$DateTime, plus5C_out$LakeNumber, col="#BC4B51", type="l")
-legend("topleft", legend=c("plus1C", "plus2C","plus3C","plus5C"),
-       col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
-       lty=1, cex=0.8, bty='n', horiz=T)
-dev.off() #way more mixing in +2 and 5C scenarios...
-
-jpeg('figures/wave_period_scenarios.jpg',width=5, height=4, units="in", res=500)
-plot(norm_out$DateTime, norm_out$Surface.Wave.Period, type = "l")
-points(plus1C_out$DateTime, plus1C_out$Surface.Wave.Period, col="#5B8E7D", type="l")
-points(plus2C_out$DateTime, plus2C_out$Surface.Wave.Period, col="#F4E285", type="l")
-points(plus3C_out$DateTime, plus3C_out$Surface.Wave.Period, col="#F4A259", type="l")
-points(plus5C_out$DateTime, plus5C_out$Surface.Wave.Period, col="#BC4B51", type="l")
-legend("top", legend=c("plus1C", "plus2C","plus3C","plus5C"),
-       col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
-       lty=1, cex=0.8, bty='n', horiz=T)
-dev.off()
-
 jpeg('figures/surf_temp_scenarios.jpg',width=5, height=4, units="in", res=500)
-plot(norm_out$DateTime, norm_out$Surface.Temp, type = "l")
-points(plus1C_out$DateTime, plus1C_out$Surface.Temp, col="#5B8E7D", type="l")
-points(plus2C_out$DateTime, plus2C_out$Surface.Temp, col="#F4E285", type="l")
-points(plus3C_out$DateTime, plus3C_out$Surface.Temp, col="#F4A259", type="l")
-points(plus5C_out$DateTime, plus5C_out$Surface.Temp, col="#BC4B51", type="l")
+plot(baseline$DateTime, baseline$Surface.Temp, type = "l")
+points(plus1C$DateTime, plus1C$Surface.Temp, col="#5B8E7D", type="l")
+points(plus2C$DateTime, plus2C$Surface.Temp, col="#F4E285", type="l")
+points(plus3C$DateTime, plus3C$Surface.Temp, col="#F4A259", type="l")
+points(plus5C$DateTime, plus5C$Surface.Temp, col="#BC4B51", type="l")
 legend("bottom", legend=c("plus1C", "plus2C","plus3C","plus5C"),
-       col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
-       lty=1, cex=0.8, bty='n', horiz=T)
-dev.off()
-
-jpeg('figures/min_temp_scenarios.jpg',width=5, height=4, units="in", res=500)
-plot(norm_out$DateTime, norm_out$Min.Temp, type = "l")
-points(plus1C_out$DateTime, plus1C_out$Min.Temp, col="#5B8E7D", type="l")
-points(plus2C_out$DateTime, plus2C_out$Min.Temp, col="#F4E285", type="l")
-points(plus3C_out$DateTime, plus3C_out$Min.Temp, col="#F4A259", type="l")
-points(plus5C_out$DateTime, plus5C_out$Min.Temp, col="#BC4B51", type="l")
-legend("bottom", legend=c("plus1C", "plus2C","plus3C","plus5C"),
-       col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
-       lty=1, cex=0.8, bty='n', horiz=T)
-dev.off()
-
-jpeg('figures/albedo_scenarios.jpg',width=5, height=4, units="in", res=500)
-plot(norm_out$DateTime, norm_out$Albedo, type = "l")
-points(plus1C_out$DateTime, plus1C_out$Albedo, col="#5B8E7D", type="l")
-points(plus2C_out$DateTime, plus2C_out$Albedo, col="#F4E285", type="l")
-points(plus3C_out$DateTime, plus3C_out$Albedo, col="#F4A259", type="l")
-points(plus5C_out$DateTime, plus5C_out$Albedo, col="#BC4B51", type="l")
-legend("top", legend=c("plus1C", "plus2C","plus3C","plus5C"),
-       col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
-       lty=1, cex=0.8, bty='n', horiz=T)
-dev.off()
-
-jpeg('figures/blueice_scenarios.jpg',width=5, height=4, units="in", res=500)
-plot(norm_out$DateTime, norm_out$Blue.Ice.Thickness, type = "l", ylim = c(0,2))
-points(plus1C_out$DateTime, plus1C_out$Blue.Ice.Thickness, col="#5B8E7D", type="l")
-points(plus2C_out$DateTime, plus2C_out$Blue.Ice.Thickness, col="#F4E285", type="l")
-points(plus3C_out$DateTime, plus3C_out$Blue.Ice.Thickness, col="#F4A259", type="l")
-points(plus5C_out$DateTime, plus5C_out$Blue.Ice.Thickness, col="#BC4B51", type="l")
-legend("top", legend=c("plus1C", "plus2C","plus3C","plus5C"),
-       col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
-       lty=1, cex=0.8, bty='n', horiz=T)
-dev.off()
-
-jpeg('figures/snow_dens_scenarios.jpg',width=5, height=4, units="in", res=500)
-plot(norm_out$DateTime, norm_out$Snow.Density, type = "l")
-points(plus1C_out$DateTime, plus1C_out$Snow.Density, col="#5B8E7D", type="l")
-points(plus2C_out$DateTime, plus2C_out$Snow.Density, col="#F4E285", type="l")
-points(plus3C_out$DateTime, plus3C_out$Snow.Density, col="#F4A259", type="l")
-points(plus5C_out$DateTime, plus5C_out$Snow.Density, col="#BC4B51", type="l")
-legend("top", legend=c("plus1C", "plus2C","plus3C","plus5C"),
        col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
        lty=1, cex=0.8, bty='n', horiz=T)
 dev.off()
 
 jpeg('figures/sa_scenarios.jpg',width=5, height=4, units="in", res=500)
-plot(norm_out$DateTime, norm_out$Surface.Area, type = "l", ylim = c(250000,400000))
-points(plus1C_out$DateTime, plus1C_out$Surface.Area, col="#5B8E7D", type="l")
-points(plus2C_out$DateTime, plus2C_out$Surface.Area, col="#F4E285", type="l")
-points(plus3C_out$DateTime, plus3C_out$Surface.Area, col="#F4A259", type="l")
-points(plus5C_out$DateTime, plus5C_out$Surface.Area, col="#BC4B51", type="l")
+plot(baseline$DateTime, baseline$Surface.Area, type = "l", ylim = c(250000,400000))
+points(plus1C$DateTime, plus1C$Surface.Area, col="#5B8E7D", type="l")
+points(plus2C$DateTime, plus2C$Surface.Area, col="#F4E285", type="l")
+points(plus3C$DateTime, plus3C$Surface.Area, col="#F4A259", type="l")
+points(plus5C$DateTime, plus5C$Surface.Area, col="#BC4B51", type="l")
 legend("topleft", legend=c("plus1C", "plus2C","plus3C","plus5C"),
        col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
-       lty=1, cex=0.8, bty='n')
+       lty=1, cex=0.8, bty='n', horiz = T)
 dev.off()
 
 jpeg('figures/depth_scenarios.jpg',width=5, height=4, units="in", res=500)
-plot(norm_out$DateTime, norm_out$Lake.Level, type = "l", ylim = c(9, 14))
-points(plus1C_out$DateTime, plus1C_out$Lake.Level, col="#5B8E7D", type="l")
-points(plus2C_out$DateTime, plus2C_out$Lake.Level, col="#F4E285", type="l")
-points(plus3C_out$DateTime, plus3C_out$Lake.Level, col="#F4A259", type="l")
-points(plus5C_out$DateTime, plus5C_out$Lake.Level, col="#BC4B51", type="l")
-legend("bottom", legend=c("plus1C", "plus2C","plus3C","plus5C"),
-       col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
-       lty=1, cex=0.8, bty='n', horiz=T)
-dev.off()
-
-jpeg('figures/rain_scenarios.jpg',width=5, height=4, units="in", res=500)
-plot(norm_out$DateTime, norm_out$Rain, type = "l", ylim = c(0, 100000))
-points(plus1C_out$DateTime, plus1C_out$Rain, col="#5B8E7D", type="l")
-points(plus2C_out$DateTime, plus2C_out$Rain, col="#F4E285", type="l")
-points(plus3C_out$DateTime, plus3C_out$Rain, col="#F4A259", type="l")
-points(plus5C_out$DateTime, plus5C_out$Rain, col="#BC4B51", type="l")
-legend("top", legend=c("plus1C", "plus2C","plus3C","plus5C"),
-       col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
-       lty=1, cex=0.8, bty='n', horiz=T)
-dev.off()
-
-jpeg('figures/evap_scenarios.jpg',width=5, height=4, units="in", res=500)
-plot(norm_out$DateTime, norm_out$Evaporation, type = "l")
-points(plus1C_out$DateTime, plus1C_out$Evaporation, col="#5B8E7D", type="l")
-points(plus2C_out$DateTime, plus2C_out$Evaporation, col="#F4E285", type="l")
-points(plus3C_out$DateTime, plus3C_out$Evaporation, col="#F4A259", type="l")
-points(plus5C_out$DateTime, plus5C_out$Evaporation, col="#BC4B51", type="l")
-legend("bottom", legend=c("plus1C", "plus2C","plus3C","plus5C"),
-       col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
-       lty=1, cex=0.8, bty='n', horiz=T)
-dev.off()
-
-jpeg('figures/overflow_scenarios.jpg',width=5, height=4, units="in", res=500)
-plot(norm_out$DateTime, norm_out$Overflow.Vol, type = "l")
-points(plus1C_out$DateTime, plus1C_out$Overflow.Vol, col="#5B8E7D", type="l")
-points(plus2C_out$DateTime, plus2C_out$Overflow.Vol, col="#F4E285", type="l")
-points(plus3C_out$DateTime, plus3C_out$Overflow.Vol, col="#F4A259", type="l")
-points(plus5C_out$DateTime, plus5C_out$Overflow.Vol, col="#BC4B51", type="l")
+plot(baseline$DateTime, baseline$Lake.Level, type = "l", ylim = c(9, 14))
+points(plus1C$DateTime, plus1C$Lake.Level, col="#5B8E7D", type="l")
+points(plus2C$DateTime, plus2C$Lake.Level, col="#F4E285", type="l")
+points(plus3C$DateTime, plus3C$Lake.Level, col="#F4A259", type="l")
+points(plus5C$DateTime, plus5C$Lake.Level, col="#BC4B51", type="l")
 legend("bottom", legend=c("plus1C", "plus2C","plus3C","plus5C"),
        col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
        lty=1, cex=0.8, bty='n', horiz=T)
@@ -346,23 +216,23 @@ dev.off()
 
 #confirm met precip/other vars do not change!!
 #read in met files
-met <- read.csv("inputs/met.csv") |> 
+met <- read.csv("sims/baseline/inputs/met.csv") |> 
   mutate(time = as.Date(time)) |> 
   group_by(time) |> 
   summarise(across(AirTemp:Snow, ~mean(.x, na.rm=T)))
-met_1C <- read.csv("inputs/met_plus1C.csv") |> 
+met_1C <- read.csv("sims/plus1/inputs/met_plus1.csv") |> 
   mutate(time = as.Date(time)) |> 
   group_by(time) |> 
   summarise(across(AirTemp:Snow, ~mean(.x, na.rm=T)))
-met_2C <- read.csv("inputs/met_plus2C.csv") |> 
+met_2C <- read.csv("sims/plus2/inputs/met_plus2.csv") |> 
   mutate(time = as.Date(time)) |> 
   group_by(time) |> 
   summarise(across(AirTemp:Snow, ~mean(.x, na.rm=T)))
-met_3C <- read.csv("inputs/met_plus3C.csv") |> 
+met_3C <- read.csv("sims/plus3/inputs/met_plus3.csv") |> 
   mutate(time = as.Date(time)) |> 
   group_by(time) |> 
   summarise(across(AirTemp:Snow, ~mean(.x, na.rm=T)))
-met_5C <- read.csv("inputs/met_plus5C.csv") |> 
+met_5C <- read.csv("sims/plus5/inputs/met_plus5.csv") |> 
   mutate(time = as.Date(time)) |> 
   group_by(time) |> 
   summarise(across(AirTemp:Snow, ~mean(.x, na.rm=T)))
