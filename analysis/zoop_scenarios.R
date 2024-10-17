@@ -3,7 +3,7 @@
 
 library(ggplot2)
 
-scenario <- c("baseline","plus1","plus2","plus3","plus5")
+scenario <- c("baseline","plus1", "plus3","plus5")
 
 for (i in 1:length(scenario)){
 
@@ -86,6 +86,15 @@ all_zoops_final <- all_zoops |>
   tidyr::pivot_longer(cols = -c(DateTime), 
                names_pattern = "(...)_(...*)$",
                names_to = c("mod", "taxon")) |> 
+  dplyr::group_by(DateTime) |>
+  dplyr::mutate(daily_sum = sum(value),
+                year = lubridate::year(DateTime),
+                doy = yday(DateTime)) |>
+  dplyr::ungroup() |>
+  dplyr::group_by(year) |>
+  dplyr::mutate(annual_sum = sum(value)) |>
+  dplyr::ungroup() |>
+  dplyr::mutate(annual_prop = (daily_sum / annual_sum) * 100) |>
   na.omit()
 
 #now create a dynamic df name
@@ -149,6 +158,15 @@ for (i in 1:length(scenario)){
     tidyr::pivot_longer(cols = -c(DateTime), 
                         names_pattern = "(...)_(...*)$",
                         names_to = c("mod", "taxon")) |> 
+    dplyr::group_by(DateTime) |>
+    dplyr::mutate(daily_sum = sum(value),
+                  year = lubridate::year(DateTime),
+                  doy = yday(DateTime)) |>
+    dplyr::ungroup() |>
+    dplyr::group_by(year) |>
+    dplyr::mutate(annual_sum = sum(value)) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(annual_prop = (daily_sum / annual_sum) * 100) |>
     na.omit()
   
   #now create a dynamic df name
@@ -212,6 +230,38 @@ ggplot() +
           fill = "white"),
         panel.spacing.y = unit(0, "lines"))
 #ggsave("figures/zoop_scenario_airtemp_1_3_5.jpg", width=6, height=6)
+
+#proportional zoop figs
+ggplot() +
+  geom_line(data=all_zoops_baseline,
+            aes(doy, annual_prop, color = "+0C")) +
+  geom_line(data=all_zoops_plus1,
+            aes(doy, annual_prop, color = "+1C")) +
+  geom_line(data=all_zoops_plus3,
+            aes(doy, annual_prop, color = "+3C")) +
+  geom_line(data=all_zoops_plus5,
+            aes(doy, annual_prop, color = "+5C")) +
+  facet_wrap(~year, scales="free_y", strip.position = "top") + 
+  theme_bw() + xlab("") +
+  scale_color_manual("", values = c("#5B8E7D","#F4E285","#F4A259","#BC4B51"),
+                     breaks = c("+0C","+1C","+3C","+5C")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "black"),
+        legend.background = element_blank(),
+        legend.position = c(0.32,0.98),
+        text = element_text(size=10), 
+        panel.border = element_rect(colour = "black", fill = NA),
+        strip.text.x = element_blank(),
+        strip.background.x = element_blank(),
+        plot.margin = unit(c(0.2, 0.1, 0, 0), "cm"),
+        legend.key = element_rect(fill = "transparent"),
+        legend.direction = "horizontal",
+        panel.spacing.x = unit(0.1, "in"),
+        panel.background = element_rect(
+          fill = "white"),
+        panel.spacing.y = unit(0, "lines"))
+#ggsave("figures/proportional_zoop_scenario_airtemp_1_3_5.jpg", width=6, height=6)
 
 # plot phytos
 ggplot() +
