@@ -248,3 +248,20 @@ legend("bottom", legend=c("plus1C", "plus2C","plus3C","plus5C"),
        col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
        lty=1, cex=0.8, bty='n', horiz=T)
 
+#quick plot of residence time as a check
+outflow<-read.csv("sims/baseline/inputs/BVR_spillway_outflow_2015_2022_metInflow.csv", header=T)
+outflow$time<-as.POSIXct(strptime(outflow$time, "%Y-%m-%d", tz="EST"))
+
+#get WRT
+volume<-glmtools::get_var("sims/baseline/output/output.nc", 
+                          "lake_volume", reference="surface") |> 
+  filter(DateTime < as.POSIXct("2020-12-31")) #in m3
+
+# Calculate WRT from modeled volume and measured outflow
+volume$time<-as.POSIXct(strptime(volume$DateTime, "%Y-%m-%d", tz="EST"))
+wrt<-merge(volume, outflow, by='time')
+wrt$wrt <- ((wrt$lake_volume)/(wrt$FLOW))*(1/60)*(1/60)*(1/24) #residence time in days
+plot(wrt$time,wrt$wrt)
+mean(wrt$wrt)
+median(wrt$wrt)
+

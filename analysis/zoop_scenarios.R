@@ -89,7 +89,7 @@ all_zoops_final <- all_zoops |>
   dplyr::group_by(DateTime) |>
   dplyr::mutate(daily_sum = sum(value),
                 year = lubridate::year(DateTime),
-                doy = yday(DateTime)) |>
+                doy = lubridate::yday(DateTime)) |>
   dplyr::ungroup() |>
   dplyr::group_by(year) |>
   dplyr::mutate(annual_sum = sum(value)) |>
@@ -161,7 +161,7 @@ for (i in 1:length(scenario)){
     dplyr::group_by(DateTime) |>
     dplyr::mutate(daily_sum = sum(value),
                   year = lubridate::year(DateTime),
-                  doy = yday(DateTime)) |>
+                  doy = lubridate::yday(DateTime)) |>
     dplyr::ungroup() |>
     dplyr::group_by(year) |>
     dplyr::mutate(annual_sum = sum(value)) |>
@@ -210,7 +210,7 @@ ggplot() +
   geom_point(data=all_zoops_obs,
              aes(DateTime, value, color="observed")) + 
   facet_wrap(~taxon, scales="free_y", nrow=3, strip.position = "right") + 
-  theme_bw() + xlab("") +
+  theme_bw() + xlab("") + 
   scale_color_manual("", values = c("#5B8E7D","#F4E285","#F4A259","#BC4B51","red"),
                      breaks = c("+0C","+1C","+3C","+5C","observed")) +
   theme(panel.grid.major = element_blank(), 
@@ -242,21 +242,20 @@ ggplot() +
   geom_line(data=all_zoops_plus5,
             aes(doy, annual_prop, color = "+5C")) +
   facet_wrap(~year, scales="free_y", strip.position = "top") + 
-  theme_bw() + xlab("") +
+  ylab("Zooplankton annual proportion") +
+  theme_bw() + xlab("") + guides(color = guide_legend(nrow = 2)) +
   scale_color_manual("", values = c("#5B8E7D","#F4E285","#F4A259","#BC4B51"),
                      breaks = c("+0C","+1C","+3C","+5C")) +
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         axis.line = element_line(colour = "black"),
         legend.background = element_blank(),
-        legend.position = c(0.32,0.98),
+        legend.position = c(0.84,.15),
         text = element_text(size=10), 
         panel.border = element_rect(colour = "black", fill = NA),
-        strip.text.x = element_blank(),
         strip.background.x = element_blank(),
         plot.margin = unit(c(0.2, 0.1, 0, 0), "cm"),
         legend.key = element_rect(fill = "transparent"),
-        legend.direction = "horizontal",
         panel.spacing.x = unit(0.1, "in"),
         panel.background = element_rect(
           fill = "white"),
@@ -294,6 +293,37 @@ ggplot() +
           fill = "white"),
         panel.spacing.y = unit(0, "lines"))
 #ggsave("figures/phytos_scenario_airtemp_1_3_5.jpg", width=6, height=6)
+
+#proportional phytos fig
+ggplot() +
+  geom_line(data=all_phytos_baseline,
+            aes(doy, annual_prop, color = "+0C")) +
+  geom_line(data=all_phytos_plus1,
+            aes(doy, annual_prop, color = "+1C")) +
+  geom_line(data=all_phytos_plus3,
+            aes(doy, annual_prop, color = "+3C")) +
+  geom_line(data=all_phytos_plus5,
+            aes(doy, annual_prop, color = "+5C")) +
+  facet_wrap(~year, scales="free_y", strip.position = "top") + 
+  theme_bw() + xlab("") + guides(color = guide_legend(nrow = 2)) +
+  ylab("Phytoplankton annual proportion") +
+  scale_color_manual("", values = c("#5B8E7D","#F4E285","#F4A259","#BC4B51"),
+                     breaks = c("+0C","+1C","+3C","+5C")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "black"),
+        legend.background = element_blank(),
+        legend.position = c(0.84,.15),
+        text = element_text(size=10), 
+        panel.border = element_rect(colour = "black", fill = NA),
+        strip.background.x = element_blank(),
+        plot.margin = unit(c(0.2, 0.1, 0, 0), "cm"),
+        legend.key = element_rect(fill = "transparent"),
+        panel.spacing.x = unit(0.1, "in"),
+        panel.background = element_rect(
+          fill = "white"),
+        panel.spacing.y = unit(0, "lines"))
+#ggsave("figures/proportional_phyto_scenario_airtemp_1_3_5.jpg", width=6, height=6)
 
 # plot chla
 ggplot() +
