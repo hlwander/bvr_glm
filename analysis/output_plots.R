@@ -175,78 +175,55 @@ pacman::p_load(tidyverse,lubridate,ncdf4,glmtools)
 
 #-----------------------------------------------------------------------------#
 #plotting vars in lake.csv file
-baseline <- read.csv("sims/baseline/output/lake.csv") |> mutate(DateTime = as.Date(time))
-plus1C <- read.csv("sims/plus1/output/lake.csv") |> mutate(DateTime = as.Date(time))
-plus2C <- read.csv("sims/plus2/output/lake.csv") |> mutate(DateTime = as.Date(time))
-plus3C <- read.csv("sims/plus3/output/lake.csv") |> mutate(DateTime = as.Date(time))
-plus5C <- read.csv("sims/plus5/output/lake.csv") |> mutate(DateTime = as.Date(time))
+baseline <- read.csv("sims/baseline/output/lake.csv") |> 
+  dplyr::mutate(DateTime = as.Date(time))
+plus1C <- read.csv("sims/plus1/output/lake.csv") |> 
+  dplyr::mutate(DateTime = as.Date(time))
+plus3C <- read.csv("sims/plus3/output/lake.csv") |> 
+  dplyr::mutate(DateTime = as.Date(time))
+plus5C <- read.csv("sims/plus5/output/lake.csv") |> 
+  dplyr::mutate(DateTime = as.Date(time))
 
 #plot various vars
 jpeg('figures/surf_temp_scenarios.jpg',width=5, height=4, units="in", res=500)
 plot(baseline$DateTime, baseline$Surface.Temp, type = "l")
-points(plus1C$DateTime, plus1C$Surface.Temp, col="#5B8E7D", type="l")
-points(plus2C$DateTime, plus2C$Surface.Temp, col="#F4E285", type="l")
+points(plus1C$DateTime, plus1C$Surface.Temp, col="#F4E285", type="l")
 points(plus3C$DateTime, plus3C$Surface.Temp, col="#F4A259", type="l")
 points(plus5C$DateTime, plus5C$Surface.Temp, col="#BC4B51", type="l")
-legend("bottom", legend=c("plus1C", "plus2C","plus3C","plus5C"),
-       col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
+legend("bottom", legend=c("baseline", "plus1C","plus3C","plus5C"),
+       col=c("black", "#F4E285","#F4A259","#BC4B51"), 
        lty=1, cex=0.8, bty='n', horiz=T)
 dev.off()
 
 jpeg('figures/sa_scenarios.jpg',width=5, height=4, units="in", res=500)
 plot(baseline$DateTime, baseline$Surface.Area, type = "l", ylim = c(250000,400000))
-points(plus1C$DateTime, plus1C$Surface.Area, col="#5B8E7D", type="l")
-points(plus2C$DateTime, plus2C$Surface.Area, col="#F4E285", type="l")
+points(plus1C$DateTime, plus1C$Surface.Area, col="#F4E285", type="l")
 points(plus3C$DateTime, plus3C$Surface.Area, col="#F4A259", type="l")
 points(plus5C$DateTime, plus5C$Surface.Area, col="#BC4B51", type="l")
-legend("topleft", legend=c("plus1C", "plus2C","plus3C","plus5C"),
-       col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
+legend("topleft", legend=c("baseline", "plus1C","plus3C","plus5C"),
+       col=c("black", "#F4E285","#F4A259","#BC4B51"), 
        lty=1, cex=0.8, bty='n', horiz = T)
 dev.off()
 
 jpeg('figures/depth_scenarios.jpg',width=5, height=4, units="in", res=500)
 plot(baseline$DateTime, baseline$Lake.Level, type = "l", ylim = c(9, 14))
-points(plus1C$DateTime, plus1C$Lake.Level, col="#5B8E7D", type="l")
-points(plus2C$DateTime, plus2C$Lake.Level, col="#F4E285", type="l")
+points(plus1C$DateTime, plus1C$Lake.Level, col="#F4E285", type="l")
 points(plus3C$DateTime, plus3C$Lake.Level, col="#F4A259", type="l")
 points(plus5C$DateTime, plus5C$Lake.Level, col="#BC4B51", type="l")
-legend("bottom", legend=c("plus1C", "plus2C","plus3C","plus5C"),
-       col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
+legend("bottom", legend=c("baseline", "plus1C","plus3C","plus5C"),
+       col=c("black", "#F4E285","#F4A259","#BC4B51"), 
        lty=1, cex=0.8, bty='n', horiz=T)
 dev.off()
 
-#confirm met precip/other vars do not change!!
-#read in met files
-met <- read.csv("sims/baseline/inputs/met.csv") |> 
-  mutate(time = as.Date(time)) |> 
-  group_by(time) |> 
-  summarise(across(AirTemp:Snow, ~mean(.x, na.rm=T)))
-met_1C <- read.csv("sims/plus1/inputs/met_plus1.csv") |> 
-  mutate(time = as.Date(time)) |> 
-  group_by(time) |> 
-  summarise(across(AirTemp:Snow, ~mean(.x, na.rm=T)))
-met_2C <- read.csv("sims/plus2/inputs/met_plus2.csv") |> 
-  mutate(time = as.Date(time)) |> 
-  group_by(time) |> 
-  summarise(across(AirTemp:Snow, ~mean(.x, na.rm=T)))
-met_3C <- read.csv("sims/plus3/inputs/met_plus3.csv") |> 
-  mutate(time = as.Date(time)) |> 
-  group_by(time) |> 
-  summarise(across(AirTemp:Snow, ~mean(.x, na.rm=T)))
-met_5C <- read.csv("sims/plus5/inputs/met_plus5.csv") |> 
-  mutate(time = as.Date(time)) |> 
-  group_by(time) |> 
-  summarise(across(AirTemp:Snow, ~mean(.x, na.rm=T)))
-
-#plots - all met drivers are the same for each scenario besides air temp
-plot(met$time, met$AirTemp, type = "l")
-points(met_1C$time, met_1C$AirTemp, col="#5B8E7D", type="l")
-points(met_2C$time, met_2C$AirTemp, col="#F4E285", type="l")
-points(met_3C$time, met_3C$AirTemp, col="#F4A259", type="l")
-points(met_5C$time, met_5C$AirTemp, col="#BC4B51", type="l")
-legend("bottom", legend=c("plus1C", "plus2C","plus3C","plus5C"),
-       col=c("#5B8E7D", "#F4E285","#F4A259","#BC4B51"), 
+jpeg('figures/blueice_scenarios.jpg',width=5, height=4, units="in", res=500)
+plot(baseline$DateTime, baseline$Blue.Ice.Thickness, type = "l")
+points(plus1C$DateTime, plus1C$Blue.Ice.Thickness, col="#F4E285", type="l")
+points(plus3C$DateTime, plus3C$Blue.Ice.Thickness, col="#F4A259", type="l")
+points(plus5C$DateTime, plus5C$Blue.Ice.Thickness, col="#BC4B51", type="l")
+legend("top", legend=c("baseline", "plus1C","plus3C","plus5C"),
+       col=c("black", "#F4E285","#F4A259","#BC4B51"), 
        lty=1, cex=0.8, bty='n', horiz=T)
+dev.off()
 
 #quick plot of residence time as a check
 outflow<-read.csv("sims/baseline/inputs/BVR_spillway_outflow_2015_2022_metInflow.csv", header=T)

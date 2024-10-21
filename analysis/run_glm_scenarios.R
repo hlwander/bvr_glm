@@ -29,7 +29,6 @@ for (j in 1:length(scenario_folder_names)){
 # add corresponding degrees C to met Temp_C column for each scenario
 # set temperature increments 
 temp_increments <- c(1,3,5)
-inflow_increments <- c(3.15, 4.65, 6.15)
 
 for (j in 1:length(scenario_folder_names)){
   
@@ -49,8 +48,19 @@ for (j in 1:length(scenario_folder_names)){
                             "/inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.65X_silica_0.2X_nitrate_0.4X_ammonium_1.9X_docr_1.7Xdoc.csv")
   inflow <- read.csv(inflow_filepath)
   
-  # add inflow water temp increments 
-  inflow$TEMP <- inflow$TEMP + inflow_increments[j]
+  # calculate bvr inflow temp based on met air temp
+  # step 1: get daily avg met for entire sim period
+  met_sub <- met |> dplyr::select(time, AirTemp) |>
+    dplyr::mutate(time = as.Date(time)) |>
+    dplyr::group_by(time) |> 
+    dplyr::summarise(mean_airtemp = mean(AirTemp)) |>
+    dplyr::filter(time<= "2022-05-04")
+ 
+  # step 3: calculate fcr water temp using: weir temp = (0.75 * air temp) + 2.4
+  fcr_inflow_temp <- (0.75 * met_sub$mean_airtemp) + 2.4
+  
+  # step 4: calculate bvr inflow temp using: BVR temp = (1.5 * FCR temp) - 9.21
+  inflow$TEMP <- (1.5 * fcr_inflow_temp) - 9.21
   
   # write to file
   new_inflow_filepath <- paste0("./sims/",scenario_folder_names[j],
@@ -87,3 +97,62 @@ for (j in 1:length(scenario_folder_names)){
                   height = 6, width = 8, units = "in")
   
 }
+
+#-------------------------------------------------------------------------#
+#quick plots of inflow temp to make sure above code is doing what I want it to
+inflow_baseline <- read.csv("sims/baseline/inputs/BVR_inflow_2015_2022_allfractions_2poolsDOC_withch4_metInflow_0.65X_silica_0.2X_nitrate_0.4X_ammonium_1.9X_docr_1.7Xdoc.csv")
+inflow_plus1 <- read.csv("sims/plus1/inputs/inflow_plus1.csv")
+inflow_plus3 <- read.csv("sims/plus3/inputs/inflow_plus3.csv")
+inflow_plus5 <- read.csv("sims/plus5/inputs/inflow_plus5.csv")
+
+plot(as.Date(inflow_baseline$time), inflow_baseline$TEMP, ylim = c(-15,40), type="l")
+points(as.Date(inflow_plus1$time), inflow_plus1$TEMP, col = "#F4E285", type="l")
+points(as.Date(inflow_plus3$time), inflow_plus3$TEMP, col = "#F4A259", type="l")
+points(as.Date(inflow_plus5$time), inflow_plus5$TEMP, col = "#BC4B51", type="l")
+legend("top", legend=c("baseline", "plus1C","plus3C","plus5C"),
+       col=c("black", "#F4E285","#F4A259","#BC4B51"), 
+       lty=1, cex=0.8, bty='n', horiz=T)
+max(inflow_plus1$TEMP) # 27.6
+max(inflow_plus3$TEMP) # 29.9
+max(inflow_plus5$TEMP) # 32.1
+
+#now read in met
+met_baseline <- read.csv("sims/baseline/inputs/met.csv") |>
+  dplyr::select(time, AirTemp) |>
+  dplyr::mutate(time = as.Date(time)) |>
+  dplyr::group_by(time) |> 
+  dplyr::summarise(mean_airtemp = mean(AirTemp)) |>
+  dplyr::filter(time<= "2022-05-04")
+
+met_plus1 <- read.csv("sims/plus1/inputs/met_plus1.csv") |>
+  dplyr::select(time, AirTemp) |>
+  dplyr::mutate(time = as.Date(time)) |>
+  dplyr::group_by(time) |> 
+  dplyr::summarise(mean_airtemp = mean(AirTemp)) |>
+  dplyr::filter(time<= "2022-05-04")
+
+met_plus3 <- read.csv("sims/plus3/inputs/met_plus3.csv") |>
+  dplyr::select(time, AirTemp) |>
+  dplyr::mutate(time = as.Date(time)) |>
+  dplyr::group_by(time) |> 
+  dplyr::summarise(mean_airtemp = mean(AirTemp)) |>
+  dplyr::filter(time<= "2022-05-04")
+
+met_plus5 <- read.csv("sims/plus5/inputs/met_plus5.csv") |>
+  dplyr::select(time, AirTemp) |>
+  dplyr::mutate(time = as.Date(time)) |>
+  dplyr::group_by(time) |> 
+  dplyr::summarise(mean_airtemp = mean(AirTemp)) |>
+  dplyr::filter(time<= "2022-05-04")
+
+plot(as.Date(met_baseline$time), met_baseline$mean_airtemp, ylim = c(-15,40), type="l")
+points(as.Date(met_plus1$time), met_plus1$mean_airtemp, col = "#F4E285", type="l")
+points(as.Date(met_plus3$time), met_plus3$mean_airtemp, col = "#F4A259", type="l")
+points(as.Date(met_plus5$time), met_plus5$mean_airtemp, col = "#BC4B51", type="l")
+legend("top", legend=c("baseline", "plus1C","plus3C","plus5C"),
+       col=c("black", "#F4E285","#F4A259","#BC4B51"), 
+       lty=1, cex=0.8, bty='n', horiz=T)
+
+max(met_plus1$mean_airtemp) # 29.5
+max(met_plus3$mean_airtemp) # 31.5
+max(met_plus5$mean_airtemp) # 33.5
