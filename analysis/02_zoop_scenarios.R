@@ -2,7 +2,6 @@
 # Written by Heather Wander
 # 22 August 2024
 
-devtools::install_github("eliocamp/tagger")
 pacman::p_load(ggplot2,ggridges,dplyr, ARTool, scales, NatParksPalettes,
                FSA, egg, tagger, stringr, cowplot)
 
@@ -168,61 +167,106 @@ box <- ggplot(data = subset(mean_proportions,
 
 p <- egg::ggarrange(area,box, nrow=1, widths = c(2,1))
 #ggsave("figures/BVR_relative_zoop_scenarios.jpg", p, width=5, height=2) 
+
+zoop_scenarios$scenario <- factor(str_to_title(zoop_scenarios$scenario), 
+                        levels = str_to_title(c("baseline", "plus1", "plus5", "plus10")))
+
+# relative zoop biomass for all scenarios
+ggplot(data = subset(zoop_scenarios, !taxon %in% c("total")),
+                aes(x=DateTime, y = value, color=taxon)) +
+  geom_area(aes(fill = taxon, color=taxon),
+            position = "fill", 
+            stat = "identity") +
+  facet_wrap(~scenario, scales = "free_x") +
+  scale_color_manual(values = c("#084c61","#db504a","#e3b505"))+
+  scale_fill_manual(values = c("#084c61","#db504a","#e3b505"),
+                    labels = c("Cladoceran","Copepod","Rotifer"))+
+  scale_x_date(expand = c(0,0), 
+               breaks = as.Date(c("2016-01-01", "2018-01-01", "2020-01-01", "2022-01-01")),
+               date_labels = '%Y') +
+  scale_y_continuous(expand = c(0,0))+
+  xlab("") + ylab("Relative biomass") +
+  guides(color= "none",
+         fill = guide_legend(ncol=3)) +
+  theme(tagger.panel.tag.text = element_text(color ="white", size=8),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "black"),
+        legend.key = element_blank(),
+        legend.background = element_blank(),
+        legend.position = "top",
+        legend.title = element_blank(),
+        text = element_text(size=9), 
+        panel.border = element_rect(colour = "black", fill = NA),
+        strip.text.x = element_text(face = "bold",hjust = 0),
+        strip.background = element_blank(),
+        axis.title.y = element_text(size = 10),
+        plot.margin = unit(c(0, 1, 0, 0), "cm"),
+        legend.box.margin = margin(0,-10,-10,-10),
+        legend.margin=margin(0,0,0,0),
+        panel.spacing.x = unit(0.1, "in"),
+        panel.background = element_rect(
+          fill = "white"),
+        panel.spacing = unit(0.5, "lines"))
+#ggsave("figures/BVR_relative_zoop_all_scenarios.jpg", width=5, height=4) 
+
   
 # numbers for results text
 mean(zoop_scenarios$value[zoop_scenarios$taxon=="total" & 
-                            zoop_scenarios$scenario=="baseline"])
+                            zoop_scenarios$scenario=="Baseline"])
 sd(zoop_scenarios$value[zoop_scenarios$taxon=="total" & 
-                               zoop_scenarios$scenario=="baseline"])
+                               zoop_scenarios$scenario=="Baseline"])
 mean(zoop_scenarios$value[zoop_scenarios$taxon=="total" & 
-                            zoop_scenarios$scenario=="plus1"])
+                            zoop_scenarios$scenario=="Plus1"])
 sd(zoop_scenarios$value[zoop_scenarios$taxon=="total" & 
-                          zoop_scenarios$scenario=="plus1"])
+                          zoop_scenarios$scenario=="Plus1"])
 mean(zoop_scenarios$value[zoop_scenarios$taxon=="total" & 
-                            zoop_scenarios$scenario=="plus5"])
+                            zoop_scenarios$scenario=="Plus5"])
 sd(zoop_scenarios$value[zoop_scenarios$taxon=="total" & 
-                            zoop_scenarios$scenario=="plus5"])
+                            zoop_scenarios$scenario=="Plus5"])
 mean(zoop_scenarios$value[zoop_scenarios$taxon=="total" & 
-                            zoop_scenarios$scenario=="plus10"])
+                            zoop_scenarios$scenario=="Plus10"])
 sd(zoop_scenarios$value[zoop_scenarios$taxon=="total" & 
-                          zoop_scenarios$scenario=="plus10"])
+                          zoop_scenarios$scenario=="Plus10"])
 
 mean(zoop_scenarios$value[zoop_scenarios$taxon=="cladoceran" & 
-                            zoop_scenarios$scenario=="baseline"])
+                            zoop_scenarios$scenario=="Baseline"])
 sd(zoop_scenarios$value[zoop_scenarios$taxon=="cladoceran" & 
-                          zoop_scenarios$scenario=="baseline"])
+                          zoop_scenarios$scenario=="Baseline"])
 
 mean(zoop_scenarios$value[zoop_scenarios$taxon=="copepod" & 
-                            zoop_scenarios$scenario=="baseline"])
+                            zoop_scenarios$scenario=="Baseline"])
 sd(zoop_scenarios$value[zoop_scenarios$taxon=="copepod" & 
-                          zoop_scenarios$scenario=="baseline"])
+                          zoop_scenarios$scenario=="Baseline"])
 
 mean(zoop_scenarios$value[zoop_scenarios$taxon=="rotifer" & 
-                            zoop_scenarios$scenario=="baseline"])
+                            zoop_scenarios$scenario=="Baseline"])
 sd(zoop_scenarios$value[zoop_scenarios$taxon=="rotifer" & 
-                          zoop_scenarios$scenario=="baseline"])
+                          zoop_scenarios$scenario=="Baseline"])
 
 mean(mean_proportions$mean_proportion[mean_proportions$taxon=="cladoceran" &
-                                        mean_proportions$scenario=="plus5"]) -
+                                        mean_proportions$scenario=="Plus5"]) -
 mean(mean_proportions$mean_proportion[mean_proportions$taxon=="cladoceran" &
-                                        mean_proportions$scenario=="baseline"])
+                                        mean_proportions$scenario=="Baseline"])
 
 mean(mean_proportions$mean_proportion[mean_proportions$taxon=="copepod" &
-                                        mean_proportions$scenario=="plus5"]) -
+                                        mean_proportions$scenario=="Plus5"]) -
 mean(mean_proportions$mean_proportion[mean_proportions$taxon=="copepod" &
-                                        mean_proportions$scenario=="baseline"])
+                                        mean_proportions$scenario=="Baseline"])
 
 mean(mean_proportions$mean_proportion[mean_proportions$taxon=="copepod" &
-                                        mean_proportions$scenario=="plus5"])
+                                        mean_proportions$scenario=="Plus5"])
 
 mean(mean_proportions$mean_proportion[mean_proportions$taxon=="rotifer" &
-                                        mean_proportions$scenario=="plus5"]) -
+                                        mean_proportions$scenario=="Plus5"]) -
 mean(mean_proportions$mean_proportion[mean_proportions$taxon=="rotifer" &
-                                        mean_proportions$scenario=="baseline"])
+                                        mean_proportions$scenario=="Baseline"])
 
 #list of proportions for high and low taxon biomass
 mean(mean_proportions$mean_proportion[mean_proportions$taxon=="cladoceran" &
                                         mean_proportions$scenario=="baseline"])
+mean(mean_proportions$mean_proportion[mean_proportions$taxon=="cladoceran" &
+                                        mean_proportions$scenario=="plus5"])
 mean(mean_proportions$mean_proportion[mean_proportions$taxon=="cladoceran" &
                                         mean_proportions$scenario=="plus10"])
 
@@ -284,7 +328,7 @@ ggplot(data=subset(zoop_annual, !taxon %in% "total" &
     group_by(taxon, scenario, month) |>
     summarise(monthly_biom = mean(value), .groups = "drop") |>
     ggplot(aes(x = factor(month), y = monthly_biom, color = factor(
-      scenario, levels = c("baseline", "plus1", "plus5", "plus10")),
+      scenario, levels = c("Baseline", "Plus1", "Plus5", "Plus10")),
       group = interaction(taxon, scenario))) + 
     geom_smooth(method = "loess") +
     facet_wrap(~taxon, nrow=1)+ 
@@ -292,7 +336,7 @@ ggplot(data=subset(zoop_annual, !taxon %in% "total" &
                                 "","Sep", "","Nov","")) +
     ylab(expression("Biomass (mg C L"^{-1}*")")) + xlab("") +
     scale_color_manual("", values = c("#147582", "#c6a000", "#c85b00", "#680000"),
-                       breaks = c("baseline", "plus1", "plus5", "plus10")) +
+                       breaks = c("Baseline", "Plus1", "Plus5", "Plus10")) +
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
           axis.line = element_line(colour = "black"),
@@ -335,7 +379,7 @@ ggplot(data=subset(zoop_annual, !taxon %in% "total" &
     filter(year %in% c(2016:2021)) |>
     summarise(monthly_biom = mean(value), .groups = "drop") |>
     ggplot(aes(x = factor(month), y = monthly_biom, 
-      color = factor(scenario, levels = c("baseline", "plus1", "plus5", "plus10")),
+      color = factor(scenario, levels = c("Baseline", "Plus1", "Plus5", "Plus10")),
       group = interaction(taxon, scenario))) + 
     geom_smooth(method = "loess") +
     facet_grid(str_to_title(taxon) ~ year, scales = "free_y") +
@@ -343,7 +387,6 @@ ggplot(data=subset(zoop_annual, !taxon %in% "total" &
     ylab(expression("Biomass (mg C L"^{-1}*")")) + xlab("") +
     scale_color_manual( "", 
       values = c("#147582", "#c6a000", "#c85b00", "#680000"),
-      breaks = c("baseline", "plus1", "plus5", "plus10"),
       labels = c("Baseline","Plus1","Plus5","Plus10")) +
     theme(
       panel.grid.major = element_blank(), 
