@@ -236,7 +236,7 @@ ggplot() +
 # Combine data from both dataframes
 combined_data <- bind_rows(zoop_pars, zoops_bl)
 
-# Figure S11
+# Figure S12
 ggplot(data = subset(combined_data, !taxon %in% "total"),
        aes(x=DateTime, y = value, color=taxon)) +
   geom_area(aes(color = taxon, fill = taxon),
@@ -324,7 +324,7 @@ mean(mean_proportions_par_sens$mean_proportion[
     mean_proportions_par_sens$scenario=="low"])) *100
 
 
-# smoothed monthly biomass for each scenario (Figure S10)
+# smoothed monthly biomass for each scenario (Figure S11)
 combined_data |>
   filter(year %in% c(2016:2021)) |>
   mutate(month = lubridate::month(DateTime),

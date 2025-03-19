@@ -3,7 +3,7 @@
 # 22 August 2024
 
 pacman::p_load(ggplot2,ggridges,dplyr, ARTool, scales, NatParksPalettes,
-               FSA, egg, tagger, stringr, cowplot)
+               FSA, egg, tagger, stringr, cowplot, tagger)
 
 scenario <- c("baseline","plus1","plus5","plus10")
 
@@ -291,7 +291,7 @@ zoop_annual <- zoop_scenarios |>
   summarize(annual_biomass = sum(value, na.rm = TRUE), .groups = "drop")
 
 ggplot(data=subset(zoop_annual, !taxon %in% "total" &
-                     scenario %in% "baseline" & 
+                     scenario %in% "Baseline" & 
                      year %in% c(2016:2021)),
        aes(x = factor(year), y = annual_biomass, fill = taxon)) +
   geom_col(position = "stack") + 
@@ -372,7 +372,7 @@ ggplot(data=subset(zoop_annual, !taxon %in% "total" &
     ) |> 
     mutate(cv_biom = sd_biom / mean_biom)
   
-#same but panels for each year (Figure S14)
+#same but panels for each year (Figure S15)
   zoop_scenarios |>
     mutate(month = lubridate::month(DateTime)) |>
     group_by(taxon, scenario, month, year) |>
@@ -420,13 +420,13 @@ zoop_mean_biom <-  zoop_scenarios |>
     summarise(mean_biom = mean(mean_biom))  
 
   ggplot(data=zoop_mean_biom, aes(x=factor(
-    scenario,levels=c("baseline","plus1","plus5","plus10")), 
+    scenario,levels=c("Baseline","Plus1","Plus5","Plus10")), 
              y = mean_biom, fill=taxon)) +
     geom_boxplot() + ylim(0,1.27) +
     scale_fill_manual(values = c("#084c61","#db504a","#e3b505"),
                       labels = c("Cladoceran","Copepod","Rotifer"))+
     ylab(expression("Biomass (mg C L"^{-1}*")")) + xlab("") +
-    geom_text(data = subset(zoop_mean_biom, scenario == "plus10" & taxon == "rotifer"),
+    geom_text(data = subset(zoop_mean_biom, scenario == "Plus10" & taxon == "rotifer"),
               aes(x = c(1.24,2.24,3.24,4.24,NA,NA), 
                   y = c(0.7,0.8,1,1,0,0), 
                   label = c("a","a","b","b","","")), 
@@ -507,68 +507,68 @@ zoop_mean_biom <-  zoop_scenarios |>
   )
   
   # numbers for results text (percent change for each taxa between baseline vs. warming scenarios)
-  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="plus10" &
+  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Plus10" &
                                   zoop_mean_biom$taxon=="rotifer"]) - 
-    mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+    mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                     zoop_mean_biom$taxon=="rotifer"])) /
-    mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+    mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                     zoop_mean_biom$taxon=="rotifer"])  *100
   
-  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="plus1" &
+  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Plus1" &
                                    zoop_mean_biom$taxon=="rotifer"]) - 
-      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                       zoop_mean_biom$taxon=="rotifer"])) /
-        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                         zoop_mean_biom$taxon=="rotifer"]) *100
   
-  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="plus5" &
+  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Plus5" &
                                    zoop_mean_biom$taxon=="rotifer"]) - 
-      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                       zoop_mean_biom$taxon=="rotifer"])) /
-        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                         zoop_mean_biom$taxon=="rotifer"]) *100
   
   #clads
-  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="plus10" &
+  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Plus10" &
                                    zoop_mean_biom$taxon=="cladoceran"]) - 
-      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                       zoop_mean_biom$taxon=="cladoceran"])) /
-        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                         zoop_mean_biom$taxon=="cladoceran"]) *100
   
-  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="plus1" &
+  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Plus1" &
                                    zoop_mean_biom$taxon=="cladoceran"]) - 
-      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                       zoop_mean_biom$taxon=="cladoceran"])) /
-        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                         zoop_mean_biom$taxon=="cladoceran"]) *100
   
-  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="plus5" &
+  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Plus5" &
                                    zoop_mean_biom$taxon=="cladoceran"]) - 
-      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                       zoop_mean_biom$taxon=="cladoceran"])) /
-        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                         zoop_mean_biom$taxon=="cladoceran"]) *100 
   #copes
-  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="plus10" &
+  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Plus10" &
                                    zoop_mean_biom$taxon=="copepod"]) - 
-      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                       zoop_mean_biom$taxon=="copepod"])) /
-        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                         zoop_mean_biom$taxon=="copepod"]) *100
   
-  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="plus1" &
+  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Plus1" &
                                    zoop_mean_biom$taxon=="copepod"]) - 
-      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                       zoop_mean_biom$taxon=="copepod"])) /
-        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                         zoop_mean_biom$taxon=="copepod"]) *100
   
-  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="plus5" &
+  (mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Plus5" &
                                    zoop_mean_biom$taxon=="copepod"]) - 
-      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+      mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                       zoop_mean_biom$taxon=="copepod"])) /
-        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="baseline" &
+        mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                         zoop_mean_biom$taxon=="copepod"]) *100 
   
 # mean annual zoop biomass across scenarios (Figure S8)
@@ -577,7 +577,6 @@ ggplot(zoop_mean_biom, aes(x = year, y = mean_biom, color = scenario)) +
   facet_wrap(~str_to_title(taxon), scales="free_y") +
   ylab(expression("Biomass (mg L"^{-1}*")")) + xlab("") +
   scale_color_manual("", values = c("#147582","#c6a000","#c85b00","#680000"),
-                     breaks = c("baseline","plus1","plus5","plus10"),
                      labels = c("Baseline","Plus1","Plus5","Plus10")) +
   theme_bw() +
   theme(panel.grid.major = element_blank(), 
@@ -845,7 +844,7 @@ ggplot(zoop_mean_biom, aes(x = year, y = mean_biom, color = scenario)) +
                           "diatom" = "Diatoms",
                           "green" = "Greens"))
   
-  # Figure S12
+  # Figure S13
   ggplot(data = subset(phyto_mean_biom, year %in% 2016:2021), 
          aes(x = year, y = mean_biom, color = scenario)) +
     geom_point(size=2) + geom_line(size=1) +
@@ -877,7 +876,7 @@ ggplot(zoop_mean_biom, aes(x = year, y = mean_biom, color = scenario)) +
             fill = "white"))
   #ggsave("figures/phyto_annual_biom_scenario_lineplot.jpg", width=7, height=4) 
 
-  # Figure S9
+  # Figure S10
   ggplot(data = subset(phyto_scenarios),
          aes(x=DateTime, y = value, color=taxon)) +
     geom_line() +
@@ -1020,7 +1019,7 @@ zoop_timing <- zoop_scenarios |>
     mean(zoop_timing$mean_doy[zoop_timing$taxon=="rotifer" &
                                 zoop_timing$scenario=="plus1"])
   
-# Create a phyto and zoop PEG model fig (Figure S15)
+# Create a phyto and zoop PEG model fig (Figure S16)
   total_phyto_scenarios <- phyto_scenarios |>
     mutate(DateTime = as.Date(DateTime)) |>
     group_by(DateTime, scenario) |>
