@@ -82,7 +82,7 @@ sd(zoop_scenarios$value[zoop_scenarios$taxon=="rotifer" &
 zoop_scenarios <- zoop_scenarios |>
   mutate(month = lubridate::month(DateTime)) 
 
-# relative zoop density for baseline vs. plus 5 (Figure 6)
+# relative zoop biomass for baseline vs. plus 5 (Figure 6)
 area <-  ggplot(data = subset(zoop_scenarios, 
                               scenario %in% c("baseline","plus5") &
                                 !taxon %in% c("total")),
@@ -124,7 +124,7 @@ area <-  ggplot(data = subset(zoop_scenarios,
           fill = "white"),
         panel.spacing = unit(0.5, "lines"))
   
-# proportion boxplots for each scenario
+# proportion boxplots for each scenario (Figure S9)
 mean_proportions <- zoop_scenarios |>
     group_by(DateTime, scenario) |>
     mutate(proportion = value / value[taxon=="total"]) |>
