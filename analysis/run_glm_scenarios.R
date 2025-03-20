@@ -83,10 +83,12 @@ ggplot(all_scenarios_output, aes(time, Surface.Temp, color=as.factor(scenario)))
 all_scenarios_ice <- reduce(list(baseline, plus1C, plus5C, plus10C), 
                                full_join) |>
   select(time, Vol.Blue.Ice, scenario) |>  
-  mutate(date = as.Date(time)) |>
+  mutate(date = as.Date(time),
+         year = year(time)) |>
   filter(Vol.Blue.Ice > 0) |>
-  group_by(scenario) |>
-  summarise(ice_days = n_distinct(date))
+  group_by(scenario, year) |>
+  summarise(ice_days = n_distinct(date)) |>
+  summarise(mean = mean(ice_days))
 
 # numbers for results text
 mean(all_scenarios_output$Surface.Temp[
