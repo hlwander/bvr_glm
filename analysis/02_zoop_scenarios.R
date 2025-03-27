@@ -414,21 +414,20 @@ ggplot(data=subset(zoop_annual, !taxon %in% "total" &
   
 # scenario boxplots across taxa (Figure 5)
 zoop_mean_biom <-  zoop_scenarios |>
-    filter(!taxon %in% "total",
-           year %in% c(2016:2021)) |>
+    filter(year %in% c(2016:2021)) |>
     group_by(year, taxon, scenario) |>
     summarise(mean_biom = mean(mean_biom))  
 
   ggplot(data=zoop_mean_biom, aes(x=factor(
     scenario,levels=c("Baseline","Plus1","Plus5","Plus10")), 
              y = mean_biom, fill=taxon)) +
-    geom_boxplot() + ylim(0,1.27) +
-    scale_fill_manual(values = c("#084c61","#db504a","#e3b505"),
-                      labels = c("Cladoceran","Copepod","Rotifer"))+
+    geom_boxplot() +
+    scale_fill_manual(values = c("#084c61","#db504a","#e3b505","#ffecd1"),
+                      labels = c("Cladoceran","Copepod","Rotifer","Total"))+
     ylab(expression("Biomass (mg C L"^{-1}*")")) + xlab("") +
     geom_text(data = subset(zoop_mean_biom, scenario == "Plus10" & taxon == "rotifer"),
-              aes(x = c(1.24,2.24,3.24,4.24,NA,NA), 
-                  y = c(0.7,0.8,1,1,0,0), 
+              aes(x = c(1.11,2.11,3.11,4.11,NA,NA), 
+                  y = c(0.7,0.8,1,1.05,0,0), 
                   label = c("a","a","b","b","","")), 
               size = 5, color = "black") +
     theme(panel.grid.major = element_blank(), 
