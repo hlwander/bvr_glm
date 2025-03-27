@@ -284,7 +284,7 @@ mean(mean_proportions$mean_proportion[mean_proportions$taxon=="rotifer" &
 mean(mean_proportions$mean_proportion[mean_proportions$taxon=="rotifer" &
                                         mean_proportions$scenario=="plus10"])
 
-# stacked annual biomass bar chart (Figure S6)
+# stacked annual biomass bar chart (Figure S5)
 zoop_annual <- zoop_scenarios |>
   mutate(year = year(DateTime)) |>
   group_by(year, taxon, scenario) |>
@@ -372,7 +372,7 @@ ggplot(data=subset(zoop_annual, !taxon %in% "total" &
     ) |> 
     mutate(cv_biom = sd_biom / mean_biom)
   
-#same but panels for each year (Figure S15)
+#same but panels for each year (Figure S14)
   zoop_scenarios |>
     mutate(month = lubridate::month(DateTime)) |>
     group_by(taxon, scenario, month, year) |>
@@ -1019,7 +1019,7 @@ zoop_timing <- zoop_scenarios |>
     mean(zoop_timing$mean_doy[zoop_timing$taxon=="rotifer" &
                                 zoop_timing$scenario=="plus1"])
   
-# Create a phyto and zoop PEG model fig (Figure S16)
+# Create a phyto and zoop PEG model fig (Figure S15)
   total_phyto_scenarios <- phyto_scenarios |>
     mutate(DateTime = as.Date(DateTime)) |>
     group_by(DateTime, scenario) |>

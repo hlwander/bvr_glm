@@ -55,7 +55,7 @@ all_scenarios_output <- reduce(list(baseline, plus1C, plus5C,plus10C),
   select(time, Surface.Temp, scenario) |>
   mutate(time = as.POSIXct(time, format = "%Y-%m-%d %H:%M:%S", tz="UTC"))
 
-#plot surf temp (Figure S7)
+#plot surf temp (Figure S6)
 ggplot(all_scenarios_output, aes(time, Surface.Temp, color=as.factor(scenario))) +
   geom_line() + theme_bw() + xlab("") + 
   ylab(expression("Surface temperature ("*degree*C*")")) +
@@ -214,7 +214,7 @@ mean(scenario_dens$stratified_days[scenario_dens$scenario=="plus1"])    # 300
 mean(scenario_dens$stratified_days[scenario_dens$scenario=="plus5"])    # 310
 mean(scenario_dens$stratified_days[scenario_dens$scenario=="plus10"])   # 339
 
-# Figure S3
+# Figure S7
 ggplot(scenario_dens, 
        aes(x = factor(scenario, levels = c("baseline", "plus1", "plus5", "plus10")), 
            y = stratified_days, fill = scenario)) +

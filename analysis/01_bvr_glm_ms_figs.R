@@ -392,7 +392,7 @@ combined_plot <- plot_grid(
 )
 #ggsave("figures/ms_fig2.jpg", width=8, height=6)
 
-# plot vars for 9m (Figure S4)
+# plot vars for 9m (Figure S3)
 ggplot() +
   geom_line(data = subset(mod_vars_final_baseline, Depth %in% 9), 
             aes(DateTime, value, color = "modeled")) +
@@ -595,7 +595,7 @@ sd(mod_vars_bl$value[mod_vars_bl$var=="chla" &
           panel.spacing = unit(0.5, "lines"))
   #ggsave("figures/mod_vars_yearly_summer_0.1m.jpg", width=7, height=4) 
 
-  # Figure S5 boxplots
+  # Figure S4 boxplots
   ggplot(data=subset(mean_summer_mod_vars,Depth==9 & 
                        !year %in% c("2015","2022")),
          aes(x = scenario, y = mean_val,  fill = scenario)) +
