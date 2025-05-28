@@ -296,7 +296,9 @@ ggplot(data=subset(zoop_annual, !taxon %in% "total" &
        aes(x = factor(year), y = annual_biomass, fill = taxon)) +
   geom_col(position = "stack") + 
   facet_wrap(~ str_to_title(scenario)) +       
-  labs(x = "", y = expression("Biomass (mg C L"^{-1}*")"), fill = "") +
+  labs(x = "", #y = expression("Biomass (mg C L"^{-1}*")"), 
+       y = expression(Biomass~(mg~C~L^{-1}~yr^{-1})), 
+       fill = "") +
   scale_fill_manual(values = c("#084c61","#db504a","#e3b505"),
                     labels = c("Cladoceran","Copepod","Rotifer"))+
     theme(panel.grid.major = element_blank(), 
@@ -574,7 +576,7 @@ zoop_mean_biom <-  zoop_scenarios |>
 ggplot(zoop_mean_biom, aes(x = year, y = mean_biom, color = scenario)) +
   geom_point(size=2) + geom_line(size=1) +
   facet_wrap(~str_to_title(taxon), scales="free_y") +
-  ylab(expression("Biomass (mg L"^{-1}*")")) + xlab("") +
+  ylab(expression("Biomass (mg C L"^{-1}*")")) + xlab("") +
   scale_color_manual("", values = c("#147582","#c6a000","#c85b00","#680000"),
                      labels = c("Baseline","Plus1","Plus5","Plus10")) +
   theme_bw() +
@@ -713,7 +715,7 @@ ggplot(zoop_mean_biom, aes(x = year, y = mean_biom, color = scenario)) +
                                         zoop_diags_summary$taxon=="rots" &
                                         zoop_diags_summary$diag=="Respiration"])
   
-  # summary diag fig + phytos for ms (Fig. 9)
+  # summary diag fig + phytos for ms (Figure 9)
   plot1 <- ggplot(data=subset(zoop_diags_summary, 
                               scenario %in% c("Baseline","Plus5")),
                   aes(x = DateTime, y = mean_rate, color = taxon)) +
@@ -848,7 +850,7 @@ ggplot(zoop_mean_biom, aes(x = year, y = mean_biom, color = scenario)) +
          aes(x = year, y = mean_biom, color = scenario)) +
     geom_point(size=2) + geom_line(size=1) +
     facet_wrap(~taxon, scales="free_y") +
-    ylab(expression("Biomass (" * mu * " g L"^{-1}*")")) +
+    ylab(expression("Biomass (" * mu * " g C L"^{-1}*")")) +
     scale_color_manual("", values = c("#147582","#c6a000","#c85b00","#680000"),
                        breaks = c("baseline","plus1","plus5","plus10"),
                        labels = c("Baseline","Plus1","Plus5","Plus10")) +
@@ -886,7 +888,7 @@ ggplot(zoop_mean_biom, aes(x = year, y = mean_biom, color = scenario)) +
                        labels = c("Cyanobacteria","Greens","Diatoms"))+
     scale_fill_manual(values = c("cyan","green","brown4"))+
     scale_x_date(expand = c(0.02,0.02)) +
-    xlab("") + ylab(expression("Biomass (" * mu * " g L"^{-1}*")")) +
+    xlab("") + ylab(expression("Biomass (" * mu * " g C L"^{-1}*")")) +
     guides(color= guide_legend(ncol=3),
            fill = "none") +
     theme(panel.grid.major = element_blank(), 
@@ -1063,7 +1065,7 @@ zoop_timing <- zoop_scenarios |>
                        labels = c("Total phytoplankton", "Total zooplankton")) +
   scale_x_discrete(breaks = 1:12, labels = c("Jan","","Mar","", "May", "", "Jul",
                               "","Sep", "","Nov","")) +
-  ylab(expression("Biomass (" * mu * " g L"^{-1}*")")) + xlab("") +
+  ylab(expression("Biomass (" * mu * " g C L"^{-1}*")")) + xlab("") +
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         axis.line = element_line(colour = "black"),

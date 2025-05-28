@@ -90,13 +90,14 @@ pacman::p_load(dplyr)
 #for (i in 1:length(sens_dirs)){
 #  
 #  nc_file = paste0("sims/spinup/sensitivity_",sens_dirs[i],"/output/output.nc")  
+# nc_file = paste0("sims/spinup/cyano_sens/output/output.nc")  #run this one for the cyano_sens SI figure
 #  
 #  #save zoop output
 #  var="ZOO_cladoceran"
-#  clad_obs<-read.csv('field_data/field_zoops.csv', header=TRUE) |>  
-#    dplyr::mutate(DateTime = as.Date(DateTime)) |> 
-#    dplyr::select(DateTime, var) |> 
-#    na.omit() 
+#clad_obs<-read.csv('field_data/field_zoops.csv', header=TRUE) |>  
+#  dplyr::mutate(DateTime = as.Date(DateTime)) |> 
+#  dplyr::select(DateTime, var) |> 
+#  na.omit() 
 #  
 #  # Function to get zoop data for varying depths
 #  get_zoops <- function(depths, nc_file, var) {
@@ -115,7 +116,7 @@ pacman::p_load(dplyr)
 #  # Define depth range and call the function
 #  depths <- seq(0, 11, by = 0.5)
 #  clad_full_wc <- get_zoops(depths, nc_file, var)
-#  
+  
 #  #sum all depths
 #  clad <- clad_full_wc |> 
 #    dplyr::mutate(ZOO_cladoceran = rowSums(dplyr::across(where(is.numeric)),na.rm=TRUE)) |>
@@ -159,14 +160,14 @@ pacman::p_load(dplyr)
 #    dplyr::group_by(DateTime) |>
 #    dplyr::mutate(ZOO_total = sum(ZOO_cladoceran, ZOO_copepod, ZOO_rotifer)) 
 #  
-#  all_zoops_obs <- purrr::reduce(list(clad_obs, cope_obs, rot_obs), dplyr::full_join) |> 
-#    tidyr::pivot_longer(cols = -c(DateTime), 
-#                        names_pattern = "(...)_(...*)$",
-#                        names_to = c("mod", "taxon")) |> 
-#    na.omit() |> 
-#    dplyr::mutate(DateTime = as.Date(DateTime)) |>
-#    dplyr::mutate(value = value * 12.011 / 1000) |> # convert to mg/L
-#    dplyr::filter(value < 6) # just to make the plot look better
+# all_zoops_obs <- purrr::reduce(list(clad_obs, cope_obs, rot_obs), dplyr::full_join) |> 
+#   tidyr::pivot_longer(cols = -c(DateTime), 
+#                       names_pattern = "(...)_(...*)$",
+#                       names_to = c("mod", "taxon")) |> 
+#   na.omit() |> 
+#   dplyr::mutate(DateTime = as.Date(DateTime)) |>
+#   dplyr::mutate(value = value * 12.011 / 1000) |> # convert to mg/L
+#   dplyr::filter(value < 6) # just to make the plot look better
 #  
 #  #convert from wide to long for plotting
 #  all_zoops_final <- all_zoops |> 
@@ -183,7 +184,8 @@ pacman::p_load(dplyr)
 #    dplyr::mutate(scenario = sens_dirs[i])
 #  
 #  #now create a dynamic df name
-#  assign(paste0("all_zoops_sens_", sens_dirs[i]), all_zoops_final)
+#  assign("all_zoops_sens_cyanos", all_zoops_final) #for cyano sens SI fig
+# assign("all_zoops_sens_",sens_dirs[i], all_zoops_final)
 #}
 #------------------------------------------------------------------------#
 #create a combined zoop df with all scenarios
@@ -365,3 +367,53 @@ combined_data |>
         panel.spacing = unit(0.5, "lines"))
 #ggsave("figures/smoothed_monthly_biom_high_vs_low.jpg", width=7, height=4) 
 
+# code for supplemental figure with clads grazing cyanos w/ 10% preference
+zoop_scenarios <- all_zoops_sens_cyanos |>
+  mutate(DateTime = as.Date(DateTime)) |>
+  filter(DateTime >= "2015-07-07") |>
+  group_by(year, taxon, scenario) |>
+  mutate(mean_biom = mean(value)) |>
+  ungroup() |>
+  mutate(diff = value - mean_biom) 
+
+#summarize across taxa to describe bl zoop timing in results (Figure 3)
+bl_zoop_summary <- zoop_scenarios |>
+  filter(
+    year %in% c(2016:2021)) |>
+  group_by(year, taxon) |>
+  mutate(max_biom_doy = doy[which.max(value)]) |>
+  ungroup() |> group_by(taxon) |>
+  summarise(max_doy = mean(max_biom_doy))
+
+# reorder the 'taxon' factor levels
+facet_labels <- c("Cladoceran", "Copepod", "Rotifer", "Total biomass")
+names(facet_labels) <- c("cladoceran", "copepod", "rotifer","total")
+
+ggplot() +
+  geom_line(data=subset(zoop_scenarios, 
+                        !taxon %in% "total" &
+                          DateTime >= "2015-07-08"),
+            aes(DateTime, value, color=taxon)) + 
+  theme_bw() + xlab("") + ylim(0,4) +
+  ylab(expression("Biomass (mg C L"^{-1}*")")) +
+  scale_color_manual(values = c("#084c61","#db504a","#e3b505"),
+                     breaks = c("cladoceran","copepod","rotifer"),
+                     labels = c("Cladoceran","Copepod","Rotifer"))+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "black"),
+        legend.background = element_blank(),
+        legend.position = c(0.75,0.95),
+        legend.direction = "horizontal",
+        legend.title = element_blank(),
+        text = element_text(size=10), 
+        panel.border = element_rect(colour = "black", fill = NA),
+        strip.background.x = element_blank(),
+        plot.margin = unit(c(0.2, 0.1, 0, 0), "cm"),
+        legend.margin = margin(c(-10,-10,-10,-10)),
+        legend.key = element_rect(fill = "transparent"),
+        panel.spacing.x = unit(0.1, "in"),
+        panel.background = element_rect(
+          fill = "white"),
+        panel.spacing.y = unit(0, "lines"))
+#ggsave("figures/zoop_cyano_sens.jpg", width=6, height=4)

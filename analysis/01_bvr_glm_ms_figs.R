@@ -25,7 +25,7 @@ scenario <- c("baseline","plus1","plus5","plus10")
 #for(i in 1:length(scenario)){
 #  
 #  nc_file = paste0("sims/spinup/",scenario[i],"/output/output.nc")  
-#
+
 ## water level
 #obs_wl <- read_csv("./inputs/BVR_Daily_WaterLevel_Vol_2015_2022_interp.csv") |>
 #  mutate(DateTime = as.POSIXct(strptime(Date, "%Y-%m-%d", tz="EST")),
@@ -43,7 +43,7 @@ scenario <- c("baseline","plus1","plus5","plus10")
 #wl_compare <-mod_wl |>
 #  mutate(obs_wl = obs_wl$WaterLevel_m) |>
 #  select(DateTime,Depth,mod_wl,obs_wl)
-#  
+  
 ## temp
 #obstemp<-read_csv('field_data/CleanedObsTemp.csv') |> 
 #  mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) |>
@@ -57,7 +57,7 @@ scenario <- c("baseline","plus1","plus5","plus10")
 #watertemp<-merge(modtemp, obstemp, by=c("DateTime","Depth")) |> 
 #  rename(mod_temp = temp.x, obs_temp = temp.y)
 #
-## DO
+# DO
 #obs_oxy<-read.csv('field_data/CleanedObsOxy.csv') |> 
 #  select(-OXY_sat) |>
 #  mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST")))|>
@@ -208,7 +208,7 @@ scenario <- c("baseline","plus1","plus5","plus10")
 #         mod_din = sum(mod_no3,mod_nh4),
 #         obs_doc = sum(obs_docl,obs_docr),
 #         mod_doc = sum(mod_docl,mod_docr))
-#  
+  
 #mod_vars <- reduce(list(mod_wl, modtemp, mod_oxy,
 #                        mod_nh4, mod_no3, 
 #                        mod_po4, mod_chla, 
@@ -221,7 +221,7 @@ scenario <- c("baseline","plus1","plus5","plus10")
 #  rename('OGM_docl' = 'OGM_doc') |>
 #  mutate(NIT_din = sum(NIT_amm, NIT_nit),
 #         OGM_doc = sum(OGM_docl,OGM_docr))
-#  
+  
 ##add col for calib vs. valid period (2020-12-31)
 #all_vars$period <- ifelse(all_vars$DateTime <= "2020-12-31",
 #                          "calib", "valid")
@@ -229,8 +229,7 @@ scenario <- c("baseline","plus1","plus5","plus10")
 ##convert from wide to long for plotting
 #all_vars_final <- all_vars |> 
 #  filter(Depth %in% c(0.1,9)) |> 
-#  select(-c(mod_nh4, obs_nh4, mod_din, obs_din, mod_docl, 
-#            obs_docl, mod_docr, obs_docr, mod_doc, obs_doc)) |>
+#  select(-c(mod_docl, obs_docl, mod_docr, obs_docr, mod_doc, obs_doc)) |>
 #  pivot_longer(cols = -c(DateTime,Depth,period), 
 #               names_pattern = "(...)_(...*)$",
 #               names_to = c("type", "var")) |> 
@@ -249,7 +248,7 @@ scenario <- c("baseline","plus1","plus5","plus10")
 #         "NIT_no3" = "NIT_nit",
 #         "PHS_po4" = "PHS_frp",
 #         "PHY_chla" = "PHY_tchla") |>
-#  select(-c(NIT_nh4, NIT_din, OGM_doc ,OGM_docl, OGM_docr)) |>
+#  select(-c(OGM_doc ,OGM_docl, OGM_docr)) |>
 #  pivot_longer(cols = -c(DateTime,Depth), 
 #               names_pattern = "(...)_(...*)$",
 #               names_to = c("type", "var")) |> 
@@ -259,13 +258,13 @@ scenario <- c("baseline","plus1","plus5","plus10")
 #}
 
 # write modeled vars to file
-#mod_vars <-  mget(c("mod_vars_final_baseline","mod_vars_final_plus1",
-#                 "mod_vars_final_plus5", "mod_vars_final_plus10")) |>
-#                   setNames(paste0(scenario)) |>
-#                   bind_rows(.id = "scenario") |>
-#                   relocate(scenario, .after = last_col()) |>
-#             filter(DateTime >= as.POSIXct("2015-07-07")) |>
-#             select(-type)
+mod_vars <-  mget(c("mod_vars_final_baseline","mod_vars_final_plus1",
+                 "mod_vars_final_plus5", "mod_vars_final_plus10")) |>
+                   setNames(paste0(scenario)) |>
+                   bind_rows(.id = "scenario") |>
+                   relocate(scenario, .after = last_col()) |>
+             filter(DateTime >= as.POSIXct("2015-07-07")) |>
+             select(-type)
 #write.csv(mod_vars, "./analysis/data/mod_vars.csv", row.names = F)
 
 
@@ -282,17 +281,15 @@ labels <- c(
   expression("Water level (m" [] * ")"),
   expression("Water Temp (" * degree * "C)"),
   expression("DO (mg L" ^-1*")"),
-  expression("NO" [3] * " (" * mu * " g L"^-1*")"),
-  expression("DRP (" * mu * " g L"^{-1}*")"),
- # expression("DOC (" * mu * " g L"^{-1}*")"),
-  expression("Chlorophyll " * italic(a) * " (" * mu * " g L"^{-1}*")")
+  expression("Chlorophyll " * italic(a) * " (" * mu * " g C L"^{-1}*")")
 )
 
 # Ensure factor levels in the data are consistent with the expressions
-variable_levels <- c("wl", "temp", "oxy", "no3", "po4", "chla") # Variable keys
+variable_levels <- c("wl", "temp", "oxy", "chla") # Variable keys
 
 all_vars_final_baseline <- all_vars_final_baseline |>
   ungroup() |>
+  filter(var %in% variable_levels) |>
   mutate(
     var = factor(var, levels = variable_levels),
     variable = factor(var, levels = variable_levels, labels = labels) 
@@ -300,13 +297,14 @@ all_vars_final_baseline <- all_vars_final_baseline |>
 
 mod_vars_final_baseline <- mod_vars_final_baseline |>
   ungroup() |>
+  filter(var %in% variable_levels) |>
   mutate(
     var = factor(var, levels = variable_levels),
     variable = factor(var, levels = variable_levels, labels = labels)
   ) |>
   na.omit()
 
-# Plot vars for 0.1m depth (Figure 2 a-f)
+# Plot vars for 0.1m depth (Figure 2 a-d)
 plot1 <- ggplot() + geom_line(
     data = subset(mod_vars_final_baseline, Depth %in% 0.1), 
     aes(DateTime, value, color = "modeled")) +
@@ -324,7 +322,7 @@ plot1 <- ggplot() + geom_line(
     guide = guide_legend(override.aes = list(
       linetype = c("solid", "blank"),
                        shape = c(NA, 16)))) +
-  tag_facets() +
+  tagger::tag_facets() +
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         axis.line = element_line(colour = "black"),
@@ -337,7 +335,7 @@ plot1 <- ggplot() + geom_line(
         text = element_text(size = 10), 
         panel.border = element_rect(colour = "black", fill = NA),
         strip.background.x = element_blank(),
-        plot.margin = unit(c(0.2, 0.1, -1.3, 0), "cm"),
+        plot.margin = unit(c(0.2, 0.1, -1, 0), "cm"),
         panel.spacing.x = unit(0.1, "in"),
         panel.background = element_rect(fill = "white"),
         panel.spacing.y = unit(0, "lines"),  
@@ -352,7 +350,7 @@ zoop_scenarios <- read_csv("./analysis/data/zoop_scenarios.csv")
 facet_labels <- c("Cladoceran", "Copepod", "Rotifer", "Total biomass")
 names(facet_labels) <- c("cladoceran", "copepod", "rotifer","total")
 
-# plot zoops (Figure 2 g-j)
+# plot zoops (Figure 2 e-h)
 plot2 <- ggplot(data=subset(zoop_scenarios, scenario %in% "baseline")) +
   geom_line(aes(DateTime, value)) + 
   geom_point(data=zoop_obs,
@@ -364,7 +362,7 @@ plot2 <- ggplot(data=subset(zoop_scenarios, scenario %in% "baseline")) +
   geom_vline(xintercept = as.Date("2020-12-31"), linetype = "dashed") +
   scale_color_manual(values = c(rep("red",4)),
                      breaks = c("cladoceran","copepod","rotifer", "total"))+
-  tag_facets(tag_pool = letters[7:10] ) +
+  tagger::tag_facets(tag_pool = letters[7:10] ) +
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         axis.line = element_line(colour = "black"),
@@ -374,7 +372,7 @@ plot2 <- ggplot(data=subset(zoop_scenarios, scenario %in% "baseline")) +
         text = element_text(size=10), 
         panel.border = element_rect(colour = "black", fill = NA),
         strip.background.x = element_blank(),
-        plot.margin = unit(c(1, 0.1, 0, 0), "cm"),
+        plot.margin = unit(c(0.5, 0.1, 0, 0), "cm"),
         legend.key = element_rect(fill = "transparent"),
         legend.direction = "horizontal",
         panel.spacing.x = unit(0.1, "in"),
@@ -392,11 +390,172 @@ combined_plot <- plot_grid(
 )
 #ggsave("figures/ms_fig2.jpg", width=8, height=6)
 
+
+#supplemental figure with N and P
+# Define the labels as expressions
+labels <- c(
+  expression("NO" [3] * " (" * mu * " g L"^-1*")"),
+  expression("NH" [4] * " (" * mu * " g L"^-1*")"),
+  expression("DIN (" * mu * " g L"^{-1}*")"),
+  expression("DRP (" * mu * " g L"^{-1}*")")
+)
+
+# Ensure factor levels in the data are consistent with the expressions
+variable_levels <- c("no3", "nh4", "din", "po4") # Variable keys
+
+obs_n_p <- all_vars_final_baseline |>
+  ungroup() |>
+  filter(var %in% variable_levels) |>
+  mutate(
+    var = factor(var, levels = variable_levels),
+    variable = factor(var, levels = variable_levels, labels = labels) 
+  )
+
+mod_n_p <- mod_vars_final_baseline |>
+  ungroup() |>
+  filter(var %in% variable_levels) |>
+  mutate(
+    var = factor(var, levels = variable_levels),
+    variable = factor(var, levels = variable_levels, labels = labels)
+  ) |>
+  na.omit()
+
+# Plot N+P for 0.1m depth 
+ggplot() + geom_line(
+  data = subset(mod_n_p, Depth %in% 0.1), 
+  aes(as.POSIXct(DateTime), value, color = "modeled")) +
+  geom_point(
+    data = subset(obs_n_p, type %in% "obs" & Depth %in% 0.1), 
+    aes(as.POSIXct(DateTime), value, color = "observed")) + 
+  facet_wrap(~ variable, scales = "free_y", 
+             nrow = 3, labeller = label_parsed) + 
+  geom_vline(xintercept = as.POSIXct("2020-12-31"), linetype = "dashed") +
+  theme_bw() + xlab("") + ylab("Value") +
+  scale_color_manual(
+    name = "",
+    values = c("modeled" = "black", "observed" = "red"),
+    labels = c("Modeled", "Observed"),
+    guide = guide_legend(override.aes = list(
+      linetype = c("solid", "blank"),
+      shape = c(NA, 16)))) +
+  tagger::tag_facets() +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "black"),
+        legend.background = element_blank(),
+        legend.margin = margin(c(-10,-10,-15,-10)),
+        legend.position = "top",
+        legend.direction = "horizontal",
+        text = element_text(size = 10), 
+        panel.border = element_rect(colour = "black", fill = NA),
+        strip.background.x = element_blank(),
+        plot.margin = unit(c(0.2, 0.1, 0, 0), "cm"),
+        panel.spacing.x = unit(0.1, "in"),
+        panel.background = element_rect(fill = "white"),
+        panel.spacing.y = unit(0, "lines"),  
+        strip.background = element_blank())
+#ggsave("figures/np_mod_vs_obs_0.1m_spinup.jpg", width=8, height=6)
+
+#figuring out what drives the high zoop biomass in winter 2017
+winter <- mod_vars_final_baseline |>
+  filter(DateTime %in% seq(as.Date("2019-05-01"),as.Date("2020-02-28"),1))
+
+zoop_winter <- zoop_scenarios |>
+  filter(DateTime %in% seq(as.Date("2019-05-01"),as.Date("2020-02-28"),1))
+
+w1 <- ggplot() + geom_line(
+  data = subset(winter, Depth %in% 0.1), 
+  aes(DateTime, value, color = "modeled")) +
+  facet_wrap(~ variable, scales = "free_y", 
+             nrow = 3, labeller = label_parsed) + 
+  geom_vline(xintercept = as.POSIXct("2020-12-31"), linetype = "dashed") +
+  theme_bw() + xlab("") + ylab("Value") +
+  tagger::tag_facets() +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "black"),
+        legend.background = element_blank(),
+        legend.margin = margin(c(-10,-10,-15,-10)),
+        legend.position = "top",
+        legend.direction = "horizontal",
+        text = element_text(size = 10), 
+        panel.border = element_rect(colour = "black", fill = NA),
+        strip.background.x = element_blank(),
+        plot.margin = unit(c(0.2, 0.1, -1.3, 0), "cm"),
+        panel.spacing.x = unit(0.1, "in"),
+        panel.background = element_rect(fill = "white"),
+        panel.spacing.y = unit(0, "lines"),  
+        strip.background = element_blank())
+
+w2 <- ggplot(data=subset(zoop_winter, scenario %in% "baseline")) +
+  geom_line(aes(DateTime, value)) + 
+  theme_bw() + xlab("") + guides(color = "none") +
+  facet_wrap(~taxon, scales = "free_y", nrow=2,
+             labeller = labeller(taxon = facet_labels)) +
+  ylab(expression("Biomass (mg C L"^{-1}*")")) +
+  geom_vline(xintercept = as.Date("2020-12-31"), linetype = "dashed") +
+  scale_color_manual(values = c(rep("red",4)),
+                     breaks = c("cladoceran","copepod","rotifer", "total"))+
+  tagger::tag_facets(tag_pool = letters[7:10] ) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "black"),
+        legend.background = element_blank(),
+        legend.position = "top",
+        legend.title = element_blank(),
+        text = element_text(size=10), 
+        panel.border = element_rect(colour = "black", fill = NA),
+        strip.background.x = element_blank(),
+        plot.margin = unit(c(1, 0.1, 0, 0), "cm"),
+        legend.key = element_rect(fill = "transparent"),
+        legend.direction = "horizontal",
+        panel.spacing.x = unit(0.1, "in"),
+        panel.spacing.y = unit(0, "lines"),
+        strip.background = element_blank(),
+        panel.background = element_rect(fill = "transparent", colour = NA), 
+        plot.background = element_rect(fill = "transparent", colour = NA))
+
+combined_plot <- plot_grid(
+  w1, w2, 
+  ncol = 1,   # Number of columns
+  align = "v" # Align plots vertically
+)
+#ggsave("figures/winter_2019_vars.jpg", width=8, height=6)
+
+# Define the labels as expressions
+labels <- c(
+  expression("Water Temp (" * degree * "C)"),
+  expression("DO (mg L" ^-1*")"),
+  expression("NO" [3] * " (" * mu * " g L"^-1*")"),
+  expression("NH" [4] * " (" * mu * " g L"^-1*")"),
+  expression("DIN (" * mu * " g L"^{-1}*")"),
+  expression("DRP (" * mu * " g L"^{-1}*")"),
+  expression("Chlorophyll " * italic(a) * " (" * mu * " g C L"^{-1}*")")
+)
+
+# Ensure factor levels in the data are consistent with the expressions
+variable_levels <- c("temp","oxy","no3", "nh4", "din", "po4","chla") 
+
+obs_n_p_9m <- all_vars_final_baseline |>
+  ungroup() |>
+  mutate(
+    var = factor(var, levels = variable_levels),
+    variable = factor(var, levels = variable_levels, labels = labels) 
+  )
+
+mod_n_p_9m <- mod_vars_final_baseline |>
+  ungroup() |>
+  mutate(
+    var = factor(var, levels = variable_levels),
+    variable = factor(var, levels = variable_levels, labels = labels)
+  ) |>
+  na.omit()
+
 # plot vars for 9m (Figure S3)
 ggplot() +
-  geom_line(data = subset(mod_vars_final_baseline, Depth %in% 9), 
+  geom_line(data = subset(mod_n_p_9m, Depth %in% 9), 
             aes(DateTime, value, color = "modeled")) +
-  geom_point(data = subset(all_vars_final_baseline, 
+  geom_point(data = subset(obs_n_p_9m, 
                            type %in% "obs" & Depth %in% 9), 
              aes(DateTime, value, color = "observed")) + 
   facet_wrap(~ variable, scales = "free_y", nrow = 3,
@@ -538,23 +697,23 @@ sd(mod_vars_bl$value[mod_vars_bl$var=="chla" &
   labels <- c(
     expression("Water temp (" * degree * "C)"),
     expression("DO (mg L" ^-1*")"),
-    expression("NO" [3] * " (" * mu * " g L"^-1*")"),
-    expression("DRP (" * mu * " g L"^{-1}*")"),
-    expression("Phyto biomass (" * mu * " g L"^{-1}*")"),
-    expression("Zoop biomass (mg L" ^-1*")")
+    expression("Phyto biomass (" * mu * " g C L"^{-1}*")"),
+    expression("Zoop biomass (mg C L" ^-1*")")
   )
+  
+  vars <- c("temp","oxy","chla","total")
   
   # line plots for each taxa/scenario
   mean_summer_mod_vars <-  summer_all_vars |>
     group_by(var, year, scenario, Depth) |>
     summarise(mean_val = mean(monthly_mean)) |>
     ungroup() |>
-    mutate(variable = factor(var, levels = unique(var)[c(5,3,2,4,1,6)],
-                            labels = labels))
+    mutate(variable = factor(var, levels = unique(var)[c(7,5,1,8)],
+                            labels = labels)) |>
+    filter(var %in% vars)
   
   mean_summer_mod_vars$var <- factor(mean_summer_mod_vars$var, 
-                              levels = c("temp", "oxy", "no3" ,
-                                         "po4", "chla", "total"))
+                              levels = c("temp", "oxy", "chla", "total"))
   
   # Figure 4 boxplot of wq vars
   ggplot(data=subset(mean_summer_mod_vars,Depth==0.1 & 
@@ -594,9 +753,97 @@ sd(mod_vars_bl$value[mod_vars_bl$var=="chla" &
             fill = "white"),
           panel.spacing = unit(0.5, "lines"))
   #ggsave("figures/mod_vars_yearly_summer_0.1m.jpg", width=7, height=4) 
+  
+  #supplemental figure with N and P vars at 0.1m
+  #new labels list
+  labels <- c(
+    expression("NO" [3] * " (" * mu * " g L"^-1*")"),
+    expression("NH" [4] * " (" * mu * " g L"^-1*")"),
+    expression("DIN (" * mu * " g L"^{-1}*")"),
+    expression("DRP (" * mu * " g L"^{-1}*")")
+  )
+  
+  vars <- c("no3","nh4","din","po4")
+  
+  # line plots for each taxa/scenario
+  np_summer_mod <-  summer_all_vars |>
+    group_by(var, year, scenario, Depth) |>
+    summarise(mean_val = mean(monthly_mean)) |>
+    ungroup() |>
+    mutate(variable = factor(var, levels = unique(var)[c(4,3,2,6)],
+                             labels = labels)) |>
+    filter(var %in% vars)
+  
+  np_summer_mod$var <- factor(np_summer_mod$var, 
+                                     levels = vars)
+  
+  # Figure 4 boxplot of wq vars
+  ggplot(data=subset(np_summer_mod,Depth==0.1 & 
+                       !year %in% c("2015","2022")),
+         aes(x = scenario, y = mean_val,  fill = scenario)) +
+    geom_boxplot() + xlab("") +
+    facet_wrap(~variable, scales = "free",
+               labeller = label_parsed) + 
+    theme_bw() + ylab("Summer mean value") +
+    scale_fill_manual("", values = c("#147582","#c6a000","#c85b00","#680000"),
+                      breaks = c("baseline","plus1","plus5","plus10")) +
+    scale_x_discrete(limits = c("baseline", "plus1", "plus5", "plus10"),
+                     labels = c(
+                       "baseline" = "Baseline",
+                       "plus1" = "Plus1",
+                       "plus5" = "Plus5",
+                       "plus10" = "Plus10")) +
+    theme_bw() + guides(fill = "none") +
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          axis.line = element_line(colour = "black"),
+          legend.key = element_blank(),
+          legend.background = element_blank(),
+          legend.position = "top",
+          legend.title = element_blank(),
+          text = element_text(size=10), 
+          axis.text.y = element_text(size = 10),
+          panel.border = element_rect(colour = "black", fill = NA),
+          strip.text.x = element_text(face = "bold",hjust = 0),
+          strip.background.x = element_blank(),
+          axis.title.y = element_text(size = 11),
+          plot.margin = unit(c(0, 1, 0, 0), "cm"),
+          legend.box.margin = margin(0,-10,-10,-10),
+          legend.margin=margin(0,0,0,0),
+          panel.spacing.x = unit(0.2, "in"),
+          panel.background = element_rect(
+            fill = "white"),
+          panel.spacing = unit(0.5, "lines"))
+  #ggsave("figures/mod_np_yearly_summer_0.1m.jpg", width=7, height=4) 
 
+  # And now 9m all vars for the supplement
+  #new labels list
+  labels <- c(
+    expression("Water temp (" * degree * "C)"),
+    expression("DO (mg L" ^-1*")"),
+    expression("NO" [3] * " (" * mu * " g L"^-1*")"),
+    expression("NH" [4] * " (" * mu * " g L"^-1*")"),
+    expression("DIN (" * mu * " g L"^{-1}*")"),
+    expression("DRP (" * mu * " g L"^{-1}*")"),
+    expression("Phyto biomass (" * mu * " g C L"^{-1}*")"),
+    expression("Zoop biomass (mg C L" ^-1*")")
+  )
+  
+  vars <- c("temp","oxy","no3","nh4","din","po4","chla","total")
+  
+  # line plots for each taxa/scenario
+  all_summer_vars <-  summer_all_vars |>
+    group_by(var, year, scenario, Depth) |>
+    summarise(mean_val = mean(monthly_mean)) |>
+    ungroup() |>
+    mutate(variable = factor(var, levels = unique(var)[c(7,5,4,3,2,6,1,8)],
+                             labels = labels)) 
+  
+  all_summer_vars$var <- factor(all_summer_vars$var, 
+                              levels = vars)
+  
   # Figure S4 boxplots
-  ggplot(data=subset(mean_summer_mod_vars,Depth==9 & 
+  ggplot(data=subset(all_summer_vars,Depth==9 & 
                        !year %in% c("2015","2022")),
          aes(x = scenario, y = mean_val,  fill = scenario)) +
     geom_boxplot() + xlab("") +
@@ -803,4 +1050,25 @@ sd(mod_vars_bl$value[mod_vars_bl$var=="chla" &
   sd(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="chla" &
                               mean_summer_mod_vars$scenario=="plus10" &
                               mean_summer_mod_vars$Depth==0.1])
-
+  
+  mean(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="total" &
+                                       mean_summer_mod_vars$scenario=="baseline" &
+                                       mean_summer_mod_vars$Depth==0.1])
+  sd(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="total" &
+                                     mean_summer_mod_vars$scenario=="baseline" &
+                                     mean_summer_mod_vars$Depth==0.1])
+  
+  mean(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="total" &
+                                       mean_summer_mod_vars$scenario=="plus1" &
+                                       mean_summer_mod_vars$Depth==0.1])
+  
+  mean(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="total" &
+                                       mean_summer_mod_vars$scenario=="plus5" &
+                                       mean_summer_mod_vars$Depth==0.1])
+  
+  mean(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="total" &
+                                       mean_summer_mod_vars$scenario=="plus10" &
+                                       mean_summer_mod_vars$Depth==0.1])
+  sd(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="total" &
+                                     mean_summer_mod_vars$scenario=="plus10" &
+                                     mean_summer_mod_vars$Depth==0.1])
