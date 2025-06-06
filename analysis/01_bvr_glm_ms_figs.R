@@ -930,27 +930,27 @@ sd(mod_vars_bl$value[mod_vars_bl$var=="chla" &
                                      mean_summer_mod_vars$scenario=="plus10" &
                                      mean_summer_mod_vars$Depth==9])
   
-  mean(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="no3" &
+  mean(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="din" &
                                 mean_summer_mod_vars$scenario=="baseline" &
                                 mean_summer_mod_vars$Depth==0.1])
+  sd(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="din" &
+                                     mean_summer_mod_vars$scenario=="baseline" &
+                                     mean_summer_mod_vars$Depth==0.1])
   
-  mean(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="no3" &
+  mean(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="din" &
                                        mean_summer_mod_vars$scenario=="plus1" &
                                        mean_summer_mod_vars$Depth==0.1])
-  sd(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="no3" &
-                              mean_summer_mod_vars$scenario=="plus1" &
-                              mean_summer_mod_vars$Depth==0.1])
     
-  mean(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="no3" &
+  mean(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="din" &
                                        mean_summer_mod_vars$scenario=="plus5" &
                                        mean_summer_mod_vars$Depth==0.1])
+  sd(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="din" &
+                                     mean_summer_mod_vars$scenario=="plus5" &
+                                     mean_summer_mod_vars$Depth==0.1])
   
-  mean(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="no3" &
+  mean(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="din" &
                                 mean_summer_mod_vars$scenario=="plus10" &
                                 mean_summer_mod_vars$Depth==0.1])
-  sd(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="no3" &
-                                     mean_summer_mod_vars$scenario=="plus10" &
-                                     mean_summer_mod_vars$Depth==0.1])
   
   mean(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="po4" &
                                 mean_summer_mod_vars$scenario=="baseline" &
