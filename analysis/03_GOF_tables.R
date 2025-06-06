@@ -163,11 +163,25 @@ pacman::p_load(tidyverse, hydroGOF, glmtools)
 # read in all of the water quality var csvs
 wl_compare <- read.csv("./analysis/data/wl_compare.csv")
 temp_compare <- read.csv("./analysis/data/temp_compare.csv")
-oxy_compare <- read.csv("./analysis/data/oxy_compare.csv")
-no3_compare <- read.csv("./analysis/data/no3_compare.csv")
-nh4_compare <- read.csv("./analysis/data/nh4_compare.csv")
-po4_compare <- read.csv("./analysis/data/po4_compare.csv")
-chla_compare <- read.csv("./analysis/data/chla_compare.csv")
+oxy_compare <- read.csv("./analysis/data/oxy_compare.csv") |>
+  mutate(mod_oxy = mod_oxy * 0.032,
+         obs_oxy = obs_oxy * 0.032) #convert from mmol/m3 --> mg/L
+no3_compare <- read.csv("./analysis/data/no3_compare.csv") |>
+  mutate(mod_no3 = mod_no3 * 62,
+         obs_no3 = obs_no3 * 62) #convert from mmol/m3 --> ug/L
+nh4_compare <- read.csv("./analysis/data/nh4_compare.csv") |>
+  mutate(mod_nh4 = mod_nh4 * 18.04,
+         obs_nh4 = obs_nh4 * 18.04) #convert from mmol/m3 --> ug/L
+din_compare <- dplyr::bind_cols(no3_compare,nh4_compare[,c(3,4)]) |>
+  group_by(DateTime,Depth) |>
+  mutate(mod_din = sum(mod_nh4,mod_no3),
+         obs_din = sum(obs_nh4,obs_no3)) |>
+  select(DateTime, Depth, mod_din, obs_din)
+po4_compare <- read.csv("./analysis/data/po4_compare.csv") |>
+  mutate(mod_po4 = mod_po4 * 94.97,
+         obs_po4 = obs_po4 * 94.97) #convert from mmol/m3 --> ug/L
+chla_compare <- read.csv("./analysis/data/chla_compare.csv") #already in ug/L see commented section above for modeled chla conversions based on individual phyto groups
+  
 
 #### Full water column, full simulation period (2015-2022) ####
 all_gof <- setNames(data.frame(matrix(ncol=2,nrow=29)),c("Parameter","Temp"))
@@ -204,8 +218,7 @@ all_gof_val$Parameter <- c("ME_val","MAE_val","MSE_val","RMSE_val","ubRMSE",
 all_gof$WaterLevel <- c(gof(wl_compare$mod_wl,wl_compare$obs_wl,do.spearman = TRUE), NA)
 all_gof$Temp <- c(gof(temp_compare$mod_temp,temp_compare$obs_temp,do.spearman = TRUE), NA)
 all_gof$DO <- c(gof(oxy_compare$mod_oxy,oxy_compare$obs_oxy,do.spearman = TRUE), NA)
-all_gof$NH4 <- c(gof(nh4_compare$mod_nh4,nh4_compare$obs_nh4,do.spearman = TRUE), NA)
-all_gof$NO3 <- c(gof(no3_compare$mod_no3,no3_compare$obs_no3,do.spearman = TRUE), NA)
+all_gof$DIN <- c(gof(din_compare$mod_din,din_compare$obs_din,do.spearman=TRUE), NA)
 all_gof$PO4 <- c(gof(po4_compare$mod_po4,po4_compare$obs_po4,do.spearman = TRUE), NA)
 all_gof$Chla <- c(gof(chla_compare$mod_chla,chla_compare$obs_chla,do.spearman = TRUE), NA)
 
@@ -219,12 +232,9 @@ comb_temp_rank <- temp_compare |>
 comb_oxy_rank <- oxy_compare |> 
   mutate(rank_obs = rank(obs_oxy),
          rank_mod = rank(mod_oxy)) 
-comb_nh4_rank <- nh4_compare |>  
-  mutate(rank_obs = rank(obs_nh4),
-         rank_mod = rank(mod_nh4)) 
-comb_no3_rank <- no3_compare |> 
-  mutate(rank_obs = rank(obs_no3),
-         rank_mod = rank(mod_no3)) 
+comb_din_rank <- din_compare |> 
+  mutate(rank_obs = rank(obs_din),
+         rank_mod = rank(mod_din)) 
 comb_po4_rank <- po4_compare |> 
   mutate(rank_obs = rank(obs_po4),
          rank_mod = rank(mod_po4)) 
@@ -236,8 +246,7 @@ comb_chla_rank <- chla_compare |>
 all_gof$WaterLevel[29] <- summary(lm(comb_wl_rank$rank_obs ~ comb_wl_rank$rank_mod))$r.squared
 all_gof$Temp[29] <- summary(lm(comb_temp_rank$rank_obs ~ comb_temp_rank$rank_mod))$r.squared
 all_gof$DO[29] <- summary(lm(comb_oxy_rank$rank_obs ~ comb_oxy_rank$rank_mod))$r.squared
-all_gof$NH4[29] <- summary(lm(comb_nh4_rank$rank_obs ~ comb_nh4_rank$rank_mod))$r.squared
-all_gof$NO3[29] <- summary(lm(comb_no3_rank$rank_obs ~ comb_no3_rank$rank_mod))$r.squared
+all_gof$DIN[29] <- summary(lm(comb_din_rank$rank_obs ~ comb_din_rank$rank_mod))$r.squared
 all_gof$PO4[29] <- summary(lm(comb_po4_rank$rank_obs ~ comb_po4_rank$rank_mod))$r.squared
 all_gof$Chla[29] <- summary(lm(comb_chla_rank$rank_obs ~ comb_chla_rank$rank_mod))$r.squared
 
@@ -252,11 +261,8 @@ all_gof_cal$Temp <- c(gof(temp_compare$mod_temp[temp_compare$DateTime< "2021-01-
 all_gof_cal$DO <- c(gof(oxy_compare$mod_oxy[oxy_compare$DateTime< "2021-01-01"],
                         oxy_compare$obs_oxy[oxy_compare$DateTime< "2021-01-01"],
                         do.spearman = TRUE), NA)
-all_gof_cal$NH4 <- c(gof(nh4_compare$mod_nh4[nh4_compare$DateTime< "2021-01-01"],
-                         nh4_compare$obs_nh4[nh4_compare$DateTime< "2021-01-01"],
-                         do.spearman = TRUE), NA)
-all_gof_cal$NO3 <- c(gof(no3_compare$mod_no3[no3_compare$DateTime< "2021-01-01"],
-                         no3_compare$obs_no3[no3_compare$DateTime< "2021-01-01"],
+all_gof_cal$DIN <- c(gof(din_compare$mod_din[din_compare$DateTime< "2021-01-01"],
+                         din_compare$obs_din[din_compare$DateTime< "2021-01-01"],
                          do.spearman = TRUE), NA)
 all_gof_cal$PO4 <- c(gof(po4_compare$mod_po4[po4_compare$DateTime< "2021-01-01"],
                          po4_compare$obs_po4[po4_compare$DateTime< "2021-01-01"],
@@ -278,14 +284,10 @@ comb_oxy_rank <- oxy_compare |>
   filter(DateTime < "2021-01-01") |> 
   mutate(rank_obs = rank(obs_oxy),
          rank_mod = rank(mod_oxy)) 
-comb_nh4_rank <- nh4_compare |> 
+comb_din_rank <- din_compare |> 
   filter(DateTime < "2021-01-01") |> 
-  mutate(rank_obs = rank(obs_nh4),
-         rank_mod = rank(mod_nh4)) 
-comb_no3_rank <- no3_compare |> 
-  filter(DateTime < "2021-01-01") |> 
-  mutate(rank_obs = rank(obs_no3),
-         rank_mod = rank(mod_no3)) 
+  mutate(rank_obs = rank(obs_din),
+         rank_mod = rank(mod_din)) 
 comb_po4_rank <- po4_compare |> 
   filter(DateTime < "2021-01-01") |> 
   mutate(rank_obs = rank(obs_po4),
@@ -299,8 +301,7 @@ comb_chla_rank <- chla_compare |>
 all_gof_cal$WaterLevel[29] <- summary(lm(comb_wl_rank$rank_obs ~ comb_wl_rank$rank_mod))$r.squared
 all_gof_cal$Temp[29] <- summary(lm(comb_temp_rank$rank_obs ~ comb_temp_rank$rank_mod))$r.squared
 all_gof_cal$DO[29] <- summary(lm(comb_oxy_rank$rank_obs ~ comb_oxy_rank$rank_mod))$r.squared
-all_gof_cal$NH4[29] <- summary(lm(comb_nh4_rank$rank_obs ~ comb_nh4_rank$rank_mod))$r.squared
-all_gof_cal$NO3[29] <- summary(lm(comb_no3_rank$rank_obs ~ comb_no3_rank$rank_mod))$r.squared
+all_gof_cal$DIN[29] <- summary(lm(comb_din_rank$rank_obs ~ comb_din_rank$rank_mod))$r.squared
 all_gof_cal$PO4[29] <- summary(lm(comb_po4_rank$rank_obs ~ comb_po4_rank$rank_mod))$r.squared
 all_gof_cal$Chla[29] <- summary(lm(comb_chla_rank$rank_obs ~ comb_chla_rank$rank_mod))$r.squared
 
@@ -315,11 +316,8 @@ all_gof_val$Temp <- c(gof(temp_compare$mod_temp[temp_compare$DateTime >= "2021-0
 all_gof_val$DO <- c(gof(oxy_compare$mod_oxy[oxy_compare$DateTime >= "2021-01-01"],
                         oxy_compare$obs_oxy[oxy_compare$DateTime >= "2021-01-01"],
                         do.spearman = TRUE), NA)
-all_gof_val$NH4 <- c(gof(nh4_compare$mod_nh4[nh4_compare$DateTime >= "2021-01-01"],
-                         nh4_compare$obs_nh4[nh4_compare$DateTime >= "2021-01-01"],
-                         do.spearman = TRUE), NA)
-all_gof_val$NO3 <- c(gof(no3_compare$mod_no3[no3_compare$DateTime >= "2021-01-01"],
-                         no3_compare$obs_no3[no3_compare$DateTime >= "2021-01-01"],
+all_gof_val$DIN <- c(gof(din_compare$mod_din[din_compare$DateTime >= "2021-01-01"],
+                         din_compare$obs_din[din_compare$DateTime >= "2021-01-01"],
                          do.spearman = TRUE), NA)
 all_gof_val$PO4 <- c(gof(po4_compare$mod_po4[po4_compare$DateTime >= "2021-01-01"],
                          po4_compare$obs_po4[po4_compare$DateTime >= "2021-01-01"],
@@ -341,14 +339,10 @@ comb_oxy_rank <- oxy_compare |>
   filter(DateTime >= "2021-01-01") |> 
   mutate(rank_obs = rank(obs_oxy),
          rank_mod = rank(mod_oxy)) 
-comb_nh4_rank <- nh4_compare |> 
+comb_din_rank <- din_compare |> 
   filter(DateTime >= "2021-01-01") |> 
-  mutate(rank_obs = rank(obs_nh4),
-         rank_mod = rank(mod_nh4)) 
-comb_no3_rank <- no3_compare |> 
-  filter(DateTime >= "2021-01-01") |> 
-  mutate(rank_obs = rank(obs_no3),
-         rank_mod = rank(mod_no3)) 
+  mutate(rank_obs = rank(obs_din),
+         rank_mod = rank(mod_din)) 
 comb_po4_rank <- po4_compare |> 
   filter(DateTime >= "2021-01-01") |> 
   mutate(rank_obs = rank(obs_po4),
@@ -362,8 +356,7 @@ comb_chla_rank <- chla_compare |>
 all_gof_val$WaterLevel[29] <- summary(lm(comb_wl_rank$rank_obs ~ comb_wl_rank$rank_mod))$r.squared
 all_gof_val$Temp[29] <- summary(lm(comb_temp_rank$rank_obs ~ comb_temp_rank$rank_mod))$r.squared
 all_gof_val$DO[29] <- summary(lm(comb_oxy_rank$rank_obs ~ comb_oxy_rank$rank_mod))$r.squared
-all_gof_val$NH4[29] <- summary(lm(comb_nh4_rank$rank_obs ~ comb_nh4_rank$rank_mod))$r.squared
-all_gof_val$NO3[29] <- summary(lm(comb_no3_rank$rank_obs ~ comb_no3_rank$rank_mod))$r.squared
+all_gof_val$DIN[29] <- summary(lm(comb_din_rank$rank_obs ~ comb_din_rank$rank_mod))$r.squared
 all_gof_val$PO4[29] <- summary(lm(comb_po4_rank$rank_obs ~ comb_po4_rank$rank_mod))$r.squared
 all_gof_val$Chla[29] <- summary(lm(comb_chla_rank$rank_obs ~ comb_chla_rank$rank_mod))$r.squared
 
@@ -376,8 +369,7 @@ all_gof$Parameter[28] <- "r.Spearman_all"
 all_gof$WaterLevel[30] <- round(all_gof$WaterLevel[2]/mean(wl_compare$obs_wl, na.rm=T),digits = 2)
 all_gof$Temp[30] <- round(all_gof$Temp[2]/mean(temp_compare$obs_temp, na.rm=T),digits = 2)
 all_gof$DO[30] <- round(all_gof$DO[2]/mean(oxy_compare$obs_oxy, na.rm=T),digits = 2)
-all_gof$NH4[30] <- round(all_gof$NH4[2]/mean(nh4_compare$obs_nh4, na.rm=T),digits = 2)
-all_gof$NO3[30] <- round(all_gof$NO3[2]/mean(no3_compare$obs_no3, na.rm=T),digits = 2)
+all_gof$DIN[30] <- round(all_gof$DIN[2]/mean(din_compare$obs_din, na.rm=T),digits = 2)
 all_gof$PO4[30] <- round(all_gof$PO4[2]/mean(po4_compare$obs_po4, na.rm=T),digits = 2)
 all_gof$Chla[30] <- round(all_gof$Chla[2]/mean(chla_compare$obs_chla, na.rm=T),digits = 2)
 
@@ -391,10 +383,8 @@ all_gof_cal$Temp[30] <- round(all_gof_cal$Temp[2]/mean(
   temp_compare$obs_temp[temp_compare$DateTime < "2021-01-01"], na.rm=T),digits = 2)
 all_gof_cal$DO[30] <- round(all_gof_cal$DO[2]/mean(
   oxy_compare$obs_oxy[oxy_compare$DateTime < "2021-01-01"], na.rm=T),digits = 2)
-all_gof_cal$NH4[30] <- round(all_gof_cal$NH4[2]/mean(
-  nh4_compare$obs_nh4[nh4_compare$DateTime < "2021-01-01"], na.rm=T),digits = 2)
-all_gof_cal$NO3[30] <- round(all_gof_cal$NO3[2]/mean(
-  no3_compare$obs_no3[no3_compare$DateTime < "2021-01-01"], na.rm=T),digits = 2)
+all_gof_cal$DIN[30] <- round(all_gof_cal$DIN[2]/mean(
+  din_compare$obs_din[din_compare$DateTime < "2021-01-01"], na.rm=T),digits = 2)
 all_gof_cal$PO4[30] <- round(all_gof_cal$PO4[2]/mean(
   po4_compare$obs_po4[po4_compare$DateTime < "2021-01-01"], na.rm=T),digits = 2)
 all_gof_cal$Chla[30] <- round(all_gof_cal$Chla[2]/mean(
@@ -410,10 +400,8 @@ all_gof_val$Temp[30] <- round(all_gof_val$Temp[2]/mean(
   temp_compare$obs_temp[temp_compare$DateTime >= "2021-01-01"], na.rm=T),digits = 2)
 all_gof_val$DO[30] <- round(all_gof_val$DO[2]/mean(
   oxy_compare$obs_oxy[oxy_compare$DateTime >= "2021-01-01"], na.rm=T),digits = 2)
-all_gof_val$NH4[30] <- round(all_gof_val$NH4[2]/mean(
-  nh4_compare$obs_nh4[nh4_compare$DateTime >= "2021-01-01"], na.rm=T),digits = 2)
-all_gof_val$NO3[30] <- round(all_gof_val$NO3[2]/mean(
-  no3_compare$obs_no3[no3_compare$DateTime >= "2021-01-01"], na.rm=T),digits = 2)
+all_gof_val$DIN[30] <- round(all_gof_val$DIN[2]/mean(
+  din_compare$obs_din[din_compare$DateTime >= "2021-01-01"], na.rm=T),digits = 2)
 all_gof_val$PO4[30] <- round(all_gof_val$PO4[2]/mean(
   po4_compare$obs_po4[po4_compare$DateTime >= "2021-01-01"], na.rm=T),digits = 2)
 all_gof_val$Chla[30] <- round(all_gof_val$Chla[2]/mean(
@@ -422,42 +410,48 @@ all_gof_val$Chla[30] <- round(all_gof_val$Chla[2]/mean(
 # read in the obs dfs for all the vars
 obs_wl <- read.csv("./analysis/data/obs_wl.csv")
 obs_temp <- read.csv("./analysis/data/obs_temp.csv")
-obs_oxy <- read.csv("./analysis/data/obs_oxy.csv")
-obs_no3 <- read.csv("./analysis/data/obs_no3.csv")
-obs_nh4 <- read.csv("./analysis/data/obs_nh4.csv")
-obs_po4 <- read.csv("./analysis/data/obs_po4.csv")
+obs_oxy <- read.csv("./analysis/data/obs_oxy.csv") |>
+  mutate(OXY_oxy = OXY_oxy * 0.032)
+obs_no3 <- read.csv("./analysis/data/obs_no3.csv") |>
+  mutate(NIT_nit = NIT_nit * 62)
+obs_nh4 <- read.csv("./analysis/data/obs_nh4.csv") |>
+  mutate(NIT_amm = NIT_amm * 18.04)
+obs_din <- dplyr::bind_cols(obs_no3,obs_nh4[,3]) |>
+  rename("NIT_amm" = "...4") |> group_by(DateTime,Depth) |>
+  mutate(NIT_din = sum(NIT_nit,NIT_amm)) |>
+  select(DateTime, Depth, NIT_din)
+obs_po4 <- read.csv("./analysis/data/obs_po4.csv") |>
+  mutate(PHS_frp = PHS_frp * 94.97)
 obs_chla <- read.csv("./analysis/data/obs_chla.csv")
 
 # Select GOF variables for the full year
 full_n_all <- c("n_all", length(obs_wl$WaterLevel_m),
                 length(obs_temp$temp), length(obs_oxy$OXY_oxy),
-                length(obs_nh4$NIT_amm), length(obs_no3$NIT_nit),
+                length(obs_din$NIT_din),
                 length(obs_po4$PHS_frp), length(obs_chla$PHY_tchla))
 
 full_n_cal <- c("n_cal",length(obs_wl$DateTime[which(obs_wl$DateTime < "2021-01-01")]),
                 length(obs_temp$DateTime[which(obs_temp$DateTime < "2021-01-01")]),
                 length(obs_oxy$DateTime[which(obs_oxy$DateTime < "2021-01-01")]),
-                length(obs_nh4$DateTime[which(obs_nh4$DateTime < "2021-01-01")]),
-                length(obs_no3$DateTime[which(obs_no3$DateTime < "2021-01-01")]),
+                length(obs_din$DateTime[which(obs_din$DateTime < "2021-01-01")]),
                 length(obs_po4$DateTime[which(obs_po4$DateTime < "2021-01-01")]),
                 length(obs_chla$DateTime[which(obs_chla$DateTime < "2021-01-01")]))
 
 full_n_val <- c("n_val",length(obs_wl$DateTime[which(obs_wl$DateTime >= "2021-01-01")]),
                 length(obs_temp$DateTime[which(obs_temp$DateTime >= "2021-01-01")]),
                 length(obs_oxy$DateTime[which(obs_oxy$DateTime >= "2021-01-01")]),
-                length(obs_nh4$DateTime[which(obs_nh4$DateTime >= "2021-01-01")]),
-                length(obs_no3$DateTime[which(obs_no3$DateTime >= "2021-01-01")]),
+                length(obs_din$DateTime[which(obs_din$DateTime >= "2021-01-01")]),
                 length(obs_po4$DateTime[which(obs_po4$DateTime >= "2021-01-01")]),
                 length(obs_chla$DateTime[which(obs_chla$DateTime >= "2021-01-01")]))
 
 full_gof_all_table <- all_gof %>% 
-  filter(Parameter == "R2_all" | Parameter == "RMSE_all" | Parameter == "PBIAS%_all" | Parameter == "NMAE_all")
+  filter(Parameter == "RMSE_all" | Parameter == "PBIAS%_all" | Parameter == "NMAE_all")
 
 full_gof_cal_table <- all_gof_cal %>% 
-  filter(Parameter == "R2_cal" | Parameter == "RMSE_cal" | Parameter == "PBIAS%_cal" | Parameter == "NMAE_cal")
+  filter(Parameter == "RMSE_cal" | Parameter == "PBIAS%_cal" | Parameter == "NMAE_cal")
 
 full_gof_val_table <- all_gof_val %>% 
-  filter(Parameter == "R2_val" | Parameter == "RMSE_val" | Parameter == "PBIAS%_val" | Parameter == "NMAE_val")
+  filter(Parameter == "RMSE_val" | Parameter == "PBIAS%_val" | Parameter == "NMAE_val")
 
 full_gof_table <- rbind(full_n_all,full_gof_all_table,full_n_cal,full_gof_cal_table,full_n_val,full_gof_val_table)
 
@@ -499,10 +493,8 @@ all_gof$Temp <- c(gof(temp_compare$mod_temp[temp_compare$Depth %in% 0.1],
                       temp_compare$obs_temp[temp_compare$Depth %in% 0.1],do.spearman = TRUE), NA)
 all_gof$DO <- c(gof(oxy_compare$mod_oxy[oxy_compare$Depth %in% 0.1],
                     oxy_compare$obs_oxy[oxy_compare$Depth %in% 0.1],do.spearman = TRUE), NA)
-all_gof$NH4 <- c(gof(nh4_compare$mod_nh4[nh4_compare$Depth %in% 0.1],
-                     nh4_compare$obs_nh4[nh4_compare$Depth %in% 0.1],do.spearman = TRUE), NA)
-all_gof$NO3 <- c(gof(no3_compare$mod_no3[no3_compare$Depth %in% 0.1],
-                     no3_compare$obs_no3[no3_compare$Depth %in% 0.1],do.spearman = TRUE), NA)
+all_gof$DIN <- c(gof(din_compare$mod_din[din_compare$Depth %in% 0.1],
+                     din_compare$obs_din[din_compare$Depth %in% 0.1],do.spearman = TRUE), NA)
 all_gof$PO4 <- c(gof(po4_compare$mod_po4[po4_compare$Depth %in% 0.1],
                      po4_compare$obs_po4[po4_compare$Depth %in% 0.1],do.spearman = TRUE), NA)
 all_gof$Chla <- c(gof(chla_compare$mod_chla[chla_compare$Depth %in% 0.1],
@@ -517,14 +509,10 @@ comb_oxy_rank <- oxy_compare |>
   filter(Depth %in% 0.1) |>
   mutate(rank_obs = rank(obs_oxy),
          rank_mod = rank(mod_oxy)) 
-comb_nh4_rank <- nh4_compare |>  
+comb_din_rank <- din_compare |>  
   filter(Depth %in% 0.1) |>
-  mutate(rank_obs = rank(obs_nh4),
-         rank_mod = rank(mod_nh4)) 
-comb_no3_rank <- no3_compare |> 
-  filter(Depth %in% 0.1) |>
-  mutate(rank_obs = rank(obs_no3),
-         rank_mod = rank(mod_no3)) 
+  mutate(rank_obs = rank(obs_din),
+         rank_mod = rank(mod_din)) 
 comb_po4_rank <- po4_compare |> 
   filter(Depth %in% 0.1) |>
   mutate(rank_obs = rank(obs_po4),
@@ -537,8 +525,7 @@ comb_chla_rank <- chla_compare |>
 # calculate non-parametric (ranked) R2, following Brett et al. 2016
 all_gof$Temp[29] <- summary(lm(comb_temp_rank$rank_obs ~ comb_temp_rank$rank_mod))$r.squared
 all_gof$DO[29] <- summary(lm(comb_oxy_rank$rank_obs ~ comb_oxy_rank$rank_mod))$r.squared
-all_gof$NH4[29] <- summary(lm(comb_nh4_rank$rank_obs ~ comb_nh4_rank$rank_mod))$r.squared
-all_gof$NO3[29] <- summary(lm(comb_no3_rank$rank_obs ~ comb_no3_rank$rank_mod))$r.squared
+all_gof$DIN[29] <- summary(lm(comb_din_rank$rank_obs ~ comb_din_rank$rank_mod))$r.squared
 all_gof$PO4[29] <- summary(lm(comb_po4_rank$rank_obs ~ comb_po4_rank$rank_mod))$r.squared
 all_gof$Chla[29] <- summary(lm(comb_chla_rank$rank_obs ~ comb_chla_rank$rank_mod))$r.squared
 
@@ -554,15 +541,10 @@ all_gof_cal$DO <- c(gof(oxy_compare$mod_oxy[oxy_compare$DateTime< "2021-01-01" &
                         oxy_compare$obs_oxy[oxy_compare$DateTime< "2021-01-01" &
                                               oxy_compare$Depth %in% 0.1],
                         do.spearman = TRUE), NA)
-all_gof_cal$NH4 <- c(gof(nh4_compare$mod_nh4[nh4_compare$DateTime< "2021-01-01" &
-                                               nh4_compare$Depth %in% 0.1],
-                         nh4_compare$obs_nh4[nh4_compare$DateTime< "2021-01-01" &
-                                               nh4_compare$Depth %in% 0.1],
-                         do.spearman = TRUE), NA)
-all_gof_cal$NO3 <- c(gof(no3_compare$mod_no3[no3_compare$DateTime< "2021-01-01" &
-                                               no3_compare$Depth %in% 0.1],
-                         no3_compare$obs_no3[no3_compare$DateTime< "2021-01-01" &
-                                               no3_compare$Depth %in% 0.1],
+all_gof_cal$DIN <- c(gof(din_compare$mod_din[din_compare$DateTime< "2021-01-01" &
+                                               din_compare$Depth %in% 0.1],
+                         din_compare$obs_din[din_compare$DateTime< "2021-01-01" &
+                                               din_compare$Depth %in% 0.1],
                          do.spearman = TRUE), NA)
 all_gof_cal$PO4 <- c(gof(po4_compare$mod_po4[po4_compare$DateTime< "2021-01-01" &
                                                po4_compare$Depth %in% 0.1],
@@ -586,16 +568,11 @@ comb_oxy_rank <- oxy_compare |>
          Depth %in% 0.1) |> 
   mutate(rank_obs = rank(obs_oxy),
          rank_mod = rank(mod_oxy)) 
-comb_nh4_rank <- nh4_compare |> 
+comb_din_rank <- din_compare |> 
   filter(DateTime < "2021-01-01",
          Depth %in% 0.1) |> 
-  mutate(rank_obs = rank(obs_nh4),
-         rank_mod = rank(mod_nh4)) 
-comb_no3_rank <- no3_compare |> 
-  filter(DateTime < "2021-01-01",
-         Depth %in% 0.1) |> 
-  mutate(rank_obs = rank(obs_no3),
-         rank_mod = rank(mod_no3)) 
+  mutate(rank_obs = rank(obs_din),
+         rank_mod = rank(mod_din)) 
 comb_po4_rank <- po4_compare |> 
   filter(DateTime < "2021-01-01",
          Depth %in% 0.1) |> 
@@ -611,8 +588,7 @@ comb_chla_rank <- chla_compare |>
 all_gof_cal$Temp[29] <- summary(lm(comb_temp_rank$rank_obs ~ comb_temp_rank$rank_mod))$r.squared
 all_gof_cal$Temp[29] <- summary(lm(comb_temp_rank$rank_obs ~ comb_temp_rank$rank_mod))$r.squared
 all_gof_cal$DO[29] <- summary(lm(comb_oxy_rank$rank_obs ~ comb_oxy_rank$rank_mod))$r.squared
-all_gof_cal$NH4[29] <- summary(lm(comb_nh4_rank$rank_obs ~ comb_nh4_rank$rank_mod))$r.squared
-all_gof_cal$NO3[29] <- summary(lm(comb_no3_rank$rank_obs ~ comb_no3_rank$rank_mod))$r.squared
+all_gof_cal$DIN[29] <- summary(lm(comb_din_rank$rank_obs ~ comb_din_rank$rank_mod))$r.squared
 all_gof_cal$PO4[29] <- summary(lm(comb_po4_rank$rank_obs ~ comb_po4_rank$rank_mod))$r.squared
 all_gof_cal$Chla[29] <- summary(lm(comb_chla_rank$rank_obs ~ comb_chla_rank$rank_mod))$r.squared
 
@@ -628,15 +604,10 @@ all_gof_val$DO <- c(gof(oxy_compare$mod_oxy[oxy_compare$DateTime >= "2021-01-01"
                         oxy_compare$obs_oxy[oxy_compare$DateTime >= "2021-01-01" &
                                               oxy_compare$Depth %in% 0.1],
                         do.spearman = TRUE), NA)
-all_gof_val$NH4 <- c(gof(nh4_compare$mod_nh4[nh4_compare$DateTime >= "2021-01-01" &
-                                               nh4_compare$Depth %in% 0.1],
-                         nh4_compare$obs_nh4[nh4_compare$DateTime >= "2021-01-01" &
-                                               nh4_compare$Depth %in% 0.1],
-                         do.spearman = TRUE), NA)
-all_gof_val$NO3 <- c(gof(no3_compare$mod_no3[no3_compare$DateTime >= "2021-01-01" &
-                                               no3_compare$Depth %in% 0.1],
-                         no3_compare$obs_no3[no3_compare$DateTime >= "2021-01-01" &
-                                               no3_compare$Depth %in% 0.1],
+all_gof_val$DIN <- c(gof(din_compare$mod_din[din_compare$DateTime >= "2021-01-01" &
+                                               din_compare$Depth %in% 0.1],
+                         din_compare$obs_din[din_compare$DateTime >= "2021-01-01" &
+                                               din_compare$Depth %in% 0.1],
                          do.spearman = TRUE), NA)
 all_gof_val$PO4 <- c(gof(po4_compare$mod_po4[po4_compare$DateTime >= "2021-01-01" &
                                                po4_compare$Depth %in% 0.1],
@@ -660,16 +631,11 @@ comb_oxy_rank <- oxy_compare |>
          Depth %in% 0.1) |> 
   mutate(rank_obs = rank(obs_oxy),
          rank_mod = rank(mod_oxy)) 
-comb_nh4_rank <- nh4_compare |> 
+comb_din_rank <- din_compare |> 
   filter(DateTime >= "2021-01-01",
          Depth %in% 0.1) |> 
-  mutate(rank_obs = rank(obs_nh4),
-         rank_mod = rank(mod_nh4)) 
-comb_no3_rank <- no3_compare |> 
-  filter(DateTime >= "2021-01-01",
-         Depth %in% 0.1) |> 
-  mutate(rank_obs = rank(obs_no3),
-         rank_mod = rank(mod_no3)) 
+  mutate(rank_obs = rank(obs_din),
+         rank_mod = rank(mod_din)) 
 comb_po4_rank <- po4_compare |> 
   filter(DateTime >= "2021-01-01",
          Depth %in% 0.1) |> 
@@ -684,8 +650,7 @@ comb_chla_rank <- chla_compare |>
 # calculate non-parametric (ranked) R2, following Brett et al. 2016
 all_gof_val$Temp[29] <- summary(lm(comb_temp_rank$rank_obs ~ comb_temp_rank$rank_mod))$r.squared
 all_gof_val$DO[29] <- summary(lm(comb_oxy_rank$rank_obs ~ comb_oxy_rank$rank_mod))$r.squared
-all_gof_val$NH4[29] <- summary(lm(comb_nh4_rank$rank_obs ~ comb_nh4_rank$rank_mod))$r.squared
-all_gof_val$NO3[29] <- summary(lm(comb_no3_rank$rank_obs ~ comb_no3_rank$rank_mod))$r.squared
+all_gof_val$DIN[29] <- summary(lm(comb_din_rank$rank_obs ~ comb_din_rank$rank_mod))$r.squared
 all_gof_val$PO4[29] <- summary(lm(comb_po4_rank$rank_obs ~ comb_po4_rank$rank_mod))$r.squared
 all_gof_val$Chla[29] <- summary(lm(comb_chla_rank$rank_obs ~ comb_chla_rank$rank_mod))$r.squared
 
@@ -699,9 +664,7 @@ all_gof$Temp[30] <- round(all_gof$Temp[2]/mean(temp_compare$obs_temp[temp_compar
                                                na.rm=T),digits = 2)
 all_gof$DO[30] <- round(all_gof$DO[2]/mean(oxy_compare$obs_oxy[oxy_compare$Depth %in% 0.1],
                                            na.rm=T),digits = 2)
-all_gof$NH4[30] <- round(all_gof$NH4[2]/mean(nh4_compare$obs_nh4[nh4_compare$Depth %in% 0.1],
-                                             na.rm=T),digits = 2)
-all_gof$NO3[30] <- round(all_gof$NO3[2]/mean(no3_compare$obs_no3[no3_compare$Depth %in% 0.1],
+all_gof$DIN[30] <- round(all_gof$DIN[2]/mean(din_compare$obs_din[din_compare$Depth %in% 0.1],
                                              na.rm=T),digits = 2)
 all_gof$PO4[30] <- round(all_gof$PO4[2]/mean(po4_compare$obs_po4[po4_compare$Depth %in% 0.1],
                                              na.rm=T),digits = 2)
@@ -718,12 +681,9 @@ all_gof_cal$Temp[30] <- round(all_gof_cal$Temp[2]/mean(
 all_gof_cal$DO[30] <- round(all_gof_cal$DO[2]/mean(
   oxy_compare$obs_oxy[oxy_compare$DateTime < "2021-01-01" & 
                         oxy_compare$Depth %in% 0.1], na.rm=T),digits = 2)
-all_gof_cal$NH4[30] <- round(all_gof_cal$NH4[2]/mean(
-  nh4_compare$obs_nh4[nh4_compare$DateTime < "2021-01-01" &
-                        nh4_compare$Depth %in% 0.1], na.rm=T),digits = 2)
-all_gof_cal$NO3[30] <- round(all_gof_cal$NO3[2]/mean(
-  no3_compare$obs_no3[no3_compare$DateTime < "2021-01-01" &
-                        no3_compare$Depth %in% 0.1], na.rm=T),digits = 2)
+all_gof_cal$DIN[30] <- round(all_gof_cal$DIN[2]/mean(
+  din_compare$obs_din[din_compare$DateTime < "2021-01-01" &
+                        din_compare$Depth %in% 0.1], na.rm=T),digits = 2)
 all_gof_cal$PO4[30] <- round(all_gof_cal$PO4[2]/mean(
   po4_compare$obs_po4[po4_compare$DateTime < "2021-01-01" &
                         po4_compare$Depth %in% 0.1], na.rm=T),digits = 2)
@@ -741,12 +701,9 @@ all_gof_val$Temp[30] <- round(all_gof_val$Temp[2]/mean(
 all_gof_val$DO[30] <- round(all_gof_val$DO[2]/mean(
   oxy_compare$obs_oxy[oxy_compare$DateTime >= "2021-01-01" &
                         oxy_compare$Depth %in% 0.1], na.rm=T),digits = 2)
-all_gof_val$NH4[30] <- round(all_gof_val$NH4[2]/mean(
-  nh4_compare$obs_nh4[nh4_compare$DateTime >= "2021-01-01" &
-                        nh4_compare$Depth %in% 0.1], na.rm=T),digits = 2)
-all_gof_val$NO3[30] <- round(all_gof_val$NO3[2]/mean(
-  no3_compare$obs_no3[no3_compare$DateTime >= "2021-01-01" &
-                        no3_compare$Depth %in% 0.1], na.rm=T),digits = 2)
+all_gof_val$DIN[30] <- round(all_gof_val$DIN[2]/mean(
+  din_compare$obs_din[din_compare$DateTime >= "2021-01-01" &
+                        din_compare$Depth %in% 0.1], na.rm=T),digits = 2)
 all_gof_val$PO4[30] <- round(all_gof_val$PO4[2]/mean(
   po4_compare$obs_po4[po4_compare$DateTime >= "2021-01-01" &
                         po4_compare$Depth %in% 0.1], na.rm=T),digits = 2)
@@ -758,8 +715,7 @@ all_gof_val$Chla[30] <- round(all_gof_val$Chla[2]/mean(
 full_n_all <- c("n_all", 
                 length(obs_temp$temp[obs_temp$Depth %in% 0.1]), 
                 length(obs_oxy$OXY_oxy[obs_oxy$Depth %in% 0.1]),
-                length(obs_nh4$NIT_amm[obs_nh4$Depth %in% 0.1]),
-                length(obs_no3$NIT_nit[obs_no3$Depth %in% 0.1]),
+                length(obs_din$NIT_din[obs_nh4$Depth %in% 0.1]),
                 length(obs_po4$PHS_frp[obs_po4$Depth %in% 0.1]),
                 length(obs_chla$PHY_tchla[obs_chla$Depth %in% 0.1]))
 
@@ -768,10 +724,8 @@ full_n_cal <- c("n_cal",
                                                 obs_temp$Depth %in% 0.1)]),
                 length(obs_oxy$DateTime[which(obs_oxy$DateTime < "2021-01-01" &
                                                 obs_oxy$Depth %in% 0.1)]),
-                length(obs_nh4$DateTime[which(obs_nh4$DateTime < "2021-01-01" &
-                                                obs_nh4$Depth %in% 0.1)]),
-                length(obs_no3$DateTime[which(obs_no3$DateTime < "2021-01-01" &
-                                                obs_no3$Depth %in% 0.1)]),
+                length(obs_din$DateTime[which(obs_din$DateTime < "2021-01-01" &
+                                                obs_din$Depth %in% 0.1)]),
                 length(obs_po4$DateTime[which(obs_po4$DateTime < "2021-01-01" &
                                                 obs_po4$Depth %in% 0.1)]),
                 length(obs_chla$DateTime[which(obs_chla$DateTime < "2021-01-01" &
@@ -782,23 +736,21 @@ full_n_val <- c("n_val",
                                                 obs_temp$Depth %in% 0.1)]),
                 length(obs_oxy$DateTime[which(obs_oxy$DateTime >= "2021-01-01" &
                                                 obs_oxy$Depth %in% 0.1)]),
-                length(obs_nh4$DateTime[which(obs_nh4$DateTime >= "2021-01-01" &
-                                                obs_nh4$Depth %in% 0.1)]),
-                length(obs_no3$DateTime[which(obs_no3$DateTime >= "2021-01-01" &
-                                                obs_no3$Depth %in% 0.1)]),
+                length(obs_din$DateTime[which(obs_din$DateTime >= "2021-01-01" &
+                                                obs_din$Depth %in% 0.1)]),
                 length(obs_po4$DateTime[which(obs_po4$DateTime >= "2021-01-01" &
                                                 obs_po4$Depth %in% 0.1)]),
                 length(obs_chla$DateTime[which(obs_chla$DateTime >= "2021-01-01" &
                                                  obs_chla$Depth %in% 0.1)]))
 
 full_gof_all_table <- all_gof %>% 
-  filter(Parameter == "R2_all" | Parameter == "RMSE_all" | Parameter == "PBIAS%_all" | Parameter == "NMAE_all")
+  filter(Parameter == "RMSE_all" | Parameter == "PBIAS%_all" | Parameter == "NMAE_all")
 
 full_gof_cal_table <- all_gof_cal %>% 
-  filter(Parameter == "R2_cal" | Parameter == "RMSE_cal" | Parameter == "PBIAS%_cal" | Parameter == "NMAE_cal")
+  filter(Parameter == "RMSE_cal" | Parameter == "PBIAS%_cal" | Parameter == "NMAE_cal")
 
 full_gof_val_table <- all_gof_val %>% 
-  filter(Parameter == "R2_val" | Parameter == "RMSE_val" | Parameter == "PBIAS%_val" | Parameter == "NMAE_val")
+  filter( Parameter == "RMSE_val" | Parameter == "PBIAS%_val" | Parameter == "NMAE_val")
 
 full_gof_table <- rbind(full_n_all,full_gof_all_table,full_n_cal,full_gof_cal_table,full_n_val,full_gof_val_table)
 
