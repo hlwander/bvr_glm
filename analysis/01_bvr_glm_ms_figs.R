@@ -475,25 +475,38 @@ mean(seasonal_nuts$value[seasonal_nuts$var=="din" & seasonal_nuts$Depth==0.1 &
 
 #figuring out what drives the high zoop biomass in winter 2017
 winter <- mod_vars_final_baseline |>
-  filter(DateTime %in% seq(as.Date("2019-05-01"),as.Date("2020-02-28"),1))
+  filter(DateTime %in% seq(as.Date("2017-05-01"),as.Date("2018-02-28"),1)) |>
+  filter(Depth == 0.1, var %in% c("wl", "temp", "oxy", "din", "po4", "chla"))
 
 zoop_winter <- zoop_scenarios |>
-  filter(DateTime %in% seq(as.Date("2019-05-01"),as.Date("2020-02-28"),1))
+  filter(DateTime %in% seq(as.Date("2017-05-01"),as.Date("2018-02-28"),1))
+
+# Relabels vars 
+var_labels <- c(
+  wl    = "Water~Level~(m)",
+  temp  = "Temp~(degree*C)",
+  oxy   = "DO~(mg~L^{-1})",
+  din   = "DIN~(mg~L^{-1})",
+  po4   = "DRP~(mg~L^{-1})",
+  chla  = "Chl~italic(a)~(mu*g~L^{-1})"
+)
 
 w1 <- ggplot() + geom_line(
   data = subset(winter, Depth %in% 0.1), 
-  aes(DateTime, value, color = "modeled")) +
-  facet_wrap(~ variable, scales = "free_y", 
-             nrow = 3, labeller = label_parsed) + 
+  aes(DateTime, value, color = "modeled"),
+  col="black") +
+  facet_wrap(~ var, scales = "free_y", 
+             nrow = 3,   labeller = as_labeller(var_labels, label_parsed)) + 
   geom_vline(xintercept = as.POSIXct("2020-12-31"), linetype = "dashed") +
   theme_bw() + xlab("") + ylab("Value") +
   tagger::tag_facets() +
+  scale_x_date(date_labels = "%b-%Y") + 
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         axis.line = element_line(colour = "black"),
         legend.background = element_blank(),
         legend.margin = margin(c(-10,-10,-15,-10)),
-        legend.position = "top",
+        legend.position = "none",
         legend.direction = "horizontal",
         text = element_text(size = 10), 
         panel.border = element_rect(colour = "black", fill = NA),
@@ -514,6 +527,7 @@ w2 <- ggplot(data=subset(zoop_winter, scenario %in% "baseline")) +
   scale_color_manual(values = c(rep("red",4)),
                      breaks = c("cladoceran","copepod","rotifer", "total"))+
   tagger::tag_facets(tag_pool = letters[7:10] ) +
+  scale_x_date(date_labels = "%b-%Y") + 
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         axis.line = element_line(colour = "black"),
@@ -537,7 +551,7 @@ combined_plot <- plot_grid(
   ncol = 1,   # Number of columns
   align = "v" # Align plots vertically
 )
-#ggsave("figures/winter_2019_vars.jpg", width=8, height=6)
+#ggsave("figures/winter_2017_vars.jpg", width=8, height=6)
 
 # Define the labels as expressions
 labels <- c(
