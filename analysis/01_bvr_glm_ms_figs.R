@@ -391,7 +391,7 @@ combined_plot <- plot_grid(
 #ggsave("figures/ms_fig2.jpg", width=8, height=6)
 
 
-#supplemental figure with N and P
+#supplemental figure with N and P (Figure S5)
 # Define the labels as expressions
 labels <- c(
   expression("NO" [3] * " (" * mu * " g L"^-1*")"),
@@ -582,7 +582,7 @@ mod_n_p_9m <- mod_vars_final_baseline |>
   ) |>
   na.omit()
 
-# plot vars for 9m (Figure S3)
+# plot vars for 9m (Figure S6)
 ggplot() +
   geom_line(data = subset(mod_n_p_9m, Depth %in% 9), 
             aes(DateTime, value, color = "modeled")) +
@@ -801,7 +801,7 @@ sd(mod_vars_bl$value[mod_vars_bl$var=="chla" &
   all_summer_vars$var <- factor(all_summer_vars$var, 
                               levels = vars)
   
-  # Figure S4 boxplots
+  # Figure S7 boxplots
   ggplot(data=subset(all_summer_vars,Depth==9 & 
                        !year %in% c("2015","2022")),
          aes(x = scenario, y = mean_val,  fill = scenario)) +
@@ -965,6 +965,9 @@ sd(mod_vars_bl$value[mod_vars_bl$var=="chla" &
   mean(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="din" &
                                 mean_summer_mod_vars$scenario=="plus10" &
                                 mean_summer_mod_vars$Depth==0.1])
+  sd(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="din" &
+                                       mean_summer_mod_vars$scenario=="plus10" &
+                                       mean_summer_mod_vars$Depth==0.1])
   
   mean(mean_summer_mod_vars$mean_val[mean_summer_mod_vars$var=="po4" &
                                 mean_summer_mod_vars$scenario=="baseline" &

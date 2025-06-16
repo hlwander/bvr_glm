@@ -620,7 +620,7 @@ all_zoops_final$year <- year(all_zoops_final$DateTime)
 ggplot(all_zoops_final, aes(doy, ZOO_cladoceran, color=as.factor(year))) + 
   geom_point() + theme_bw() + geom_line()
 
-# zoop size histogram for the three focal taxa (supplemental figure)
+# zoop size histogram for the three focal taxa (supplemental Figure S2)
 s <- ggplot(all_zoops, aes(Size_mm, fill=Taxon)) +
   geom_density() + theme_bw() + xlab("Size (mm)") +
   scale_fill_manual(values = c("#084c61","#db504a","#e3b505"),
@@ -656,7 +656,7 @@ zoops_temp <- read.csv("field_data/field_zoops.csv") |>
          biomass_log = log(Biomass_ugL))
 
 
-# zoop size histogram for the three focal taxa (supplemental figure)
+# zoop size histogram for the three focal taxa (supplemental Figure S2)
 b <- ggplot(zoops_temp, aes(biomass_log, fill=Taxon)) +
   geom_density(alpha = 0.7) + theme_bw() + ylab("") +
   scale_fill_manual(values = c("#084c61","#db504a","#e3b505"),

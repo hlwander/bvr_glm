@@ -90,7 +90,7 @@ pacman::p_load(dplyr)
 #for (i in 1:length(sens_dirs)){
 #  
 #  nc_file = paste0("sims/spinup/sensitivity_",sens_dirs[i],"/output/output.nc")  
-# nc_file = paste0("sims/spinup/cyano_sens/output/output.nc")  #run this one for the cyano_sens SI figure
+# nc_file = paste0("sims/spinup/cyano_sens/output/output.nc")  #run this one for the cyano_sens SI figure (Figure S3)
 #  
 #  #save zoop output
 #  var="ZOO_cladoceran"
@@ -202,7 +202,7 @@ zoop_pars <-read.csv("analysis/data/zoop_pars_sens.csv") |>
 zoops_bl <- read_csv("analysis/data/zoop_scenarios.csv") |>
   filter(scenario %in% "baseline")
 
-# zoop figs to summarize changes between high vs. low pars (Figure S2)
+# zoop figs to summarize changes between high vs. low pars (Figure S4)
 ggplot() +
   geom_line(data=zoop_pars,
             aes(DateTime, value, color = scenario)) +
@@ -238,7 +238,7 @@ ggplot() +
 # Combine data from both dataframes
 combined_data <- bind_rows(zoop_pars, zoops_bl)
 
-# Figure S12
+# Figure S15
 ggplot(data = subset(combined_data, !taxon %in% "total"),
        aes(x=DateTime, y = value, color=taxon)) +
   geom_area(aes(color = taxon, fill = taxon),
@@ -326,7 +326,7 @@ mean(mean_proportions_par_sens$mean_proportion[
     mean_proportions_par_sens$scenario=="low"])) *100
 
 
-# smoothed monthly biomass for each scenario (Figure S11)
+# smoothed monthly biomass for each scenario (Figure S14)
 combined_data |>
   filter(year %in% c(2016:2021)) |>
   mutate(month = lubridate::month(DateTime),
@@ -367,7 +367,7 @@ combined_data |>
         panel.spacing = unit(0.5, "lines"))
 #ggsave("figures/smoothed_monthly_biom_high_vs_low.jpg", width=7, height=4) 
 
-# code for supplemental figure with clads grazing cyanos w/ 10% preference
+# code for supplemental figure with clads grazing cyanos w/ 10% preference (Figure S3)
 zoop_scenarios <- all_zoops_sens_cyanos |>
   mutate(DateTime = as.Date(DateTime)) |>
   filter(DateTime >= "2015-07-07") |>

@@ -124,7 +124,7 @@ area <-  ggplot(data = subset(zoop_scenarios,
           fill = "white"),
         panel.spacing = unit(0.5, "lines"))
   
-# proportion boxplots for each scenario (Figure S9)
+# proportion boxplots for each scenario
 mean_proportions <- zoop_scenarios |>
     group_by(DateTime, scenario) |>
     mutate(proportion = value / value[taxon=="total"]) |>
@@ -171,7 +171,7 @@ p <- egg::ggarrange(area,box, nrow=1, widths = c(2,1))
 zoop_scenarios$scenario <- factor(str_to_title(zoop_scenarios$scenario), 
                         levels = str_to_title(c("baseline", "plus1", "plus5", "plus10")))
 
-# relative zoop biomass for all scenarios
+# relative zoop biomass for all scenarios (Figure S12)
 ggplot(data = subset(zoop_scenarios, !taxon %in% c("total")),
                 aes(x=DateTime, y = value, color=taxon)) +
   geom_area(aes(fill = taxon, color=taxon),
@@ -284,7 +284,7 @@ mean(mean_proportions$mean_proportion[mean_proportions$taxon=="rotifer" &
 mean(mean_proportions$mean_proportion[mean_proportions$taxon=="rotifer" &
                                         mean_proportions$scenario=="plus10"])
 
-# stacked annual biomass bar chart (Figure S5)
+# stacked annual biomass bar chart (Figure S8)
 zoop_annual <- zoop_scenarios |>
   mutate(year = year(DateTime)) |>
   group_by(year, taxon, scenario) |>
@@ -374,7 +374,7 @@ ggplot(data=subset(zoop_annual, !taxon %in% "total" &
     ) |> 
     mutate(cv_biom = sd_biom / mean_biom)
   
-#same but panels for each year (Figure S14)
+#same but panels for each year (Figure S17)
   zoop_scenarios |>
     mutate(month = lubridate::month(DateTime)) |>
     group_by(taxon, scenario, month, year) |>
@@ -572,7 +572,7 @@ zoop_mean_biom <-  zoop_scenarios |>
         mean(zoop_mean_biom$mean_biom[zoop_mean_biom$scenario=="Baseline" &
                                         zoop_mean_biom$taxon=="copepod"]) *100 
   
-# mean annual zoop biomass across scenarios (Figure S8)
+# mean annual zoop biomass across scenarios (Figure S11)
 ggplot(zoop_mean_biom, aes(x = year, y = mean_biom, color = scenario)) +
   geom_point(size=2) + geom_line(size=1) +
   facet_wrap(~str_to_title(taxon), scales="free_y") +
@@ -845,7 +845,7 @@ ggplot(zoop_mean_biom, aes(x = year, y = mean_biom, color = scenario)) +
                           "diatom" = "Diatoms",
                           "green" = "Greens"))
   
-  # Figure S13
+  # Figure S16
   ggplot(data = subset(phyto_mean_biom, year %in% 2016:2021), 
          aes(x = year, y = mean_biom, color = scenario)) +
     geom_point(size=2) + geom_line(size=1) +
@@ -877,7 +877,7 @@ ggplot(zoop_mean_biom, aes(x = year, y = mean_biom, color = scenario)) +
             fill = "white"))
   #ggsave("figures/phyto_annual_biom_scenario_lineplot.jpg", width=7, height=4) 
 
-  # Figure S10
+  # Figure S13
   ggplot(data = subset(phyto_scenarios),
          aes(x=DateTime, y = value, color=taxon)) +
     geom_line() +
@@ -1020,7 +1020,7 @@ zoop_timing <- zoop_scenarios |>
     mean(zoop_timing$mean_doy[zoop_timing$taxon=="rotifer" &
                                 zoop_timing$scenario=="plus1"])
   
-# Create a phyto and zoop PEG model fig (Figure S15)
+# Create a phyto and zoop PEG model fig (Figure S18)
   total_phyto_scenarios <- phyto_scenarios |>
     mutate(DateTime = as.Date(DateTime)) |>
     group_by(DateTime, scenario) |>

@@ -4,7 +4,7 @@
 noaa_roa_temp <- read_csv("analysis/data/ROA_annual_temp.csv",skip=3) |>
   mutate(Date = as.numeric(substr(Date,1,4)),
          Value = (Value - 32) * 5/9) |> # to convert to deg C
-  rename(airtemp = Value)
+  rename(airtemp = Value) 
   
 ggplot(noaa_roa_temp, aes(x = Date, y = airtemp)) +
   geom_point() +
